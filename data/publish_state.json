@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "platforms": {
+    "bale": {
+      "digest": "cebe2e9c13c25fa8177e2ec4041a7d5a8a552cb6bb1fd739186ddf01cd7840a3",
+      "message_id": "3",
+      "sent_at": "2026-11-10T14:57:59+00:00"
+    }
+  }
+}
