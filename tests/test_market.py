@@ -78,3 +78,24 @@ def test_unknown_market_unit_skipped():
     html='''<main><table><tr><td><a href="/en/markets/bonds/unknown">Unknown yield</a></td>
     <td>3.04% annualized</td></tr></table></main>'''
     assert parse_page(html,BY_PATH)=={}
+
+
+def test_card_renderer_creates_output_directory(tmp_path,monkeypatch):
+    from currencytel import media
+    from io import BytesIO
+    from PIL import Image
+    import base64
+    class FakeDriver:
+        def __init__(self):self.visited=[]
+        def get(self,url):self.visited.append(url)
+        def execute_cdp_cmd(self,method,options):
+            if method=='Page.captureScreenshot':
+                out=BytesIO();Image.new('RGB',(1080,1350),'white').save(out,format='PNG')
+                return {'data':base64.b64encode(out.getvalue()).decode()}
+            return {}
+    monkeypatch.setattr(media,'ROOT',tmp_path)
+    result=media.render_card(FakeDriver(),quotes(),'testing')
+    assert result.exists()
+    assert result.parent.name=='generated'
+    assert result.parent.parent.name=='assets'
+    assert not (tmp_path/'data'/'.instagram_card.html').exists()

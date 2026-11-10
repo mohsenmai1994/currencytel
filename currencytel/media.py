@@ -30,8 +30,10 @@ header{{height:120px;display:flex;align-items:center;justify-content:space-betwe
 
 def render_card(driver,quotes,digest):
     path=ROOT/'assets'/'generated'/f'post-{digest[:16]}.jpg'
+    path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():return path
     html_path=ROOT/'data'/'.instagram_card.html'
+    html_path.parent.mkdir(parents=True, exist_ok=True)
     html_path.write_text(card_html(quotes),encoding='utf-8')
     try:
         driver.get(html_path.resolve().as_uri())
