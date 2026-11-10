@@ -1,0 +1,155 @@
+{
+  "schema_version": 2,
+  "fetched_at": null,
+  "timezone": "Asia/Tehran",
+  "source": "https://alanchand.com/en",
+  "source_label": "الان چند",
+  "bootstrap": true,
+  "complete": true,
+  "social_count": 14,
+  "extra_count": 0,
+  "channel": "currencytel",
+  "bot": "currencytel_bot",
+  "items": [
+    {
+      "id": "usd",
+      "label": "دلار آمریکا",
+      "category": "currency",
+      "value": "263900",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/currencies-price/usd",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "eur",
+      "label": "یورو",
+      "category": "currency",
+      "value": "296400",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/currencies-price/eur",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "gbp",
+      "label": "پوند انگلیس",
+      "category": "currency",
+      "value": "351000",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/currencies-price/gbp",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "try",
+      "label": "لیر ترکیه",
+      "category": "currency",
+      "value": "5330",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/currencies-price/try",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "chf",
+      "label": "فرانک سوئیس",
+      "category": "currency",
+      "value": "321800",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/currencies-price/chf",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "cny",
+      "label": "یوان چین",
+      "category": "currency",
+      "value": "39680",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/currencies-price/cny",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "bahar",
+      "label": "سکه بهار آزادی",
+      "category": "coin",
+      "value": "249000000",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/gold-price/bahar",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "nim",
+      "label": "نیم سکه",
+      "category": "coin",
+      "value": "136000000",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/gold-price/nim",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "rob",
+      "label": "ربع سکه",
+      "category": "coin",
+      "value": "73000000",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/gold-price/rob",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "usd_xau",
+      "label": "انس طلا",
+      "category": "gold",
+      "value": "4094.69",
+      "unit": "دلار",
+      "source_url": "https://alanchand.com/en/gold-price/usd_xau",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "18ayar",
+      "label": "طلای ۱۸ عیار",
+      "category": "gold",
+      "value": "25762960",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/gold-price/18ayar",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "brent-oil",
+      "label": "نفت برنت",
+      "category": "energy",
+      "value": "89.72",
+      "unit": "دلار/بشکه",
+      "source_url": "https://alanchand.com/en/energy/brent-oil",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "btc",
+      "label": "بیت کوین",
+      "category": "crypto",
+      "value": "74436",
+      "unit": "دلار",
+      "source_url": "https://alanchand.com/en/crypto-price/btc",
+      "received_at": null,
+      "social": true
+    },
+    {
+      "id": "usdt",
+      "label": "تتر",
+      "category": "crypto",
+      "value": "262208",
+      "unit": "تومان",
+      "source_url": "https://alanchand.com/en/crypto-price/usdt",
+      "received_at": null,
+      "social": true
+    }
+  ]
+}
