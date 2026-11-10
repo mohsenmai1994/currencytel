@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1420">
+  <meta name="description" content="CurrencyTel | مرجع ساده و سریع قیمت ارز، طلا، سکه، رمزارز و بازارهای جهانی؛ جستجو، نمودار و محاسبه‌گر">
+  <meta property="og:title" content="CurrencyTel | نبض بازار">
+  <meta property="og:description" content="قیمت ارز، طلا، سکه و رمزارز در یک داشبورد شفاف و نصب‌شدنی">
+  <meta property="og:type" content="website">
+  <meta name="color-scheme" content="dark light">
+  <title>CurrencyTel — نبض بازار ارز و طلا</title>
+  <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/main.css">
+  <script src="./assets/js/app.js" type="module" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#prices">رفتن به قیمت‌ها</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a href="./" class="brand" aria-label="CurrencyTel صفحه اصلی">
+        <img src="./assets/icons/icon.svg" alt="" width="42" height="42">
+        <span><strong>CurrencyTel</strong><small>نبض بازار، در یک نگاه</small></span>
+      </a>
+      <div class="header-right">
+        <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال دریافت اطلاعات</span></div>
+        <button id="installBtn" type="button" class="icon-button install-btn" hidden title="نصب اپلیکیشن" aria-label="نصب اپلیکیشن">⬇</button>
+        <button id="themeBtn" type="button" class="icon-button" aria-label="تغییر تم" title="تغییر تم">☼</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div>
+        <p class="eyebrow"><span class="spark">✦</span> پایش هوشمند بازار</p>
+        <h1 id="heroTitle">قیمت‌ها، واضح‌تر از همیشه.</h1>
+        <p>ارز، طلا، سکه، رمزارز و بازارهای جهانی در یک فضای ساده و کاربردی.</p>
+        <div class="hero-actions">
+          <a href="https://t.me/currencytel" target="_blank" rel="noopener noreferrer" class="button primary">کانال قیمت‌ها <span aria-hidden="true">↗</span></a>
+          <button type="button" id="refreshBtn" class="button secondary">⟳ تازه‌سازی</button>
+        </div>
+      </div>
+      <div class="hero-side">
+        <span class="hero-side-title">آخرین دریافت از منبع</span>
+        <strong id="updatedAt">—</strong>
+        <small id="ageLabel">داده‌ها پس از اولین اجرای موفق نمایش داده می‌شوند</small>
+        <span class="source-link">منبع: <a href="https://alanchand.com/en" target="_blank" rel="noopener noreferrer">الان چند ↗</a></span>
+      </div>
+    </section>
+
+    <section class="summary-grid" aria-label="قیمت‌های شاخص" id="summaryGrid">
+      <div class="summary-card skeleton"></div><div class="summary-card skeleton"></div>
+      <div class="summary-card skeleton"></div><div class="summary-card skeleton"></div>
+    </section>
+
+    <section class="section" id="prices">
+      <div class="section-heading"><div><p class="eyebrow">تابلوی بازار</p><h2>قیمت‌های بازار</h2><p id="countLabel" class="muted">—</p></div><span id="favoriteCount" class="favs-badge">★ علاقه‌مندی‌ها: ۰</span></div>
+      <div class="toolbar">
+        <label class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" aria-label="جستجوی قیمت‌ها" placeholder="جستجو: دلار، طلا، اتریوم..." autocomplete="off"></label>
+        <div id="filterBar" class="filter-bar" aria-label="دسته‌بندی بازار">
+          <button class="chip active" data-filter="all" type="button" aria-pressed="true">همه</button>
+          <button class="chip" data-filter="currency" type="button">ارز</button>
+          <button class="chip" data-filter="coin" type="button">سکه</button>
+          <button class="chip" data-filter="gold" type="button">طلا</button>
+          <button class="chip" data-filter="crypto" type="button">رمزارز</button>
+          <button class="chip" data-filter="energy" type="button">انرژی</button>
+          <button class="chip" data-filter="metal" type="button">فلزات</button>
+          <button class="chip" data-filter="agriculture" type="button">کشاورزی</button>
+          <button class="chip" data-filter="index" type="button">شاخص‌ها</button>
+          <button class="chip" data-filter="commodity" type="button">کالاها</button>
+          <button class="chip" data-filter="favorite" type="button">★ منتخب من</button>
+        </div>
+      </div>
+      <div class="table-toolbar"><span id="marketCoverage">قیمت‌ها از منبع دریافت می‌شوند</span><label>مرتب‌سازی <select id="sortInput" aria-label="مرتب‌سازی"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">قیمت (نزولی)</option><option value="change_desc">بیشترین رشد</option></select></label></div>
+      <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th scope="col">دارایی</th><th scope="col">قیمت</th><th scope="col">تغییر روزانه</th><th scope="col">بیشترین / کمترین</th><th scope="col" class="fav-heading">منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="5" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
+      <div id="errorMessage" role="alert" class="error-message" hidden></div>
+    </section>
+
+    <div class="utilities-grid">
+      <section class="panel" aria-labelledby="chartTitle">
+        <div class="panel-heading"><div><p class="eyebrow">روند قیمت</p><h2 id="chartTitle">نمودار تغییرات</h2></div><span class="soft-badge">بر اساس گزارش‌های ذخیره‌شده</span></div>
+        <label class="field-label" for="chartAsset">انتخاب دارایی</label>
+        <select id="chartAsset" class="field-select"><option value="usd">دلار آمریکا</option></select>
+        <div id="chartNumber" class="chart-value">—</div>
+        <div id="chartMeta" class="muted chart-subtitle">برای نمایش نمودار، چند نوبت داده لازم است.</div>
+        <div class="chart-wrap"><svg id="historyChart" viewBox="0 0 640 190" preserveAspectRatio="none" role="img" aria-label="نمودار تاریخچه قیمت"></svg><div id="chartEmpty" class="chart-empty">تاریخچه کافی ثبت نشده است</div></div>
+      </section>
+      <section class="panel" aria-labelledby="convertTitle">
+        <div class="panel-heading"><div><p class="eyebrow">ابزار سریع</p><h2 id="convertTitle">محاسبه‌گر نرخ</h2></div><span class="soft-badge">بدون کارمزد</span></div>
+        <label class="field-label" for="converterAsset">دارایی</label>
+        <select id="converterAsset" class="field-select"></select>
+        <label class="field-label" for="converterAmount">مقدار</label>
+        <input id="converterAmount" class="field-input" inputmode="decimal" type="number" min="0" step="any" value="1">
+        <div class="conversion-result"><small>معادل تقریبی</small><strong id="conversionValue">—</strong><span id="conversionNote">بر اساس آخرین نرخ ثبت‌شده؛ بدون کارمزد و هزینه معامله</span></div>
+      </section>
+    </div>
+
+    <section class="section" aria-labelledby="connectTitle">
+      <div class="section-heading"><div><p class="eyebrow">همراه ما باشید</p><h2 id="connectTitle">CurrencyTel در همه‌جا</h2></div></div>
+      <div class="channels-grid">
+        <a class="channel-card" href="https://t.me/currencytel" target="_blank" rel="noopener noreferrer"><span class="channel-icon">✈</span><span><strong>تلگرام</strong><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a class="channel-card" href="https://ble.ir/currencytel" target="_blank" rel="noopener noreferrer"><span class="channel-icon">ب</span><span><strong>بله</strong><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a class="channel-card" href="https://rubika.ir/currencytel" target="_blank" rel="noopener noreferrer"><span class="channel-icon">ر</span><span><strong>روبیکا</strong><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a class="channel-card" href="https://www.instagram.com/currencytel/" target="_blank" rel="noopener noreferrer"><span class="channel-icon">◎</span><span><strong>اینستاگرام</strong><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a class="channel-card" href="https://t.me/currencytel_bot" target="_blank" rel="noopener noreferrer"><span class="channel-icon">⌘</span><span><strong>ربات CurrencyTel</strong><small>@currencytel_bot</small></span><span class="external">↗</span></a>
+      </div>
+      <p class="muted contact-link">برای تبلیغات، همکاری یا سفارش ربات اختصاصی: <a href="https://t.me/currencytel_admin" target="_blank" rel="noopener noreferrer">@currencytel_admin</a></p>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="shell footer-inner"><span>© ۲۰۲۶ CurrencyTel — اطلاعات برای اطلاع‌رسانی است، نه توصیه سرمایه‌گذاری.</span><span>منبع: <a href="https://alanchand.com/en" target="_blank" rel="noopener noreferrer">AlanChand</a> · <span id="footerTime">—</span></span></div></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
