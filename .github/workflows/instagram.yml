@@ -1,0 +1,39 @@
+name: CurrencyTel | Publish prepared Instagram image
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [instagram_publish]
+permissions:
+  contents: write
+concurrency:
+  group: currencytel-commit
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install API dependencies
+        run: pip install requests
+      - name: Publish latest card after GitHub Pages deployment
+        env:
+          ENABLE_INSTAGRAM: ${{ vars.ENABLE_INSTAGRAM || '0' }}
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          INSTAGRAM_API_VERSION: ${{ vars.INSTAGRAM_API_VERSION || 'v25.0' }}
+        run: python scripts/post_instagram.py
+      - name: Save Instagram publishing receipt
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- data/publish_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Save Instagram publish state [skip ci]'
+            git push
+          fi
