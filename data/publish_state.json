@@ -2,14 +2,14 @@
   "schema_version": 1,
   "platforms": {
     "bale": {
-      "digest": "fd804d07966512ffdfbbbc32bf033cc5f0960127395ce966d8e79ef3c7c1717b",
-      "message_id": "6",
-      "sent_at": "2026-11-10T15:39:46+00:00"
+      "digest": "343542660a1aba68226d325d6a29045b0027c6fe23adabc09c6a12b42c8e46d4",
+      "message_id": "8",
+      "sent_at": "2026-11-11T05:33:45+00:00"
     },
     "telegram": {
-      "digest": "fd804d07966512ffdfbbbc32bf033cc5f0960127395ce966d8e79ef3c7c1717b",
-      "message_id": "19353",
-      "sent_at": "2026-11-10T15:39:44+00:00"
+      "digest": "343542660a1aba68226d325d6a29045b0027c6fe23adabc09c6a12b42c8e46d4",
+      "message_id": "19360",
+      "sent_at": "2026-11-11T05:33:45+00:00"
     }
   }
 }
