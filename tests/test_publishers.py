@@ -35,11 +35,6 @@ def test_http_failure_safe(monkeypatch):
     assert 'secret-token' not in str(exc.value)
 
 
-def test_rubika_username_rejected_before_network(monkeypatch):
-    monkeypatch.setenv('RUBIKA_BOT_TOKEN','test_token')
-    monkeypatch.setenv('RUBIKA_CHAT_ID','@currencytel')
-    with pytest.raises(PublishError,match='GUID'):
-        rubika.send('hi',FakeSession(Response({})))
 
 def test_http_error_details_are_safe(monkeypatch):
     monkeypatch.setenv('TELEGRAM_BOT_TOKEN','sensitive-test-token')

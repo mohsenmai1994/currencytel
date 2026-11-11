@@ -46,9 +46,16 @@ def check(platform,token,chat):
     if not chat:
         print(f'{platform}: no channel ID configured')
         return
-    if platform=='rubika' and chat.startswith('@'):
-        print('rubika: RUBIKA_CHAT_ID must be a chat GUID, NOT @username')
-        return
+    if platform=='rubika' and (chat.startswith('@') or chat.lower().startswith('https://rubika.ir/')):
+        from currencytel.publishers.rubika import resolve_username, _username
+        username = _username(chat)
+        found = resolve_username(username, token)
+        if found:
+            print(f'rubika: @{username} resolved to verified channel GUID (no post sent)')
+            chat = found
+        else:
+            print(f'rubika: @{username} is configured; no verified GUID found yet. Actual publishing will try @username. If rejected, forward a channel post to the bot and retry.')
+            return
     data=query(platform,base,'getChat',{'chat_id':chat})
     if data is not None:
         print(f'{platform}: channel access confirmed (getChat); posting permission still needs checking')

@@ -12,13 +12,18 @@ def quotes():
 
 def test_social_exactly_14_in_order():
     q=quotes();text=render_report(q)
-    rows=[x for x in text.splitlines() if x.startswith(('دلار آمریکا:','☸','✴'))]
+    rows=[x for x in text.splitlines() if x.startswith(('☸','✴'))]
     assert len(rows)==14
-    assert rows[0].startswith('دلار آمریکا: 100,000 تومان')
+    assert rows[0].startswith('☸️دلار آمریکا: 100,000 تومان')
     assert rows[9].startswith('✴️ انس طلا: 1.25 دلار')
     assert rows[-1].startswith('✴️ تتر:')
     assert text.endswith('🆔 @currencytel')
+    assert text.startswith('قیمت #ارز، #طلا و #بازار')
+    assert '💵 ارزهای خارجی' not in text
+    assert '🪙 طلا و سکه' not in text
+    assert '🌐 انرژی و رمزارز' not in text
     assert 'سکه امامی' not in text
+    assert text.splitlines().count('') == 2
 
 def test_fails_closed_missing_value():
     q=quotes();q.pop('chf')
