@@ -27,11 +27,11 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: '@currencytel'
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || vars.TELEGRAM_CHAT_ID || '@currencytel' }}
           BALE_BOT_TOKEN: ${{ secrets.BALE_BOT_TOKEN }}
           BALE_CHAT_ID: ${{ secrets.BALE_CHAT_ID }}
           RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
-          RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID }}
+          RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID || vars.RUBIKA_CHAT_ID || '@currencytel' }}
           ENABLE_TELEGRAM: ${{ vars.ENABLE_TELEGRAM || '1' }}
           ENABLE_BALE: ${{ vars.ENABLE_BALE || '0' }}
           ENABLE_RUBIKA: ${{ vars.ENABLE_RUBIKA || '0' }}
@@ -44,7 +44,10 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- data/ assets/generated/ market_log.txt
+          git add -A -- data/ market_log.txt
+          if [ -d assets/generated ]; then
+            git add -A -- assets/generated/
+          fi
           if ! git diff --cached --quiet; then
             git commit -m 'Update CurrencyTel market data [skip ci]'
             git push
