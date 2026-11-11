@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "fetched_at": "2026-11-11T21:36:40+03:30",
+  "fetched_at": "2026-11-11T21:49:13+03:30",
   "timezone": "Asia/Tehran",
   "source": "https://alanchand.com/en",
   "source_label": "الان چند",
@@ -17,7 +17,7 @@
       "value": "264900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/usd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -27,7 +27,7 @@
       "value": "293800",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/eur",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -37,7 +37,7 @@
       "value": "348100",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/gbp",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -47,7 +47,7 @@
       "value": "5350",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/try",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -57,7 +57,7 @@
       "value": "317800",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/chf",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -67,7 +67,7 @@
       "value": "39800",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/cny",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -77,7 +77,7 @@
       "value": "247000000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/bahar",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -87,7 +87,7 @@
       "value": "134500000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/nim",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -97,17 +97,17 @@
       "value": "73000000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/rob",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
       "id": "usd_xau",
       "label": "انس طلا",
       "category": "gold",
-      "value": "3997.34",
+      "value": "3989.27",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/gold-price/usd_xau",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -117,37 +117,37 @@
       "value": "25137400",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/18ayar",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
       "id": "brent-oil",
       "label": "نفت برنت",
       "category": "energy",
-      "value": "92.25",
+      "value": "92.34",
       "unit": "دلار/بشکه",
       "source_url": "https://alanchand.com/en/energy/brent-oil",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
       "id": "btc",
       "label": "بیت کوین",
       "category": "crypto",
-      "value": "13840",
+      "value": "13834",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/btc",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
       "id": "usdt",
       "label": "تتر",
       "category": "crypto",
-      "value": "264964",
+      "value": "263916",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/crypto-price/usdt",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": true
     },
     {
@@ -157,7 +157,7 @@
       "value": "255000000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/sekkeh",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -167,37 +167,37 @@
       "value": "37000000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/sek",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "avax",
       "label": "آوالانچ",
       "category": "crypto",
-      "value": "22979990",
+      "value": "22827710",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/avax",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "aave",
       "label": "آوه",
       "category": "crypto",
-      "value": "328479160",
+      "value": "327542550",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/aave",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "eth",
       "label": "اتریوم",
       "category": "crypto",
-      "value": "2090",
+      "value": "2088",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/eth",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -207,7 +207,7 @@
       "value": "410000",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/xlm",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -217,7 +217,7 @@
       "value": "0.0298",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/storj",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -227,17 +227,17 @@
       "value": "61900",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/enj",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "axs",
       "label": "اکسی اینفینیتی",
       "category": "crypto",
-      "value": "2150000",
+      "value": "2138830",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/axs",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -247,17 +247,17 @@
       "value": "0.7799",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/eos",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "bnb",
       "label": "بایننس کوین",
       "category": "crypto",
-      "value": "687.54",
+      "value": "687.56",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/bnb",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -267,17 +267,17 @@
       "value": "321570",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/bat",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "trx",
       "label": "ترون",
       "category": "crypto",
-      "value": "0.3165",
+      "value": "0.3166",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/trx",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -287,7 +287,7 @@
       "value": "634560",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/xtz",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -297,17 +297,17 @@
       "value": "1.60",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/ton",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "doge",
       "label": "دوج کوین",
       "category": "crypto",
-      "value": "0.0691",
+      "value": "0.0690",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/doge",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -317,7 +317,7 @@
       "value": "1.07",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/xrp",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -327,7 +327,7 @@
       "value": "1008",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/zec",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -337,17 +337,17 @@
       "value": "113380",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/sand",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "sol",
       "label": "سولانا",
       "category": "crypto",
-      "value": "85.31",
+      "value": "85.21",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/sol",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -357,7 +357,7 @@
       "value": "53498",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/cvc",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -367,7 +367,7 @@
       "value": "12",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/shib",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -377,27 +377,27 @@
       "value": "2056350",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/fil",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "flow",
       "label": "فلو",
       "category": "crypto",
-      "value": "53900",
+      "value": "56820",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/flow",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "ltc",
       "label": "لایت کوین",
       "category": "crypto",
-      "value": "135193640",
+      "value": "135258690",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/ltc",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -407,7 +407,7 @@
       "value": "17232",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/lrc",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -417,17 +417,17 @@
       "value": "185420",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/mana",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "not",
       "label": "نات کوین",
       "category": "crypto",
-      "value": "881",
+      "value": "873",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/not",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -437,17 +437,17 @@
       "value": "9868340",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/near",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "one",
       "label": "هارمونی",
       "category": "crypto",
-      "value": "4046",
+      "value": "4059",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/one",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -457,7 +457,7 @@
       "value": "12864120",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/zen",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -467,17 +467,17 @@
       "value": "4839770",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/cake",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "dot",
       "label": "پولکادات",
       "category": "crypto",
-      "value": "2261680",
+      "value": "2285780",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/dot",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -487,7 +487,7 @@
       "value": "13",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/pepe",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -497,7 +497,7 @@
       "value": "28690",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/chz",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -507,37 +507,37 @@
       "value": "27850460",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/link",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "ada",
       "label": "کاردانو",
       "category": "crypto",
-      "value": "0.1789",
+      "value": "0.1786",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/ada",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "gala",
       "label": "گالا",
       "category": "crypto",
-      "value": "3980",
+      "value": "3960",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/gala",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "grt",
       "label": "گراف",
       "category": "crypto",
-      "value": "46890",
+      "value": "47530",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/grt",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -547,7 +547,7 @@
       "value": "17508430",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/crypto-price/uni",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -557,7 +557,7 @@
       "value": "4070",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/afn",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -567,7 +567,7 @@
       "value": "7840",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/thb",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -577,7 +577,7 @@
       "value": "261700",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/usd-hav",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -587,17 +587,17 @@
       "value": "290900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/eur-hav",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "aed",
       "label": "درهم امارات",
       "category": "currency",
-      "value": "72130",
+      "value": "72120",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/aed",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -607,7 +607,7 @@
       "value": "261900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/usd-ist",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -617,7 +617,7 @@
       "value": "181400",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/aud",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -627,7 +627,7 @@
       "value": "262100",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/usd-sulaymaniyah",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -637,17 +637,17 @@
       "value": "199980",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/sgd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "nzd",
       "label": "دلار نیوزیلند",
       "category": "currency",
-      "value": "142960",
+      "value": "142980",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/nzd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -657,7 +657,7 @@
       "value": "262100",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/usd-herat",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -667,7 +667,7 @@
       "value": "32740",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/hkd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -677,27 +677,27 @@
       "value": "185900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/cad",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "bhd",
       "label": "دینار بحرین",
       "category": "currency",
-      "value": "681780",
+      "value": "681900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/bhd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "kwd",
       "label": "دینار کویت",
       "category": "currency",
-      "value": "825060",
+      "value": "825080",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/kwd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -707,7 +707,7 @@
       "value": "46200",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/brl",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -717,7 +717,7 @@
       "value": "3205",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/rub",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -727,7 +727,7 @@
       "value": "2830",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/inr",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -737,7 +737,7 @@
       "value": "937",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/pkr",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -747,7 +747,7 @@
       "value": "69160",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/sar",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -757,7 +757,7 @@
       "value": "688000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/omr",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -767,7 +767,7 @@
       "value": "70400",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/qar",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -777,7 +777,7 @@
       "value": "65040",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/myr",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -787,7 +787,7 @@
       "value": "27640",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/tjs",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -797,7 +797,7 @@
       "value": "2940",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/kgs",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -807,7 +807,7 @@
       "value": "10",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/amd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -817,17 +817,17 @@
       "value": "10",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/iqd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "krw",
       "label": "صد وون کره جنوبی",
       "category": "currency",
-      "value": "19420",
+      "value": "19400",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/krw",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -837,7 +837,7 @@
       "value": "211025",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/syp",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -847,7 +847,7 @@
       "value": "10",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/jpy",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -857,7 +857,7 @@
       "value": "102200",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/gel",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -867,7 +867,7 @@
       "value": "155800",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/azn",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -877,7 +877,7 @@
       "value": "73400",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/tmt",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -887,7 +887,7 @@
       "value": "166",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/ars",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -897,17 +897,17 @@
       "value": "38120",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/dkk",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "nok",
       "label": "کرون نروژ",
       "category": "currency",
-      "value": "26880",
+      "value": "26900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/nok",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -917,7 +917,7 @@
       "value": "290900",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/currencies-price/eur-ist",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -927,37 +927,37 @@
       "value": "8476.59",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/gold-price/xrh",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "xag",
       "label": "انس نقره",
       "category": "gold",
-      "value": "52.01",
+      "value": "51.95",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/gold-price/xag",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "xpd",
       "label": "انس پالادیوم",
       "category": "gold",
-      "value": "1047.05",
+      "value": "1045.12",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/gold-price/xpd",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
       "id": "xpt",
       "label": "انس پلاتین",
       "category": "gold",
-      "value": "1538.54",
+      "value": "1537.12",
       "unit": "دلار",
       "source_url": "https://alanchand.com/en/gold-price/xpt",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     },
     {
@@ -967,7 +967,7 @@
       "value": "108890000",
       "unit": "تومان",
       "source_url": "https://alanchand.com/en/gold-price/abshodeh",
-      "received_at": "2026-11-11T18:06:37+00:00",
+      "received_at": "2026-11-11T18:19:09+00:00",
       "social": false
     }
   ]
