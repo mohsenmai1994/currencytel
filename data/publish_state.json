@@ -2,9 +2,9 @@
   "schema_version": 1,
   "platforms": {
     "bale": {
-      "digest": "52747f6a83497e186a076c4ad50e873f8f8bc22a7f5001ad0c74a17141cf5128",
-      "message_id": "13",
-      "sent_at": "2026-11-11T17:59:42+00:00"
+      "digest": "3c8387331c57455e289a56fc7cd24537a0118d57235827e85c565ef48ab69c28",
+      "message_id": "14",
+      "sent_at": "2026-11-11T18:01:51+00:00"
     },
     "telegram": {
       "digest": "52930c61bf14d105346774d556ad13d0d7ecd1b2e794887197204a3c3c61f1a0",
