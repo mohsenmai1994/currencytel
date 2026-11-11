@@ -24,3 +24,9 @@ jobs:
           RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
           RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID || vars.RUBIKA_CHAT_ID || '@currencytel' }}
         run: python scripts/check_channels.py
+
+      - name: Print Rubika GUID candidates (read-only, no posts)
+        env:
+          RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
+          RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID || vars.RUBIKA_CHAT_ID || '@currencytel' }}
+        run: python scripts/print_rubika_guid.py
