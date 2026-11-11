@@ -122,6 +122,58 @@ def resolve_username(username: str, token: str, session=None) -> str | None:
     return None
 
 
+
+def diagnostic_summary(username: str, token: str, session=None) -> dict:
+    """Read-only, privacy-safe details for why public-name resolution failed.
+
+    Never prints chats, private message contents, IDs, or tokens.
+    """
+    username = username.lstrip('@').lower()
+    result = {
+        'status': 'unknown', 'events': 0, 'forwarded': 0, 'candidates': 0,
+        'accessible': 0, 'missing_username': 0, 'mismatched_username': 0,
+        'verified': False,
+    }
+    try:
+        data = _api(token, 'getUpdates', {'limit': 100}, session)
+    except PublishError:
+        result['status'] = 'updates_unavailable'
+        return result
+    updates = data.get('updates', []) if isinstance(data, dict) else []
+    if not isinstance(updates, list):
+        result['status'] = 'unexpected_updates_format'
+        return result
+    result['events'] = len(updates)
+    result['forwarded'] = sum(
+        1 for event in updates
+        if isinstance(event, dict) and isinstance(
+            (event.get('new_message') or event.get('updated_message') or {}), dict
+        ) and isinstance(
+            (event.get('new_message') or event.get('updated_message') or {}).get('forwarded_from'), dict
+        )
+    )
+    candidates = _get_candidates(data)
+    result['candidates'] = len(candidates)
+    if not candidates:
+        result['status'] = 'no_channel_candidates'
+        return result
+    for guid in candidates:
+        chat = _chat_info(token, guid, session)
+        if chat is None:
+            continue
+        result['accessible'] += 1
+        found = str(chat.get('username') or '').strip().lstrip('@').lower()
+        if not found:
+            result['missing_username'] += 1
+        elif found != username:
+            result['mismatched_username'] += 1
+        if _verified_guid(chat, username):
+            result['verified'] = True
+            result['status'] = 'verified'
+            return result
+    result['status'] = 'unverified_candidates'
+    return result
+
 def send(text, session=None):
     token = os.getenv('RUBIKA_BOT_TOKEN', '').strip()
     chat = os.getenv('RUBIKA_CHAT_ID', '@currencytel').strip()

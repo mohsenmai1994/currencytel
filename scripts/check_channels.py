@@ -54,7 +54,24 @@ def check(platform,token,chat):
             print(f'rubika: @{username} resolved to verified channel GUID (no post sent)')
             chat = found
         else:
-            print(f'rubika: @{username} is configured; no verified GUID found yet. Actual publishing will try @username. If rejected, forward a channel post to the bot and retry.')
+            from currencytel.publishers.rubika import diagnostic_summary
+            diag = diagnostic_summary(username, token)
+            print(f'rubika: @{username} is configured, but the channel GUID is not verified.')
+            print('rubika diagnostic: getUpdates status={status}; returned events={events}; '
+                  'forwarded messages={forwarded}; channel candidates={candidates}; '
+                  'getChat accessible={accessible}; missing username={missing_username}; '
+                  'other usernames={mismatched_username}'.format(**diag))
+            if diag['status'] == 'updates_unavailable':
+                print('rubika next step: getUpdates could not be read. Check bot polling/webhook setup and permissions.')
+            elif not diag['events']:
+                print('rubika next step: no events available. In Rubika BotFather enable receiving all channel/group messages, '
+                      'publish a NEW channel post, and rerun this read-only workflow.')
+            elif not diag['candidates']:
+                print('rubika next step: updates arrived but none exposed a channel GUID. Enable all channel messages '
+                      'in BotFather and publish a new channel post; forwarding may not expose its source ID.')
+            else:
+                print('rubika next step: a candidate ID exists but the API did not verify its username as @'+username+
+                      '. Do not publish to an unverified GUID; check channel access or use its confirmed internal ID.')
             return
     data=query(platform,base,'getChat',{'chat_id':chat})
     if data is not None:
