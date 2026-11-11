@@ -13,8 +13,8 @@ SOCIAL_GROUPS = (
     ('🪙 طلا و سکه', SOCIAL[6:11]),
     ('🌐 انرژی و رمزارز', SOCIAL[11:]),
 )
-TITLE = '#نرخ_ارز #سکه #طلا #دلار #بیتکوین'
-FOOTER = 'ID: @currencytel'
+TITLE = 'قیمت #ارز، #طلا و #بازار'
+FOOTER = '🆔 @currencytel'
 
 
 def fmt(value: Decimal) -> str:

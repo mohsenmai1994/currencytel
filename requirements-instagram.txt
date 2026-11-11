@@ -1,0 +1,4 @@
+# Installed separately in Instagram workflow; never needed by market scraper.
+instagrapi==3.2.9
+cryptography>=45,<49
+Pillow>=13,<14

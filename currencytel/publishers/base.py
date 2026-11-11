@@ -20,7 +20,7 @@ def safe_error_details(body):
             details.append(f'{field}: {value}')
     # Avoid logging API access tokens, tokenized URLs or control characters.
     msg='; '.join(details)
-    for key in ('BOT_TOKEN','TELEGRAM_BOT_TOKEN','BALE_BOT_TOKEN','RUBIKA_BOT_TOKEN','INSTAGRAM_ACCESS_TOKEN'):
+    for key in ('BOT_TOKEN','TELEGRAM_BOT_TOKEN','BALE_BOT_TOKEN','RUBIKA_BOT_TOKEN'):
         secret=os.getenv(key,'')
         if secret:msg=msg.replace(secret,'[redacted]')
     msg=re.sub(r'https?://\S+','[url redacted]',msg)

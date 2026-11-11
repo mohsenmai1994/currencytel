@@ -12,7 +12,6 @@ class Settings:
     post_unchanged: bool = False
     dry_run: bool = False
     max_history_points: int = 336
-    instagram_api_version: str = 'v25.0'
 
     @classmethod
     def from_env(cls):
@@ -22,7 +21,6 @@ class Settings:
             post_unchanged=os.getenv('POST_UNCHANGED','0') == '1',
             dry_run=os.getenv('DRY_RUN','0') == '1',
             max_history_points=int(os.getenv('MAX_HISTORY_POINTS','336')),
-            instagram_api_version=os.getenv('INSTAGRAM_API_VERSION','v25.0'),
         )
 
 
