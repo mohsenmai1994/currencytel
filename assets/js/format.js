@@ -4,7 +4,7 @@ export function number(value,maximumFractionDigits=8){
   if(value===null||value===undefined||value==='')return '—';
   const n=Number(value);
   if(!Number.isFinite(n))return '—';
-  return new Intl.NumberFormat('en-US',{maximumFractionDigits:Math.abs(n)<0.01?12:maximumFractionDigits}).format(n);
+  return new Intl.NumberFormat('fa-IR',{maximumFractionDigits:Math.abs(n)<0.01?12:maximumFractionDigits}).format(n);
 }
 export function money(item){return number(item?.value);} 
 export function clean(text){return String(text||'').replace(/[ي]/g,'ی').replace(/ك/g,'ک').toLowerCase().trim();}
@@ -21,4 +21,12 @@ export function changeText(v){
   const n=Number(v);
   if(!Number.isFinite(n))return ['—','flat'];
   return [(n>0?'+':'')+number(n,2)+'%',n>0?'up':n<0?'down':'flat'];
+}
+
+/** Normalize numeric input without touching stored numeric market data. */
+export function parseLocalizedNumber(value){
+  const normalized=String(value??'').replace(/[۰-۹]/g,d=>String(d.charCodeAt(0)-1776))
+    .replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-1632))
+    .replace(/[٬,\s]/g,'').replace(/٫/g,'.');
+  return normalized.trim()?Number(normalized):NaN;
 }

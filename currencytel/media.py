@@ -6,6 +6,7 @@ from html import escape
 import base64,io
 from PIL import Image
 from .report import SOCIAL_GROUPS, fmt, marker_for
+from .instagram_caption import persian_digits
 from .storage import ROOT
 
 
@@ -20,7 +21,7 @@ def card_html(quotes):
             rows.append(
                 f'<div class="price-row">'
                 f'<div class="name"><span class="marker">{marker}</span>{escape(asset.label)}</div>'
-                f'<div class="value"><strong dir="ltr">{fmt(quote.value)}</strong><small>{escape(asset.unit)}</small></div>'
+                f'<div class="value"><strong dir="ltr">{persian_digits(fmt(quote.value))}</strong><small>{escape(asset.unit)}</small></div>'
                 '</div>'
             )
         groups.append(
@@ -46,7 +47,7 @@ header{{height:115px;display:flex;align-items:center;justify-content:space-betwe
 .name{{display:flex;align-items:center;gap:10px;font-size:25px;font-weight:600;white-space:nowrap}}
 .marker{{display:inline-grid;place-items:center;font-family:"Noto Sans Arabic","Tahoma",sans-serif;font-size:23px;color:#92DCD6;width:30px;flex-shrink:0}}
 .value{{display:flex;align-items:center;gap:9px;direction:ltr;white-space:nowrap}}
-strong{{font:bold 29px Arial;letter-spacing:-.3px;direction:ltr}}
+strong{{font:800 29px "Vazirmatn","Noto Sans Arabic",Tahoma,sans-serif;letter-spacing:-.3px;direction:ltr;font-variant-numeric:normal}}
 small{{font-size:20px;color:#B9C9D5}}
 footer{{height:57px;display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding:0 8px;border-top:1px solid #264050;color:#B9CBD5;font-size:23px}}
 footer .handle{{font-family:Arial;color:#86E1D7;font-weight:800;font-size:29px;direction:ltr}}
@@ -54,7 +55,7 @@ footer .handle{{font-family:Arial;color:#86E1D7;font-weight:800;font-size:29px;d
 
 
 def render_card(driver,quotes,digest):
-    path=ROOT/'assets'/'generated'/f'post-{digest[:16]}.jpg'
+    path=ROOT/'assets'/'generated'/f'post-{digest[:16]}-fa.jpg'
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():return path
     html_path=ROOT/'data'/'.instagram_card.html'

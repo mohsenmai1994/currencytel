@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from currencytel.storage import DATA, ROOT, read_json, write_atomic
 from currencytel.publishers.instagram import publish, authenticate
 from currencytel.publishers.base import PublishError
+from currencytel.instagram_caption import render_instagram_caption
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 
@@ -77,8 +78,9 @@ def run() -> int:
         print("Prepared Instagram image path is outside assets/generated; aborting")
         return 1
     try:
-        receipt = publish(image, queue["report"], verification_code=code)
-    except PublishError as exc:
+        caption = render_instagram_caption(queue["report"])
+        receipt = publish(image, caption, verification_code=code)
+    except (PublishError, ValueError) as exc:
         print("Instagram not published:", exc)
         return 1
     state.setdefault("platforms", {})["instagram"] = {

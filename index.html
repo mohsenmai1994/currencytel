@@ -19,22 +19,11 @@
 </head>
 <body>
   <a class="skip-link" href="#prices">رفتن به قیمت‌ها</a>
-  <aside class="app-sidebar" aria-label="ناوبری اصلی">
-    <a href="#home" class="sidebar-brand"><img src="./assets/icons/icon.svg" width="43" height="43" alt=""><span><b>CurrencyTel</b><small>نبض بازار</small></span></a>
-    <div class="nav-caption">دسترسی سریع</div>
-    <nav class="side-nav">
-      <a class="nav-link active" href="#home" data-nav="home"><span aria-hidden="true">◈</span>نمای کلی</a>
-      <a class="nav-link" href="#prices" data-nav="prices"><span aria-hidden="true">▦</span>بازارها</a>
-      <a class="nav-link" href="#tools" data-nav="tools"><span aria-hidden="true">⌁</span>تحلیل و ابزارها</a>
-      <a class="nav-link" href="#connect" data-nav="connect"><span aria-hidden="true">◎</span>کانال‌ها</a>
-    </nav>
-    <div class="sidebar-bottom"><div class="source-mini"><span class="status-dot"></span> اطلاعات ثبت‌شده از منبع</div><a href="https://alanchand.com/en" target="_blank" rel="noopener noreferrer">الان‌چند <span aria-hidden="true">↗</span></a></div>
-  </aside>
   <div class="app-main">
     <header class="site-header">
       <div class="shell header-inner">
-        <a class="mobile-brand" href="#home"><img src="./assets/icons/icon.svg" alt="" width="34" height="34"><b>CurrencyTel</b></a>
-        <div class="header-title"><b>داشبورد بازار</b><small>نرخ ارز، طلا و بازارهای جهانی</small></div>
+        <a class="mobile-brand" href="#home" aria-label="CurrencyTel، صفحه اصلی"><img src="./assets/icons/icon.svg" alt="" width="38" height="38"><span><b>CurrencyTel</b><small>نبض بازار</small></span></a>
+        <nav class="header-nav" aria-label="منوی اصلی"><a href="#home" data-nav="home" class="active">خانه</a><a href="#prices" data-nav="prices">بازارها</a><a href="#tools" data-nav="tools">ابزارها</a><a href="#connect" data-nav="connect">کانال‌ها</a></nav>
         <div class="header-actions">
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال بارگیری</span></div>
           <button id="refreshBtn" type="button" class="icon-button" aria-label="تازه‌سازی اطلاعات" title="تازه‌سازی">⟳</button>
@@ -46,10 +35,10 @@
     <main class="shell content">
       <section id="home" class="home-section" aria-labelledby="heroTitle">
         <div class="hero">
-          <div class="hero-main"><span class="eyebrow"><span class="spark">✦</span> CurrencyTel / وضعیت بازار</span><h1 id="heroTitle">نبض بازار در یک نگاه</h1><p>نرخ‌ها، تغییرات و روند بازار؛ سریع، شفاف و بدون شلوغی.</p>
-            <div class="hero-meta"><span class="hero-time-icon">◷</span><span>آخرین ثبت:</span><strong id="updatedAt">—</strong></div>
+          <div class="hero-main"><span class="eyebrow"><span class="spark">✦</span> CURRENCYTEL / بازارهای امروز</span><h1 id="heroTitle">بازار، در یک نگاه</h1><p>قیمت‌های مهم، تغییرات و جزئیات بازار در یک جای ساده.</p>
+            <div class="hero-meta"><span class="hero-time-icon">◷</span><span>آخرین به‌روزرسانی:</span><strong id="updatedAt">—</strong></div><a class="hero-cta" href="#prices">مشاهده همه قیمت‌ها <span aria-hidden="true">←</span></a>
           </div>
-          <div class="hero-aside"><span>وضعیت داده‌ها</span><strong id="ageLabel">در انتظار دریافت قیمت‌ها</strong><small>به‌روزرسانی سایت بر اساس زمان اجرای GitHub انجام می‌شود.</small></div>
+          <div class="hero-aside"><span class="hero-aside-dot" aria-hidden="true"></span><div><span>وضعیت اطلاعات</span><strong id="ageLabel">در انتظار دریافت قیمت‌ها</strong><small>براساس آخرین دریافت موفق از منبع</small></div></div>
         </div>
         <div id="summaryGrid" class="summary-grid" aria-label="قیمت‌های شاخص"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
         <div class="market-pulse" id="marketPulse" aria-live="polite"><span>◈ <b id="pulseAssets">—</b> نماد</span><span class="up">↑ <b id="pulseUp">—</b> افزایشی</span><span class="down">↓ <b id="pulseDown">—</b> کاهشی</span><span><b id="pulseMarkets">—</b> بازار</span></div>
@@ -58,13 +47,37 @@
         <div class="section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2><p class="muted" id="countLabel">در حال دریافت قیمت‌ها...</p></div><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span></div>
         <div class="toolbar"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="جستجوی نماد، ارز، سکه، فلز..." autocomplete="off" aria-label="جستجوی دارایی‌ها"></label><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div>
         <div id="filterBar" class="filter-bar" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip">☆ منتخب</button><button type="button" data-filter="currency" class="chip">ارز</button><button type="button" data-filter="gold" class="chip">طلا</button><button type="button" data-filter="coin" class="chip">سکه</button><button type="button" data-filter="crypto" class="chip">رمزارز</button><button type="button" data-filter="energy" class="chip">انرژی</button><button type="button" data-filter="stock" class="chip">بورس ایران</button><button type="button" data-filter="index" class="chip">شاخص‌ها</button><button type="button" data-filter="metal" class="chip">فلزات</button><button type="button" data-filter="agriculture" class="chip">کشاورزی</button><button type="button" data-filter="forex" class="chip">فارکس</button><button type="button" data-filter="bond" class="chip">اوراق</button><button type="button" data-filter="commodity" class="chip">کالاها</button></div>
-        <div class="table-toolbar"><span id="marketCoverage">اطلاعات دریافت‌شده از منبع</span><span class="hint">برای جزئیات روی هر ردیف بزنید</span></div>
+        <div class="table-toolbar"><span id="marketCoverage">اطلاعات دریافت‌شده از منبع</span><span class="hint">برای مشاهده جزئیات، دارایی را انتخاب کنید</span></div>
         <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر روزانه</th><th>بازه روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="5" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
         <div id="errorMessage" role="alert" class="error-message" hidden></div>
       </section>
       <section id="tools" class="section tools-section"><div class="section-heading"><div><div class="eyebrow">TOOLS & INSIGHTS</div><h2>تحلیل و ابزارها</h2><p class="muted">اطلاعاتی مبتنی بر گزارش‌های ثبت‌شده، نه قیمت‌سازی یا پیش‌بینی</p></div></div>
-        <div class="utilities-grid"><section class="panel" aria-labelledby="chartTitle"><div class="panel-heading"><h3 id="chartTitle">روند تغییرات</h3><span class="soft-badge">تاریخچه ذخیره‌شده</span></div><label class="field-label" for="chartAsset">دارایی را انتخاب کنید</label><select id="chartAsset" class="field-select"><option value="usd">دلار آمریکا</option></select><div id="chartNumber" class="chart-value">—</div><p id="chartMeta" class="muted chart-subtitle">برای رسم روند، چند گزارش ثبت‌شده لازم است.</p><div class="chart-wrap"><svg id="historyChart" viewBox="0 0 640 190" preserveAspectRatio="none" role="img" aria-label="نمودار تاریخچه"></svg><div id="chartEmpty" class="chart-empty">تاریخچه کافی موجود نیست</div></div></section>
-          <section class="panel" aria-labelledby="convertTitle"><div class="panel-heading"><h3 id="convertTitle">محاسبه‌گر نرخ</h3><span class="soft-badge">بدون کارمزد</span></div><label class="field-label" for="converterAsset">انتخاب دارایی</label><select id="converterAsset" class="field-select"></select><label class="field-label" for="converterAmount">مقدار</label><input id="converterAmount" class="field-input" inputmode="decimal" type="number" min="0" step="any" value="1"><div class="conversion-result"><small>ارزش تقریبی به تومان</small><strong id="conversionValue">—</strong><span id="conversionNote">بر اساس آخرین نرخ ثبت‌شده و بدون کارمزد</span></div></section></div>
+        <div class="utilities-grid"><section class="panel analytics-panel" aria-labelledby="chartTitle">
+          <div class="panel-heading"><div><h3 id="chartTitle">نمودار و تحلیل قیمت</h3><p class="muted chart-explain">روند واقعی بر اساس گزارش‌های ذخیره‌شده</p></div><span class="soft-badge">تا ۹۰ روز</span></div>
+          <label class="field-label" for="chartAsset">انتخاب دارایی</label>
+          <select id="chartAsset" class="field-select"><option value="usd">دلار آمریکا</option></select>
+          <div class="range-tabs" id="chartRanges" role="group" aria-label="بازه زمانی نمودار">
+            <button type="button" class="range-tab active" data-range="24h" aria-pressed="true">۲۴ ساعت</button>
+            <button type="button" class="range-tab" data-range="7d" aria-pressed="false">۷ روز</button>
+            <button type="button" class="range-tab" data-range="30d" aria-pressed="false">۳۰ روز</button>
+            <button type="button" class="range-tab" data-range="90d" aria-pressed="false">۹۰ روز</button>
+          </div>
+          <div class="chart-headline"><div><small>آخرین قیمت ثبت‌شده</small><div id="chartNumber" class="chart-value">—</div></div><span id="chartTrend" class="chart-trend flat">—</span></div>
+          <div class="chart-wrap chart-pro" id="chartPlot">
+            <svg id="historyChart" tabindex="0" role="img" aria-label="نمودار قیمت بر اساس تاریخچه ثبت‌شده"></svg>
+            <div id="chartTooltip" class="chart-tooltip" hidden></div>
+            <div id="chartEmpty" class="chart-empty" hidden>برای این بازه هنوز گزارش قیمت ثبت نشده است.</div>
+          </div>
+          <div class="chart-stat-grid" id="chartStats" aria-live="polite">
+            <div><small>تغییر در داده‌های موجود</small><strong id="chartDelta">—</strong></div>
+            <div><small>کمترین ثبت‌شده</small><strong id="chartLow">—</strong></div>
+            <div><small>بیشترین ثبت‌شده</small><strong id="chartHigh">—</strong></div>
+            <div><small>تعداد مشاهدات</small><strong id="chartCount">—</strong></div>
+          </div>
+          <p id="chartMeta" class="muted chart-subtitle" aria-live="polite">برای رسم نمودار، تاریخچه قیمت لازم است.</p>
+          <p class="chart-disclaimer">نمودار فقط مشاهدات واقعی ذخیره‌شده را نشان می‌دهد؛ در بازه‌های بدون داده، قیمت حدس زده نمی‌شود. کمینه و بیشینه مربوط به نمونه‌های ذخیره‌شده‌اند، نه لزوماً تمام معاملات بازار.</p>
+        </section>
+          <section class="panel" aria-labelledby="convertTitle"><div class="panel-heading"><h3 id="convertTitle">محاسبه‌گر نرخ</h3><span class="soft-badge">بدون کارمزد</span></div><label class="field-label" for="converterAsset">انتخاب دارایی</label><select id="converterAsset" class="field-select"></select><label class="field-label" for="converterAmount">مقدار</label><input id="converterAmount" class="field-input" inputmode="decimal" type="text" value="۱" pattern="[0-9۰-۹٠-٩.,٫٬ ]*"><div class="conversion-result"><small>ارزش تقریبی به تومان</small><strong id="conversionValue">—</strong><span id="conversionNote">بر اساس آخرین نرخ ثبت‌شده و بدون کارمزد</span></div></section></div>
       </section>
       <section id="connect" class="section connect-section"><div class="section-heading"><div><div class="eyebrow">FOLLOW US</div><h2>CurrencyTel در شبکه‌های اجتماعی</h2><p class="muted">هر کانال با شناسه currencytel</p></div></div><div class="channels-grid">
         <a href="https://t.me/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon">✈</span><span><b>تلگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
@@ -76,7 +89,7 @@
     </main>
     <footer class="site-footer shell"><span>© CurrencyTel · نرخ‌ها صرفاً جهت اطلاع‌رسانی هستند.</span><span>منبع: <a href="https://alanchand.com/en" target="_blank" rel="noopener noreferrer">الان‌چند</a> · <span id="footerTime">—</span></span></footer>
   </div>
-  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a class="active" href="#home" data-nav="home"><span aria-hidden="true">◈</span><small>خانه</small></a><a href="#prices" data-nav="prices"><span aria-hidden="true">▦</span><small>بازارها</small></a><a href="#tools" data-nav="tools"><span aria-hidden="true">⌁</span><small>ابزارها</small></a><a href="#connect" data-nav="connect"><span aria-hidden="true">◎</span><small>کانال‌ها</small></a></nav>
+  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a class="active" href="#home" data-nav="home"><span aria-hidden="true">⌂</span><small>خانه</small></a><a href="#prices" data-nav="prices"><span aria-hidden="true">▦</span><small>بازارها</small></a><a href="#tools" data-nav="tools"><span aria-hidden="true">⌁</span><small>ابزارها</small></a><a href="#connect" data-nav="connect"><span aria-hidden="true">◎</span><small>کانال‌ها</small></a></nav>
   <div id="detailBackdrop" class="detail-backdrop" hidden></div>
   <aside id="detailSheet" class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden><div class="detail-sheet-top"><span class="detail-handle"></span><button id="detailClose" type="button" class="icon-button" aria-label="بستن پنجره">×</button></div><div id="detailContent"></div></aside>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>

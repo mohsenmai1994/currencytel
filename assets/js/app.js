@@ -1,8 +1,9 @@
 import {getSnapshot,getHistory} from './data.js';
-import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText} from './format.js';
+import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,parseLocalizedNumber} from './format.js';
 import {drawHistory} from './chart.js';
+import {PERIODS} from './history.js';
 const el=id=>document.getElementById(id);
-const state={items:[],history:[],filter:'all',query:'',sort:'default',favorites:new Set(),snapshot:null,loading:false};
+const state={items:[],history:[],filter:'all',query:'',sort:'default',favorites:new Set(),snapshot:null,loading:false,chartRange:'24h'};
 try{state.favorites=new Set(JSON.parse(localStorage.getItem('ct-favorites')||'[]'));}catch{}
 
 function status(kind,text){const e=el('status');e.className=`status ${kind}`;el('statusLabel').textContent=text;}
@@ -10,7 +11,7 @@ function toast(message){const div=el('toast');div.textContent=message;div.hidden
 function addFavorites(id){
   if(state.favorites.has(id))state.favorites.delete(id);else state.favorites.add(id);
   try{localStorage.setItem('ct-favorites',JSON.stringify([...state.favorites]));}catch{}
-  renderRows();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${state.favorites.size.toLocaleString('fa-IR')}`;
+  renderRows();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${number(state.favorites.size,0)}`;
 }
 function cards(){
   const ids=['usd','18ayar','bahar','btc'];
@@ -18,7 +19,7 @@ function cards(){
   el('summaryGrid').innerHTML=ids.map(id=>{
     const q=state.items.find(x=>x.id===id),[title,icon]=meta[id];
     const [movement,kind]=changeText(q?.change_pct);
-    return `<div class="summary-card"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${q?number(q.value):'—'}</div><div class="summary-bottom"><span class="summary-unit">${q?safe(q.unit):'ناموجود'}</span><span class="change ${kind}" dir="ltr">${movement}</span></div></div>`;
+    return `<button type="button" class="summary-card" data-summary="${safe(id)}" aria-label="مشاهده جزئیات ${safe(title)}"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${q?number(q.value):'—'}</div><div class="summary-bottom"><span class="summary-unit">${q?safe(q.unit):'ناموجود'}</span><span class="change ${kind}" dir="ltr">${movement}</span></div></button>`;
   }).join('');
 }
 function marketPulse(){
@@ -43,8 +44,8 @@ function filteredItems(){
 }
 function renderRows(){
   const data=filteredItems();
-  el('countLabel').textContent=`${data.length.toLocaleString('fa-IR')} مورد از ${state.items.length.toLocaleString('fa-IR')} قیمت ثبت‌شده`;
-  el('marketCoverage').textContent=`${(state.snapshot?.social_count||0).toLocaleString('fa-IR')} نرخ اصلی • ${(state.snapshot?.extra_count||0).toLocaleString('fa-IR')} بازار تکمیلی`;
+  el('countLabel').textContent=`${number(data.length,0)} مورد از ${number(state.items.length,0)} قیمت ثبت‌شده`;
+  el('marketCoverage').textContent=`${number(state.snapshot?.social_count||0,0)} نرخ اصلی • ${number(state.snapshot?.extra_count||0,0)} بازار تکمیلی`;
   const tbody=el('priceRows');
   if(!data.length){tbody.innerHTML='<tr><td class="blank-state" colspan="5">موردی پیدا نشد. فیلتر یا عبارت جستجو را تغییر دهید.</td></tr>';return;}
   tbody.innerHTML=data.map(q=>{
@@ -67,13 +68,28 @@ function selectOptions(){
 function renderChart(){
   const id=el('chartAsset').value;
   const item=state.items.find(x=>x.id===id);
-  el('chartNumber').textContent=item?`${number(item.value)} ${item.unit}`:'—';
-  el('chartMeta').textContent='در حال بررسی تاریخچه';
-  drawHistory(el('historyChart'),state.history,id);
+  const model=drawHistory(el('historyChart'),state.history,id,{
+    range:state.chartRange,emptyEl:el('chartEmpty'),tooltipEl:el('chartTooltip')
+  });
+  const value=model.last?.value ?? item?.value;
+  el('chartNumber').textContent=item&&Number.isFinite(Number(value))?`${number(value)} ${item.unit}`:'—';
+  const diff=model.difference;
+  const trend=el('chartTrend');
+  trend.className=`chart-trend ${diff===null?'flat':diff>0?'up':diff<0?'down':'flat'}`;
+  trend.textContent=diff===null?'تغییر نامشخص':`${model.percent>0?'+':''}${number(model.percent,2)}٪`;
+  el('chartDelta').textContent=diff===null?'—':`${diff>0?'+':''}${number(diff,4)} ${item?.unit||''}`;
+  el('chartLow').textContent=model.min===null?'—':number(model.min,4);
+  el('chartHigh').textContent=model.max===null?'—':number(model.max,4);
+  el('chartCount').textContent=number(model.entries.length,0);
+  const label=PERIODS[state.chartRange]?.label||'۲۴ ساعت';
+  const first=model.first,last=model.last;
+  el('chartMeta').textContent=!first ? `در ${label} گذشته برای این دارایی داده‌ای ثبت نشده؛ بازه دیگری را انتخاب کنید.`
+    : model.entries.length===1 ? `تنها یک مشاهده در ${label} اخیر ثبت شده؛ برای محاسبه تغییر به دو مشاهده نیاز است. آخرین ثبت: ${when(last.t)}`
+    : `پوشش واقعی ${when(first.t)} تا ${when(last.t)} • تغییر صرفاً بین اولین و آخرین نمونه همین فاصله محاسبه شده است.`;
 }
 function renderConverter(){
   const item=state.items.find(q=>q.id===el('converterAsset').value);
-  const amount=Number(el('converterAmount').value);
+  const amount=parseLocalizedNumber(el('converterAmount').value);
   const dollar=state.items.find(q=>q.id==='usd');
   if(!item||!Number.isFinite(amount)||amount<0){el('conversionValue').textContent='—';return;}
   let toman=Number(item.value)*amount;
@@ -95,10 +111,10 @@ function renderTime(){
   if(snapshot?.bootstrap || !Number.isFinite(age)){
     status('stale','آخرین گزارش آرشیوی');el('ageLabel').textContent='نمونه برگرفته از گزارش قبلی؛ زمان آخرین به‌روزرسانی مشخص نیست';return;
   }
-  el('ageLabel').textContent=age<1?'همین حالا دریافت شده':`${age.toLocaleString('fa-IR')} دقیقه از آخرین دریافت گذشته است`;
+  el('ageLabel').textContent=age<1?'همین حالا دریافت شده':`${number(age,0)} دقیقه از آخرین دریافت گذشته است`;
   if(age<=90)status('ok','داده دریافت‌شده');else status('stale','ممکن است داده‌ها قدیمی باشند');
 }
-function renderAll(){cards();marketPulse();renderRows();selectOptions();renderChart();renderConverter();renderTime();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${state.favorites.size.toLocaleString('fa-IR')}`;}
+function renderAll(){cards();marketPulse();renderRows();selectOptions();renderChart();renderConverter();renderTime();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${number(state.favorites.size,0)}`;}
 async function refresh({showToast=false}={}){
   if(state.loading)return;
   state.loading=true;el('refreshBtn').disabled=true;
@@ -130,9 +146,11 @@ function openDetail(id){
   if(q.market_status)metrics.push(detailMetric('وضعیت بازار',String(q.market_status)));
   const url=String(q.source_url||'');
   const source=url.startsWith('https://alanchand.com/')?`<a class="detail-source" href="${safe(url)}" target="_blank" rel="noopener noreferrer">مشاهده اطلاعات در منبع ↗</a>`:'';
-  el('detailContent').innerHTML=`<div class="eyebrow">${safe(categories[q.category]||'بازار')}</div><h2 id="detailTitle">${safe(q.label)}</h2><div class="detail-intro">${safe(q.id.toUpperCase())} · آخرین نرخ ثبت‌شده</div><div class="detail-price">${number(q.value)}</div><div class="detail-unit">${safe(q.unit)} <span class="change ${kind}" dir="ltr">${change}</span></div><div class="detail-grid">${metrics.join('')}</div>${source}<p class="detail-note">زمان دریافت: ${safe(when(q.received_at||state.snapshot?.fetched_at))}. اطلاعات صرفاً جهت اطلاع‌رسانی است.</p>`;
+  el('detailContent').innerHTML=`<div class="eyebrow">${safe(categories[q.category]||'بازار')}</div><h2 id="detailTitle">${safe(q.label)}</h2><div class="detail-intro">${safe(q.id.toUpperCase())} · آخرین نرخ ثبت‌شده</div><div class="detail-price">${number(q.value)}</div><div class="detail-unit">${safe(q.unit)} <span class="change ${kind}" dir="ltr">${change}</span></div><div class="detail-grid">${metrics.join('')}</div><div class="detail-spark-panel"><div class="detail-spark-heading"><strong>روند ثبت‌شده ۷ روز اخیر</strong><button id="detailFullChart" type="button" class="detail-chart-link" data-full-chart="${safe(q.id)}">تحلیل کامل ←</button></div><div class="detail-spark-wrap"><svg id="detailHistoryChart" role="img" aria-label="روند ۷ روز اخیر"></svg><div id="detailChartEmpty" class="mini-empty" hidden>هنوز داده کافی ثبت نشده</div></div></div>${source}<p class="detail-note">زمان دریافت: ${safe(when(q.received_at||state.snapshot?.fetched_at))}. اطلاعات صرفاً جهت اطلاع‌رسانی است.</p>`;
   el('detailBackdrop').hidden=false;el('detailSheet').hidden=false;
-  document.body.style.overflow='hidden';el('detailClose').focus();
+  document.body.style.overflow='hidden';
+  drawHistory(el('detailHistoryChart'),state.history,id,{range:'7d',compact:true,emptyEl:el('detailChartEmpty')});
+  el('detailClose').focus();
 }
 function closeDetail(){el('detailBackdrop').hidden=true;el('detailSheet').hidden=true;document.body.style.overflow='';}
 function setupNavigation(){
@@ -148,6 +166,7 @@ function setupNavigation(){
   }
 }
 function events(){
+  el('summaryGrid').addEventListener('click',e=>{const card=e.target.closest('[data-summary]');if(card)openDetail(card.dataset.summary);});
   el('searchInput').addEventListener('input',e=>{state.query=clean(e.target.value);renderRows();});
   el('filterBar').addEventListener('click',e=>{
     const button=e.target.closest('[data-filter]');if(!button)return;
@@ -163,6 +182,29 @@ function events(){
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('detailSheet').hidden)closeDetail();});
   setupNavigation();
   el('chartAsset').addEventListener('change',renderChart);
+  el('chartRanges').addEventListener('click',event=>{
+    const button=event.target.closest('[data-range]');
+    if(!button||!PERIODS[button.dataset.range])return;
+    state.chartRange=button.dataset.range;
+    el('chartRanges').querySelectorAll('[data-range]').forEach(b=>{
+      const chosen=b===button;b.classList.toggle('active',chosen);b.setAttribute('aria-pressed',String(chosen));
+    });
+    renderChart();
+  });
+  el('detailContent').addEventListener('click',event=>{
+    const btn=event.target.closest('[data-full-chart]');if(!btn)return;
+    closeDetail();
+    el('chartAsset').value=btn.dataset.fullChart;
+    state.chartRange='7d';
+    el('chartRanges').querySelectorAll('[data-range]').forEach(b=>{
+      const chosen=b.dataset.range==='7d';b.classList.toggle('active',chosen);b.setAttribute('aria-pressed',String(chosen));
+    });
+    renderChart();el('tools').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  if('ResizeObserver' in window){
+    const ro=new ResizeObserver(()=>{if(state.snapshot)renderChart();});
+    ro.observe(el('chartPlot'));
+  }
   el('converterAsset').addEventListener('change',renderConverter);
   el('converterAmount').addEventListener('input',renderConverter);
   el('refreshBtn').addEventListener('click',()=>refresh({showToast:true}));

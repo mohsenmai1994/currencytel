@@ -5,15 +5,17 @@ function assertSnapshot(result) {
   return result;
 }
 export async function getSnapshot(signal) {
-  const response=await fetch('./data/market.json',{cache:'no-store',signal});
+  const response = await fetch('./data/market.json', {cache: 'no-store', signal});
   if (!response.ok) throw new Error(`خطای دریافت داده بازار (${response.status})`);
   return assertSnapshot(await response.json());
 }
-export async function getHistory() {
+export async function getHistory(signal) {
   try {
-    const r=await fetch('./data/history.json',{cache:'no-store'});
+    const r = await fetch('./data/history.json', {cache: 'no-store', signal});
     if (!r.ok) return [];
-    const data=await r.json();
-    return Array.isArray(data.points)?data.points.slice(-336):[];
-  } catch {return [];}
+    const data = await r.json();
+    // No arbitrary 336-item slice: the server-side collector has already
+    // compacted actual observations to a bounded 120-day history.
+    return Array.isArray(data.points) ? data.points : [];
+  } catch { return []; }
 }
