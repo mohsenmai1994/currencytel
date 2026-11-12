@@ -188,7 +188,6 @@ def save_market(quotes: dict[str, MarketQuote], max_history=2500):
     )
     market = {
         'schema_version': 2, 'fetched_at': stamp, 'market_day': _day_in_tehran(_as_utc(stamp)), 'timezone': 'Asia/Tehran',
-        'source': 'https://alanchand.com/en', 'source_label': 'الان چند',
         'complete': len(ordered) == len(SOCIAL), 'social_count': len(ordered),
         'extra_count': len(extras), 'channel': 'currencytel', 'bot': 'currencytel_bot',
         'items': [{**q.to_dict(), **daily_changes.get(q.asset.key, {})} for q in ordered + extras],

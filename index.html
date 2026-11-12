@@ -53,9 +53,9 @@
         <div class="section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2><p class="muted" id="countLabel">در حال دریافت قیمت‌ها...</p></div><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span></div>
         <div class="toolbar"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="جستجوی نماد، ارز، سکه، فلز..." autocomplete="off" aria-label="جستجوی دارایی‌ها"></label><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div>
         <div id="filterBar" class="filter-bar" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip">☆ منتخب</button><button type="button" data-filter="currency" class="chip">ارز</button><button type="button" data-filter="gold" class="chip">طلا</button><button type="button" data-filter="coin" class="chip">سکه</button><button type="button" data-filter="crypto" class="chip">رمزارز</button><button type="button" data-filter="energy" class="chip">انرژی</button><button type="button" data-filter="stock" class="chip">بورس ایران</button><button type="button" data-filter="index" class="chip">شاخص‌ها</button><button type="button" data-filter="metal" class="chip">فلزات</button><button type="button" data-filter="agriculture" class="chip">کشاورزی</button><button type="button" data-filter="forex" class="chip">فارکس</button><button type="button" data-filter="bond" class="chip">اوراق</button><button type="button" data-filter="commodity" class="chip">کالاها</button></div>
-        <div class="table-toolbar"><span id="marketCoverage">اطلاعات دریافت‌شده از منبع</span><span class="hint">برای مشاهده جزئیات، دارایی را انتخاب کنید</span></div>
+        <div class="table-toolbar"><span id="marketCoverage">نمای کلی بازارها</span><span class="hint">برای مشاهده جزئیات، دارایی را انتخاب کنید</span></div>
         <p class="daily-open-note">تغییر روزانه نسبت به اولین نرخ معتبری است که سیستم در همان روز به وقت تهران ثبت کرده؛ در صورت اعلام بسته‌بودن بازار، مبنا از نخستین ثبت پس از بازشدن آن است. این لزوماً قیمت رسمی گشایش نیست.</p>
-        <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>بازه روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="5" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
+        <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="4" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
         <div id="errorMessage" role="alert" class="error-message" hidden></div>
       </section>
       <section id="tools" class="section tools-section"><div class="section-heading"><div><div class="eyebrow">TOOLS & INSIGHTS</div><h2>تحلیل و ابزارها</h2><p class="muted">اطلاعاتی مبتنی بر گزارش‌های ثبت‌شده، نه قیمت‌سازی یا پیش‌بینی</p></div></div>
@@ -77,12 +77,10 @@
           </div>
           <div class="chart-stat-grid" id="chartStats" aria-live="polite">
             <div><small>تغییر در داده‌های موجود</small><strong id="chartDelta">—</strong></div>
-            <div><small>کمترین ثبت‌شده</small><strong id="chartLow">—</strong></div>
-            <div><small>بیشترین ثبت‌شده</small><strong id="chartHigh">—</strong></div>
             <div><small>تعداد مشاهدات</small><strong id="chartCount">—</strong></div>
           </div>
           <p id="chartMeta" class="muted chart-subtitle" aria-live="polite">برای رسم نمودار، تاریخچه قیمت لازم است.</p>
-          <p class="chart-disclaimer">نمودار فقط مشاهدات واقعی ذخیره‌شده را نشان می‌دهد؛ در بازه‌های بدون داده، قیمت حدس زده نمی‌شود. کمینه و بیشینه مربوط به نمونه‌های ذخیره‌شده‌اند، نه لزوماً تمام معاملات بازار.</p>
+          <p class="chart-disclaimer">نمودار فقط مشاهدات واقعی ذخیره‌شده را نشان می‌دهد؛ در بازه‌های بدون داده، قیمت حدس زده نمی‌شود.</p>
         </section>
           <section class="panel" aria-labelledby="convertTitle"><div class="panel-heading"><h3 id="convertTitle">محاسبه‌گر نرخ</h3><span class="soft-badge">بدون کارمزد</span></div><label class="field-label" for="converterAsset">انتخاب دارایی</label><select id="converterAsset" class="field-select"></select><label class="field-label" for="converterAmount">مقدار</label><input id="converterAmount" class="field-input" inputmode="decimal" type="text" value="۱" pattern="[0-9۰-۹٠-٩.,٫٬ ]*"><div class="conversion-result"><small>ارزش تقریبی به تومان</small><strong id="conversionValue">—</strong><span id="conversionNote">بر اساس آخرین نرخ ثبت‌شده و بدون کارمزد</span></div></section></div>
       </section>
@@ -94,7 +92,7 @@
         <a href="https://t.me/currencytel_bot" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon">⌘</span><span><b>ربات تلگرام</b><small>@currencytel_bot</small></span><span class="external">↗</span></a>
       </div></section>
     </main>
-    <footer class="site-footer shell"><span>© CurrencyTel · نرخ‌ها صرفاً جهت اطلاع‌رسانی هستند.</span><span>منبع: <a href="https://alanchand.com/en" target="_blank" rel="noopener noreferrer">الان‌چند</a> · <span id="footerTime">—</span></span></footer>
+    <footer class="site-footer shell"><span>© CurrencyTel · نرخ‌ها صرفاً جهت اطلاع‌رسانی هستند.</span><span>آخرین ثبت: <span id="footerTime">—</span></span></footer>
   </div>
   <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a class="active" href="#home" data-nav="home"><span aria-hidden="true">⌂</span><small>خانه</small></a><a href="#prices" data-nav="prices"><span aria-hidden="true">▦</span><small>بازارها</small></a><a href="#tools" data-nav="tools"><span aria-hidden="true">⌁</span><small>ابزارها</small></a><a href="#connect" data-nav="connect"><span aria-hidden="true">◎</span><small>کانال‌ها</small></a></nav>
   <div id="detailBackdrop" class="detail-backdrop" hidden></div>

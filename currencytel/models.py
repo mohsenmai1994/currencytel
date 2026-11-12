@@ -24,7 +24,6 @@ class MarketQuote:
         value = self.asset
         result = dict(id=value.key, label=value.label, category=value.category,
              value=str(self.value), unit=value.unit,
-             source_url=f'https://alanchand.com{value.path}',
              received_at=self.received_at, social=value.social)
         for key in ('buy','change_pct','day_high','day_low','usd_value','toman_value','bubble_pct'):
             amount = getattr(self,key)

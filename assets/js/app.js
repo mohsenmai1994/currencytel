@@ -76,12 +76,10 @@ function renderRows(){
   el('countLabel').textContent=`${number(data.length,0)} مورد از ${number(state.items.length,0)} قیمت ثبت‌شده`;
   el('marketCoverage').textContent=`${number(state.snapshot?.social_count||0,0)} نرخ اصلی • ${number(state.snapshot?.extra_count||0,0)} بازار تکمیلی`;
   const tbody=el('priceRows');
-  if(!data.length){tbody.innerHTML='<tr><td class="blank-state" colspan="5">موردی پیدا نشد. فیلتر یا عبارت جستجو را تغییر دهید.</td></tr>';return;}
+  if(!data.length){tbody.innerHTML='<tr><td class="blank-state" colspan="4">موردی پیدا نشد. فیلتر یا عبارت جستجو را تغییر دهید.</td></tr>';return;}
   tbody.innerHTML=data.map(q=>{
     const [text,kind]=changeLabel(q);
-    const hi=q.day_high===undefined?'—':number(q.day_high);
-    const lo=q.day_low===undefined?'—':number(q.day_low);
-    return `<tr data-detail="${safe(q.id)}" tabindex="0" aria-label="جزئیات ${safe(q.label)}"><td><div class="asset-title"><span class="asset-symbol">${safe(categoryIcons[q.category]||'◌')}</span><div>${safe(q.label)}<span class="asset-source">${safe(q.id.toUpperCase())} · ${safe(categories[q.category]||'سایر')}</span></div></div></td><td><span class="money-number">${number(q.value)}</span><span class="money-unit">${safe(q.unit)}</span></td><td><span class="change ${kind}">${text}</span></td><td><span class="day-range">${lo} / ${hi}</span></td><td><button class="favorite-btn ${state.favorites.has(q.id)?'saved':''}" type="button" data-favorite="${safe(q.id)}" aria-pressed="${state.favorites.has(q.id)}" aria-label="${safe(q.label)}: علاقه‌مندی">${state.favorites.has(q.id)?'★':'☆'}</button></td></tr>`;
+    return `<tr data-detail="${safe(q.id)}" tabindex="0" aria-label="جزئیات ${safe(q.label)}"><td><div class="asset-title"><span class="asset-symbol">${safe(categoryIcons[q.category]||'◌')}</span><div>${safe(q.label)}<span class="asset-meta">${safe(q.id.toUpperCase())} · ${safe(categories[q.category]||'سایر')}</span></div></div></td><td><span class="money-number">${number(q.value)}</span><span class="money-unit">${safe(q.unit)}</span></td><td><span class="change ${kind}">${text}</span></td><td><button class="favorite-btn ${state.favorites.has(q.id)?'saved':''}" type="button" data-favorite="${safe(q.id)}" aria-pressed="${state.favorites.has(q.id)}" aria-label="${safe(q.label)}: علاقه‌مندی">${state.favorites.has(q.id)?'★':'☆'}</button></td></tr>`;
   }).join('');
 }
 function selectOptions(){
@@ -107,8 +105,6 @@ function renderChart(){
   trend.className=`chart-trend ${diff===null?'flat':diff>0?'up':diff<0?'down':'flat'}`;
   trend.textContent=diff===null?'تغییر نامشخص':`${model.percent>0?'+':''}${number(model.percent,2)}٪`;
   el('chartDelta').textContent=diff===null?'—':`${diff>0?'+':''}${number(diff,4)} ${item?.unit||''}`;
-  el('chartLow').textContent=model.min===null?'—':number(model.min,4);
-  el('chartHigh').textContent=model.max===null?'—':number(model.max,4);
   el('chartCount').textContent=number(model.entries.length,0);
   const label=PERIODS[state.chartRange]?.label||'۲۴ ساعت';
   const first=model.first,last=model.last;
@@ -160,7 +156,7 @@ async function refresh({showToast=false}={}){
   }catch(error){
     const message=error instanceof Error?error.message:'خطا در دریافت داده';
     el('errorMessage').textContent=message;el('errorMessage').hidden=false;
-    if(!state.items.length){el('priceRows').innerHTML='<tr><td colspan="5" class="blank-state">امکان بارگیری نرخ‌ها وجود ندارد. اتصال اینترنت و اجرای پروژه را بررسی کنید.</td></tr>';status('error','عدم دسترسی به اطلاعات');}
+    if(!state.items.length){el('priceRows').innerHTML='<tr><td colspan="4" class="blank-state">امکان بارگیری نرخ‌ها وجود ندارد. اتصال اینترنت و اجرای پروژه را بررسی کنید.</td></tr>';status('error','عدم دسترسی به اطلاعات');}
     else{status('stale','نمایش آخرین داده در دسترس');toast('بارگیری تازه موفق نبود؛ داده قبلی نمایش داده می‌شود.');}
   }finally{state.loading=false;}
 }
@@ -173,15 +169,11 @@ function openDetail(id){
   if(dailyAmount(q)!==null)metrics.push(detailMetric('مقدار تغییر امروز',dailyAmount(q)));
   if(q.day_open!==undefined && state.snapshot?.market_day===tehranDay()){metrics.push(detailMetric('اولین نرخ ثبت‌شده امروز',`${number(q.day_open)} ${q.unit}`));metrics.push(detailMetric('زمان مبنا',when(q.day_open_at)));}
   if(q.buy!==undefined)metrics.push(detailMetric('نرخ خرید',`${number(q.buy)} ${q.unit}`));
-  if(q.day_low!==undefined)metrics.push(detailMetric('کمترین روز',`${number(q.day_low)} ${q.unit}`));
-  if(q.day_high!==undefined)metrics.push(detailMetric('بیشترین روز',`${number(q.day_high)} ${q.unit}`));
   if(q.usd_value!==undefined)metrics.push(detailMetric('قیمت دلاری',`${number(q.usd_value)} دلار`));
   if(q.toman_value!==undefined)metrics.push(detailMetric('قیمت تومانی',`${number(q.toman_value)} تومان`));
   if(q.bubble_pct!==undefined)metrics.push(detailMetric('حباب',`${number(q.bubble_pct,2)}٪`));
   if(q.market_status)metrics.push(detailMetric('وضعیت بازار',String(q.market_status)));
-  const url=String(q.source_url||'');
-  const source=url.startsWith('https://alanchand.com/')?`<a class="detail-source" href="${safe(url)}" target="_blank" rel="noopener noreferrer">مشاهده اطلاعات در منبع ↗</a>`:'';
-  el('detailContent').innerHTML=`<div class="eyebrow">${safe(categories[q.category]||'بازار')}</div><h2 id="detailTitle">${safe(q.label)}</h2><div class="detail-intro">${safe(q.id.toUpperCase())} · آخرین نرخ ثبت‌شده</div><div class="detail-price">${number(q.value)}</div><div class="detail-unit">${safe(q.unit)} <span class="change ${kind}" dir="ltr">${change}</span></div><div class="detail-grid">${metrics.join('')}</div><div class="detail-spark-panel"><div class="detail-spark-heading"><strong>روند ثبت‌شده ۷ روز اخیر</strong><button id="detailFullChart" type="button" class="detail-chart-link" data-full-chart="${safe(q.id)}">تحلیل کامل ←</button></div><div class="detail-spark-wrap"><svg id="detailHistoryChart" role="img" aria-label="روند ۷ روز اخیر"></svg><div id="detailChartEmpty" class="mini-empty" hidden>هنوز داده کافی ثبت نشده</div></div></div>${source}<p class="detail-note">زمان دریافت: ${safe(when(q.received_at||state.snapshot?.fetched_at))}. اطلاعات صرفاً جهت اطلاع‌رسانی است.</p>`;
+  el('detailContent').innerHTML=`<div class="eyebrow">${safe(categories[q.category]||'بازار')}</div><h2 id="detailTitle">${safe(q.label)}</h2><div class="detail-intro">${safe(q.id.toUpperCase())} · آخرین نرخ ثبت‌شده</div><div class="detail-price">${number(q.value)}</div><div class="detail-unit">${safe(q.unit)} <span class="change ${kind}" dir="ltr">${change}</span></div><div class="detail-grid">${metrics.join('')}</div><div class="detail-spark-panel"><div class="detail-spark-heading"><strong>روند ثبت‌شده ۷ روز اخیر</strong><button id="detailFullChart" type="button" class="detail-chart-link" data-full-chart="${safe(q.id)}">تحلیل کامل ←</button></div><div class="detail-spark-wrap"><svg id="detailHistoryChart" role="img" aria-label="روند ۷ روز اخیر"></svg><div id="detailChartEmpty" class="mini-empty" hidden>هنوز داده کافی ثبت نشده</div></div></div><p class="detail-note">زمان دریافت: ${safe(when(q.received_at||state.snapshot?.fetched_at))}. اطلاعات صرفاً جهت اطلاع‌رسانی است.</p>`;
   el('detailBackdrop').hidden=false;el('detailSheet').hidden=false;
   document.body.style.overflow='hidden';
   drawHistory(el('detailHistoryChart'),state.history,id,{range:'7d',compact:true,emptyEl:el('detailChartEmpty')});
