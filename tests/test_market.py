@@ -17,8 +17,8 @@ def test_social_exactly_14_in_order():
     assert rows[0].startswith('☸️دلار آمریکا: 100,000 تومان')
     assert rows[9].startswith('✴️ انس طلا: 1.25 دلار')
     assert rows[-1].startswith('✴️ تتر:')
-    assert text.endswith('🆔 @currencytel')
-    assert text.startswith('قیمت #ارز، #طلا و #بازار')
+    assert text.endswith('ID: @currencytel')
+    assert text.startswith('#نرخ_ارز #سکه #طلا #دلار #بیتکوین')
     assert '💵 ارزهای خارجی' not in text
     assert '🪙 طلا و سکه' not in text
     assert '🌐 انرژی و رمزارز' not in text
@@ -104,3 +104,34 @@ def test_card_renderer_creates_output_directory(tmp_path,monkeypatch):
     assert result.parent.name=='generated'
     assert result.parent.parent.name=='assets'
     assert not (tmp_path/'data'/'.instagram_card.html').exists()
+
+
+def test_btc_usd_column_overrides_irr_and_percent():
+    html='''<main><table><thead><tr><th>Currency</th><th>Price (IRR)</th><th>24h change</th><th>Price (USD)</th><th>Chart</th></tr></thead>
+    <tbody><tr><td><a href="/en/crypto-price/btc">Bitcoin BTC</a></td><td>192,077,340,800</td><td>+0.56%</td><td>74,060</td><td>📈</td></tr></tbody></table></main>'''
+    result=parse_page(html,BY_PATH)
+    assert result['btc'].value==Decimal('74060')
+    assert result['btc'].toman_value==Decimal('19207734080')
+
+
+def test_btc_detail_matches_explicit_usd_not_rial_or_market_cap():
+    html='''<main><h1>Bitcoin (BTC) Live Price</h1><h2>Bitcoin BTC</h2>
+    <strong>192,680,000,010 IRR</strong><span>−0.5% 24h</span>
+    <p>Price (USD)$74,009 Market Rank1 Market Cap$1,418,335,119,483</p></main>'''
+    assert detail_price(html,BY_KEY['btc'])==Decimal('74009')
+
+
+def test_exact_social_heading_and_signature():
+    text=render_report(quotes())
+    assert text.splitlines()[0]=='#نرخ_ارز #سکه #طلا #دلار #بیتکوین'
+    assert text.splitlines()[-1]=='ID: @currencytel'
+    assert len([line for line in text.splitlines() if line.startswith(('☸️','✴️'))])==14
+
+
+def test_dynamic_iran_stock_quotes_in_toman_and_market_status():
+    html="""<main><table><thead><tr><th>Market</th><th>Price</th><th>Day change</th><th>Market status</th></tr></thead>
+    <tbody><tr><td><a href='/en/iran-stocks/fameli'>Fameli (National Iranian Copper)</a></td><td>28,540 IRR per share</td><td>-610 (-2.09%)</td><td>Closed 12:30</td></tr></tbody></table></main>"""
+    result=parse_page(html,BY_PATH)
+    q=result['extra-iran-stocks-fameli']
+    assert q.value==Decimal('2854') and q.asset.unit=='تومان/سهم'
+    assert q.change_pct==Decimal('-2.09') and q.market_status=='Closed 12:30'

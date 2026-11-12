@@ -30,6 +30,8 @@ DYNAMIC_CATEGORIES={
     '/en/markets/bonds/':'bond',
     '/en/markets/forex/':'forex',
     '/en/energy/':'energy',
+    '/en/iran-stocks/':'stock',
+    '/en/energy/iranian-crude/':'energy',
 }
 PERSIAN_NAMES={
     'Copper':'مس','Aluminium':'آلومینیوم','Zinc':'روی','Nickel':'نیکل','Lead':'سرب','Tin':'قلع',
@@ -41,6 +43,14 @@ PERSIAN_NAMES={
     'Orange Juice':'آب پرتقال','Live Cattle':'دام زنده',
     'S&P 500':'شاخص S&P 500','Dow Jones 30':'داوجونز ۳۰','Nasdaq 100':'نزدک ۱۰۰',
     'Russell 2000':'راسل ۲۰۰۰','US Dollar Index (DXY)':'شاخص دلار DXY',
+    'TEDPIX (Tehran Stock Exchange Index)':'شاخص کل بورس تهران',
+    'TEDPIX Equal-Weight':'شاخص هم‌وزن بورس',
+    'Iran Fara Bourse Index (IFX)':'شاخص فرابورس',
+    'Fameli (National Iranian Copper)':'فملی (مس ایران)',
+    'Foolad (Mobarakeh Steel)':'فولاد (مبارکه)',
+    'Khodro (Iran Khodro)':'خودرو (ایران‌خودرو)',
+    'Shasta (Social Security Investment)':'شستا',
+    'Vabemellat (Bank Mellat)':'وبملت (بانک ملت)',
     'FTSE 100':'فوتسی ۱۰۰','DAX 40':'دکس ۴۰','CAC 40':'کک ۴۰',
 }
 
@@ -52,19 +62,21 @@ def discovery(path,anchor):
     raw=cells[1].get_text(' ',strip=True)
     # A source row should specify an actual price unit, not merely a rate or
     # different numerical column (volume/change/timestamps).
-    match=re.search(r'\b(USD|GBP|CNY|EUR)\b(?:\s+per\s+(.+))?',raw,re.I)
+    match=re.search(r'\b(USD|GBP|CNY|EUR|JPY|CHF|CAD|AUD|NZD|IRR)\b(?:\s+per\s+(.+))?',raw,re.I)
     point=re.search(r'\b(points?|index points)\b',raw,re.I)
     if match:
         currency=match.group(1).upper()
-        unit={'USD':'دلار','GBP':'پوند','EUR':'یورو','CNY':'یوان'}[currency]
+        unit={'USD':'دلار','GBP':'پوند','EUR':'یورو','CNY':'یوان','JPY':'ین','CHF':'فرانک','CAD':'دلار کانادا','AUD':'دلار استرالیا','NZD':'دلار نیوزیلند','IRR':'تومان'}[currency]
         suffix=(match.group(2) or '').strip()
         if suffix:
             suffix=suffix.split(' | ')[0][:35]
             suffix_map={'tonne':'تن','short ton':'تن کوتاه','pound':'پوند','bushel':'بوشل',
                         'hundredweight':'صد پوند','barrel':'بشکه','troy ounce':'انس',
-                        '1,000 board feet':'هزار فوت تخته'}
+                        '1,000 board feet':'هزار فوت تخته','share':'سهم','exchange rate':'نرخ برابری','mmbtu':'میلیون BTU','therm':'ترم','mwh':'مگاوات‌ساعت'}
             unit+='/' + suffix_map.get(suffix,suffix)
+        if category=='forex': unit=f'نرخ برابری ({currency})'
     elif point:unit='واحد شاخص'
+    elif category=='bond' and 'contract price' in raw.lower():unit='قیمت قرارداد (در ۱۰۰)'
     else:return None
     name=anchor.get_text(' ',strip=True)
     if not name or len(name)>70:return None
@@ -72,7 +84,7 @@ def discovery(path,anchor):
     slug=path.rsplit('/',1)[-1]
     section=path.rsplit('/',1)[0]
     return Asset(key,PERSIAN_NAMES.get(name,name),slug,section,category,unit,
-       Decimal('0.0000000000001'),Decimal('999999999999999'),False,name,False)
+       Decimal('0.0000000000001'),Decimal('999999999999999'),currency=='IRR' if match else False,name,False)
 
 
 def decimals(text):
@@ -113,13 +125,31 @@ def nearby_row(anchor:Tag):
     return cells if len(cells)>=2 else None
 
 
+def price_column(cells, *terms):
+    """Locate a numeric column by its table header rather than position."""
+    table=cells[0].find_parent('table') if cells else None
+    headers=[]
+    if table:
+        head=table.find('thead')
+        if head: headers=table_header(head.find_all('th'))
+    for i, col in enumerate(headers):
+        if any(term in col for term in terms) and i < len(cells):
+            return cells[i]
+    return None
+
+
 def get_price_from_row(cells, asset:Asset):
-    """Use the source's own column semantics. Never treat % as a price."""
+    """BTC/other crypto in dollars: require an explicitly USD-quoted column."""
     if asset.key=='btc' or (asset.category=='crypto' and not asset.is_rial):
-        if len(cells)>=4:
-            usd=numeric(cells[3].get_text(' ',strip=True),asset)
-            if usd is not None:return usd
-        return None
+        cell=price_column(cells,'price (usd)','قیمت (دلار)','price usd')
+        if cell is None:
+            # The known AlanChand crypto table is: name, IRR, 24h change, USD.
+            # Do not fall back to an arbitrary column on a different table.
+            table=cells[0].find_parent('table')
+            header=table.find('thead') if table else None
+            if header is None and len(cells)>=4 and asset.section=='/en/crypto-price':
+                cell=cells[3]
+        return numeric(cell.get_text(' ',strip=True),asset) if cell is not None else None
     return numeric(cells[1].get_text(' ',strip=True),asset)
 
 
@@ -144,6 +174,8 @@ def metadata_from_row(cells, asset):
         text=cell.get_text(' ',strip=True)
         if ('change' in col or 'تغییر' in col) and (p:=percent(text)) is not None:
             result['change_pct']=p
+        if ('status' in col or 'وضعیت' in col) and len(text)<64 and text:
+            result['market_status']=text
         if ('high' in col or 'بیشترین' in col) and (v:=numeric(text,asset)) is not None:
             result['day_high']=normal_price(v,asset)
         if ('low' in col or 'کمترین' in col) and (v:=numeric(text,asset)) is not None:
@@ -154,7 +186,8 @@ def metadata_from_row(cells, asset):
             result['bubble_pct']=v
     if asset.category=='crypto' and len(cells)>=4:
         usd_asset=Asset(asset.key,asset.label,asset.slug,asset.section,asset.category,'دلار',Decimal('0.000000000001'),Decimal('999999999'),False)
-        if (v:=numeric(cells[3].get_text(' ',strip=True),usd_asset)) is not None:
+        usd_cell=price_column(cells,'price (usd)','قیمت (دلار)','price usd')
+        if usd_cell is not None and (v:=numeric(usd_cell.get_text(' ',strip=True),usd_asset)) is not None:
             result['usd_value']=v
         rial_asset=Asset(asset.key,asset.label,asset.slug,asset.section,asset.category,'تومان',Decimal('0.001'),Decimal('999999999999999'),True)
         if (v:=numeric(cells[1].get_text(' ',strip=True),rial_asset)) is not None:
@@ -260,6 +293,7 @@ class AlanChandSource:
 
     def gather(self,include_extras=True):
         collected={}
+        btc_usd_verified=False
         source_time=utc_now()
         wanted={a.path:a for a in ALL}
         home=self.load('/en')
@@ -276,7 +310,8 @@ class AlanChandSource:
         # Listings also supply extras for PWA. Their failures must never
         # prevent gathering the 14 core values from detail pages.
         sections=('/en/currencies-price','/en/gold-price','/en/crypto-price',
-                  '/en/base-metals','/en/agriculture','/en/markets')
+                  '/en/base-metals','/en/agriculture','/en/markets','/en/energy',
+                  '/en/iran-stocks','/en/markets/forex','/en/markets/bonds')
         if include_extras or any(a.key not in collected for a in SOCIAL):
             for section in sections:
                 if not include_extras and not any(a.section==section and a.key not in collected for a in SOCIAL):continue
@@ -284,13 +319,34 @@ class AlanChandSource:
                 if not html:continue
                 more=parse_page(html,wanted,source_time)
                 for key,value in more.items():
-                    if key not in collected or (value.change_pct is not None and collected[key].change_pct is None):
+                    if key=='btc' and section=='/en/crypto-price':
+                        # Always prefer the unambiguous USD column to a homepage card.
                         collected[key]=value
+                        btc_usd_verified=True
+                    elif key not in collected or (value.change_pct is not None and collected[key].change_pct is None):
+                        collected[key]=value
+        # Bitcoin's detail explicitly labels the USD price. Prefer it over any
+        # homepage shorthand; never confuse the very large IRR quote with USD.
+        btc=next(a for a in SOCIAL if a.key=='btc')
+        btc_detail=self.load(btc.path)
+        verified_btc=detail_price(btc_detail,btc) if btc_detail else None
+        if verified_btc is not None:
+            btc_usd_verified=True
+            previous=collected.get('btc')
+            fields=({name:getattr(previous,name) for name in
+                ('buy','change_pct','day_high','day_low','toman_value','bubble_pct','market_status')}
+                if previous else {})
+            collected['btc']=MarketQuote(btc,verified_btc,source_time,usd_value=verified_btc,**fields)
+            LOG.info('Bitcoin USD validated against detail page (Price USD column)')
         for a in SOCIAL:
             if a.key in collected:continue
             html=self.load(a.path)
             value=detail_price(html,a) if html else None
             if value is not None:collected[a.key]=MarketQuote(a,value,source_time)
+        # A BTC quote from an ambiguous homepage card alone is NOT enough.
+        # Only the explicit USD column or USD-labelled detail is trusted.
+        if not btc_usd_verified:
+            raise RuntimeError('Bitcoin USD not verified from explicit USD source; no channel post sent')
         absent=[a.key for a in SOCIAL if a.key not in collected]
         if absent:raise RuntimeError('Missing broadcast prices; existing website and messages preserved: '+', '.join(absent))
         return collected

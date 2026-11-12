@@ -1,5 +1,5 @@
-export const categories={currency:'ارز',coin:'سکه',gold:'طلا',crypto:'رمزارز',energy:'انرژی',metal:'فلزات پایه',agriculture:'کشاورزی',index:'شاخص‌های جهانی',commodity:'کالاهای جهانی',bond:'اوراق',forex:'فارکس'};
-export const categoryIcons={currency:'$',coin:'◉',gold:'✧',crypto:'₿',energy:'◈',metal:'⬡',agriculture:'❋',index:'⌁',commodity:'◆',bond:'▣',forex:'↗'};
+export const categories={currency:'ارز',coin:'سکه',gold:'طلا',crypto:'رمزارز',energy:'انرژی',metal:'فلزات پایه',agriculture:'کشاورزی',index:'شاخص‌های جهانی',commodity:'کالاهای جهانی',bond:'اوراق',forex:'فارکس',stock:'بورس ایران'};
+export const categoryIcons={currency:'$',coin:'◉',gold:'✧',crypto:'₿',energy:'◈',metal:'⬡',agriculture:'❋',index:'⌁',commodity:'◆',bond:'▣',forex:'↗',stock:'▤'};
 export function number(value,maximumFractionDigits=8){
   if(value===null||value===undefined||value==='')return '—';
   const n=Number(value);

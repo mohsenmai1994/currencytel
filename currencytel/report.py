@@ -13,8 +13,8 @@ SOCIAL_GROUPS = (
     ('🪙 طلا و سکه', SOCIAL[6:11]),
     ('🌐 انرژی و رمزارز', SOCIAL[11:]),
 )
-TTITLE = '#نرخ_ارز #سکه #طلا #دلار #بیتکوین'
-FOOTER = 'ID: @currencytel'
+HEADER_HASHTAGS = '#نرخ_ارز #سکه #طلا #دلار #بیتکوین'
+SIGNATURE = 'ID: @currencytel'
 
 
 def fmt(value: Decimal) -> str:
@@ -39,5 +39,5 @@ def render_report(quotes: dict, footer: bool = True) -> str:
         f'{marker_for(asset.key)}{asset.label}: {fmt(quotes[asset.key].value)} {asset.unit}'
         for asset in SOCIAL
     ]
-    report = TITLE + '\n\n' + '\n'.join(rows)
-    return report + ('\n\n' + FOOTER if footer else '')
+    report = HEADER_HASHTAGS + '\n\n' + '\n'.join(rows)
+    return report + ('\n\n' + SIGNATURE if footer else '')

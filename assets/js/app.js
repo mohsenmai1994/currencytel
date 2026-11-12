@@ -16,10 +16,19 @@ function cards(){
   const ids=['usd','18ayar','bahar','btc'];
   const meta={'usd':['دلار آمریکا','$'],'18ayar':['طلای ۱۸ عیار','✦'],'bahar':['سکه بهار آزادی','◉'],'btc':['بیت کوین','₿']};
   el('summaryGrid').innerHTML=ids.map(id=>{
-    const q=state.items.find(x=>x.id===id), [title,icon]=meta[id];
-    return `<div class="summary-card"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${q?number(q.value):'—'}</div><div class="summary-unit">${q?safe(q.unit):'در انتظار داده'}</div></div>`;
+    const q=state.items.find(x=>x.id===id),[title,icon]=meta[id];
+    const [movement,kind]=changeText(q?.change_pct);
+    return `<div class="summary-card"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${q?number(q.value):'—'}</div><div class="summary-bottom"><span class="summary-unit">${q?safe(q.unit):'ناموجود'}</span><span class="change ${kind}" dir="ltr">${movement}</span></div></div>`;
   }).join('');
 }
+function marketPulse(){
+  const eligible=state.items.filter(q=>q.change_pct!==undefined&&q.change_pct!==null&&Number.isFinite(Number(q.change_pct)));
+  el('pulseAssets').textContent=number(state.items.length,0);
+  el('pulseUp').textContent=number(eligible.filter(q=>Number(q.change_pct)>0).length,0);
+  el('pulseDown').textContent=number(eligible.filter(q=>Number(q.change_pct)<0).length,0);
+  el('pulseMarkets').textContent=number(new Set(state.items.map(q=>q.category)).size,0);
+}
+
 function filteredItems(){
   let items=state.items.filter(item=>{
     if(state.filter==='favorite' && !state.favorites.has(item.id))return false;
@@ -42,7 +51,7 @@ function renderRows(){
     const [text,kind]=changeText(q.change_pct);
     const hi=q.day_high===undefined?'—':number(q.day_high);
     const lo=q.day_low===undefined?'—':number(q.day_low);
-    return `<tr><td><div class="asset-title"><span class="asset-symbol">${safe(categoryIcons[q.category]||'◌')}</span><div>${safe(q.label)}<span class="asset-source">${safe(q.id.toUpperCase())} · ${safe(categories[q.category]||'سایر')}</span></div></div></td><td><span class="money-number">${number(q.value)}</span><span class="money-unit">${safe(q.unit)}</span></td><td><span class="change ${kind}">${text}</span></td><td><span class="day-range">${lo} / ${hi}</span></td><td><button class="favorite-btn ${state.favorites.has(q.id)?'saved':''}" type="button" data-favorite="${safe(q.id)}" aria-pressed="${state.favorites.has(q.id)}" aria-label="${safe(q.label)}: علاقه‌مندی">${state.favorites.has(q.id)?'★':'☆'}</button></td></tr>`;
+    return `<tr data-detail="${safe(q.id)}" tabindex="0" aria-label="جزئیات ${safe(q.label)}"><td><div class="asset-title"><span class="asset-symbol">${safe(categoryIcons[q.category]||'◌')}</span><div>${safe(q.label)}<span class="asset-source">${safe(q.id.toUpperCase())} · ${safe(categories[q.category]||'سایر')}</span></div></div></td><td><span class="money-number">${number(q.value)}</span><span class="money-unit">${safe(q.unit)}</span></td><td><span class="change ${kind}">${text}</span></td><td><span class="day-range">${lo} / ${hi}</span></td><td><button class="favorite-btn ${state.favorites.has(q.id)?'saved':''}" type="button" data-favorite="${safe(q.id)}" aria-pressed="${state.favorites.has(q.id)}" aria-label="${safe(q.label)}: علاقه‌مندی">${state.favorites.has(q.id)?'★':'☆'}</button></td></tr>`;
   }).join('');
 }
 function selectOptions(){
@@ -89,7 +98,7 @@ function renderTime(){
   el('ageLabel').textContent=age<1?'همین حالا دریافت شده':`${age.toLocaleString('fa-IR')} دقیقه از آخرین دریافت گذشته است`;
   if(age<=90)status('ok','داده دریافت‌شده');else status('stale','ممکن است داده‌ها قدیمی باشند');
 }
-function renderAll(){cards();renderRows();selectOptions();renderChart();renderConverter();renderTime();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${state.favorites.size.toLocaleString('fa-IR')}`;}
+function renderAll(){cards();marketPulse();renderRows();selectOptions();renderChart();renderConverter();renderTime();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${state.favorites.size.toLocaleString('fa-IR')}`;}
 async function refresh({showToast=false}={}){
   if(state.loading)return;
   state.loading=true;el('refreshBtn').disabled=true;
@@ -106,6 +115,38 @@ async function refresh({showToast=false}={}){
     else{status('stale','نمایش آخرین داده در دسترس');toast('بارگیری تازه موفق نبود؛ داده قبلی نمایش داده می‌شود.');}
   }finally{state.loading=false;el('refreshBtn').disabled=false;}
 }
+const detailMetric=(label,value)=>`<div class="detail-stat"><small>${safe(label)}</small><b>${safe(value)}</b></div>`;
+function openDetail(id){
+  const q=state.items.find(x=>x.id===id);if(!q)return;
+  const [change,kind]=changeText(q.change_pct);
+  const metrics=[];
+  metrics.push(detailMetric('تغییر روزانه',change));
+  if(q.buy!==undefined)metrics.push(detailMetric('نرخ خرید',`${number(q.buy)} ${q.unit}`));
+  if(q.day_low!==undefined)metrics.push(detailMetric('کمترین روز',`${number(q.day_low)} ${q.unit}`));
+  if(q.day_high!==undefined)metrics.push(detailMetric('بیشترین روز',`${number(q.day_high)} ${q.unit}`));
+  if(q.usd_value!==undefined)metrics.push(detailMetric('قیمت دلاری',`${number(q.usd_value)} دلار`));
+  if(q.toman_value!==undefined)metrics.push(detailMetric('قیمت تومانی',`${number(q.toman_value)} تومان`));
+  if(q.bubble_pct!==undefined)metrics.push(detailMetric('حباب',`${number(q.bubble_pct,2)}٪`));
+  if(q.market_status)metrics.push(detailMetric('وضعیت بازار',String(q.market_status)));
+  const url=String(q.source_url||'');
+  const source=url.startsWith('https://alanchand.com/')?`<a class="detail-source" href="${safe(url)}" target="_blank" rel="noopener noreferrer">مشاهده اطلاعات در منبع ↗</a>`:'';
+  el('detailContent').innerHTML=`<div class="eyebrow">${safe(categories[q.category]||'بازار')}</div><h2 id="detailTitle">${safe(q.label)}</h2><div class="detail-intro">${safe(q.id.toUpperCase())} · آخرین نرخ ثبت‌شده</div><div class="detail-price">${number(q.value)}</div><div class="detail-unit">${safe(q.unit)} <span class="change ${kind}" dir="ltr">${change}</span></div><div class="detail-grid">${metrics.join('')}</div>${source}<p class="detail-note">زمان دریافت: ${safe(when(q.received_at||state.snapshot?.fetched_at))}. اطلاعات صرفاً جهت اطلاع‌رسانی است.</p>`;
+  el('detailBackdrop').hidden=false;el('detailSheet').hidden=false;
+  document.body.style.overflow='hidden';el('detailClose').focus();
+}
+function closeDetail(){el('detailBackdrop').hidden=true;el('detailSheet').hidden=true;document.body.style.overflow='';}
+function setupNavigation(){
+  const links=[...document.querySelectorAll('[data-nav]')];
+  const active=key=>links.forEach(a=>a.classList.toggle('active',a.dataset.nav===key));
+  links.forEach(a=>a.addEventListener('click',()=>active(a.dataset.nav)));
+  if('IntersectionObserver' in window){
+    const observer=new IntersectionObserver(entries=>{
+      const entry=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(entry)active(entry.target.id);
+    },{rootMargin:'-18% 0px -62% 0px',threshold:0});
+    ['home','prices','tools','connect'].forEach(id=>{const target=el(id);if(target)observer.observe(target);});
+  }
+}
 function events(){
   el('searchInput').addEventListener('input',e=>{state.query=clean(e.target.value);renderRows();});
   el('filterBar').addEventListener('click',e=>{
@@ -115,7 +156,12 @@ function events(){
     renderRows();
   });
   el('sortInput').addEventListener('change',e=>{state.sort=e.target.value;renderRows();});
-  el('priceRows').addEventListener('click',e=>{const btn=e.target.closest('[data-favorite]');if(btn)addFavorites(btn.dataset.favorite);});
+  el('priceRows').addEventListener('click',e=>{const btn=e.target.closest('[data-favorite]');if(btn){addFavorites(btn.dataset.favorite);return;}const row=e.target.closest('[data-detail]');if(row)openDetail(row.dataset.detail);});
+  el('priceRows').addEventListener('keydown',e=>{const row=e.target.closest('[data-detail]');if(row&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDetail(row.dataset.detail);}});
+  el('detailClose').addEventListener('click',closeDetail);
+  el('detailBackdrop').addEventListener('click',closeDetail);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('detailSheet').hidden)closeDetail();});
+  setupNavigation();
   el('chartAsset').addEventListener('change',renderChart);
   el('converterAsset').addEventListener('change',renderConverter);
   el('converterAmount').addEventListener('input',renderConverter);

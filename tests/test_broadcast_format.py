@@ -6,7 +6,7 @@ from currencytel.report import render_report, SOCIAL_GROUPS
 from currencytel.media import card_html
 
 
-EXPECTED = """قیمت #ارز، #طلا و #بازار
+EXPECTED = """#نرخ_ارز #سکه #طلا #دلار #بیتکوین
 
 ☸️دلار آمریکا: 263,100 تومان
 ☸️ یورو: 295,600 تومان
@@ -23,7 +23,7 @@ EXPECTED = """قیمت #ارز، #طلا و #بازار
 ✴️ بیت کوین: 74,846 دلار
 ✴️ تتر: 261,566 تومان
 
-🆔 @currencytel"""
+ID: @currencytel"""
 
 
 VALUES = ('263100','295600','345200','5320','315300','38740',
@@ -41,7 +41,7 @@ def test_exact_output_snapshot():
 
 
 def test_footer_optional_but_pricing_stable():
-    assert render_report(sample_quotes(), footer=False) == EXPECTED.removesuffix('\n\n🆔 @currencytel')
+    assert render_report(sample_quotes(), footer=False) == EXPECTED.removesuffix('\n\nID: @currencytel')
 
 
 def test_same_number_of_rows_on_photo_and_text():

@@ -17,6 +17,7 @@ class MarketQuote:
     usd_value: Decimal | None = None
     toman_value: Decimal | None = None
     bubble_pct: Decimal | None = None
+    market_status: str | None = None
     source: str = 'alanchand.com'
 
     def to_dict(self) -> dict[str, Any]:
@@ -28,6 +29,7 @@ class MarketQuote:
         for key in ('buy','change_pct','day_high','day_low','usd_value','toman_value','bubble_pct'):
             amount = getattr(self,key)
             if amount is not None: result[key] = str(amount)
+        if self.market_status: result['market_status']=self.market_status
         return result
 
 
