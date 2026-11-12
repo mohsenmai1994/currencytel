@@ -15,4 +15,4 @@ jobs:
           cache: 'pip'
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest -q
-      - run: node --check assets/js/app.js && node --check assets/js/data.js && node --check assets/js/chart.js && node --check assets/js/format.js
+      - run: node --check assets/js/app.js && node --check assets/js/data.js && node --check assets/js/chart.js && node --check assets/js/history.js && node --check assets/js/format.js
