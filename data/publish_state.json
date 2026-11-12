@@ -2,9 +2,9 @@
   "schema_version": 1,
   "platforms": {
     "bale": {
-      "digest": "7fc8ce5ce464efd9f2ddf3a1e8b892437854b76aca8eb97de32dd16817d27b45",
-      "message_id": "16",
-      "sent_at": "2026-11-11T18:19:14+00:00"
+      "digest": "3e56fa87663459534785f4690b7ef0936c562e9156ad0d35c9472681656915a4",
+      "message_id": "17",
+      "sent_at": "2026-11-12T06:38:29+00:00"
     },
     "telegram": {
       "digest": "52930c61bf14d105346774d556ad13d0d7ecd1b2e794887197204a3c3c61f1a0",
@@ -12,9 +12,9 @@
       "sent_at": "2026-11-11T07:53:27+00:00"
     },
     "rubika": {
-      "digest": "c6c77a78491312a4c0dba210921bcddc52c1c20d1ea05f7d0ef903ea51defd78",
-      "message_id": "1969301727323442753",
-      "sent_at": "2026-11-12T05:36:32+00:00"
+      "digest": "3e56fa87663459534785f4690b7ef0936c562e9156ad0d35c9472681656915a4",
+      "message_id": "1969325741809442753",
+      "sent_at": "2026-11-12T06:38:32+00:00"
     },
     "instagram": {
       "digest": "c6c77a78491312a4c0dba210921bcddc52c1c20d1ea05f7d0ef903ea51defd78",
