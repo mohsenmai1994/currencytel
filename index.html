@@ -7,7 +7,7 @@
   <meta name="description" content="CurrencyTel؛ اپلیکیشن قیمت ارز، طلا، سکه، رمزارز، انرژی، بورس و بازارهای جهانی با نمودار، جستجو و محاسبه‌گر">
   <meta name="color-scheme" content="dark light">
   <meta property="og:title" content="CurrencyTel | نبض بازار">
-  <meta property="og:description" content="قیمت‌های بازار ایران و جهان در اپلیکیشنی سریع و قابل نصب">
+  <meta property="og:description" content="قیمت‌ها، تغییرات روزانه و نمودارهای بازار ایران و جهان">
   <title>CurrencyTel | نبض بازار</title>
   <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -26,21 +26,27 @@
         <nav class="header-nav" aria-label="منوی اصلی"><a href="#home" data-nav="home" class="active">خانه</a><a href="#prices" data-nav="prices">بازارها</a><a href="#tools" data-nav="tools">ابزارها</a><a href="#connect" data-nav="connect">کانال‌ها</a></nav>
         <div class="header-actions">
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال بارگیری</span></div>
-          <button id="refreshBtn" type="button" class="icon-button" aria-label="تازه‌سازی اطلاعات" title="تازه‌سازی">⟳</button>
-          <button id="installBtn" type="button" class="icon-button install-btn" hidden aria-label="نصب برنامه" title="نصب برنامه">↓</button>
           <button id="themeBtn" type="button" class="icon-button" aria-label="تغییر حالت روشن و تاریک" title="تغییر تم">☼</button>
         </div>
       </div>
     </header>
     <main class="shell content">
       <section id="home" class="home-section" aria-labelledby="heroTitle">
-        <div class="hero">
-          <div class="hero-main"><span class="eyebrow"><span class="spark">✦</span> CURRENCYTEL / بازارهای امروز</span><h1 id="heroTitle">بازار، در یک نگاه</h1><p>قیمت‌های مهم، تغییرات و جزئیات بازار در یک جای ساده.</p>
-            <div class="hero-meta"><span class="hero-time-icon">◷</span><span>آخرین به‌روزرسانی:</span><strong id="updatedAt">—</strong></div><a class="hero-cta" href="#prices">مشاهده همه قیمت‌ها <span aria-hidden="true">←</span></a>
+        <div class="hero compact-hero">
+          <div class="hero-main">
+            <span class="eyebrow">CURRENCYTEL / بازارهای امروز</span>
+            <h1 id="heroTitle">بازار، در یک نگاه</h1>
+            <p>قیمت‌های مهم و تغییرات هر روز، ساده و سریع.</p>
+            <div class="hero-meta"><span class="data-icon" aria-hidden="true">●</span><span>آخرین ثبت قیمت:</span><strong id="updatedAt">—</strong></div>
           </div>
-          <div class="hero-aside"><span class="hero-aside-dot" aria-hidden="true"></span><div><span>وضعیت اطلاعات</span><strong id="ageLabel">در انتظار دریافت قیمت‌ها</strong><small>براساس آخرین دریافت موفق از منبع</small></div></div>
+          <div class="hero-aside clock-panel" aria-label="ساعت فعلی تهران">
+            <span class="clock-icon" aria-hidden="true">◷</span>
+            <div><span>زمان فعلی تهران</span><strong id="ageLabel" class="live-clock">—</strong><small id="currentDate">—</small></div>
+          </div>
         </div>
-        <div id="summaryGrid" class="summary-grid" aria-label="قیمت‌های شاخص"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
+        <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2><span>تغییر نسبت به اولین نرخ ثبت‌شده امروز</span></div><div class="carousel-controls"><button type="button" id="carouselPrev" aria-label="اسلاید قبلی">→</button><button type="button" id="carouselNext" aria-label="اسلاید بعدی">←</button></div></div>
+        <div id="summaryGrid" class="summary-grid summary-carousel" aria-label="اسلایدر قیمت‌های شاخص" aria-roledescription="اسلایدر"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
+        <div id="carouselDots" class="carousel-dots" aria-label="انتخاب اسلاید قیمت‌ها"></div>
         <div class="market-pulse" id="marketPulse" aria-live="polite"><span>◈ <b id="pulseAssets">—</b> نماد</span><span class="up">↑ <b id="pulseUp">—</b> افزایشی</span><span class="down">↓ <b id="pulseDown">—</b> کاهشی</span><span><b id="pulseMarkets">—</b> بازار</span></div>
       </section>
       <section class="section" id="prices" aria-labelledby="pricesTitle">
@@ -48,7 +54,8 @@
         <div class="toolbar"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="جستجوی نماد، ارز، سکه، فلز..." autocomplete="off" aria-label="جستجوی دارایی‌ها"></label><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div>
         <div id="filterBar" class="filter-bar" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip">☆ منتخب</button><button type="button" data-filter="currency" class="chip">ارز</button><button type="button" data-filter="gold" class="chip">طلا</button><button type="button" data-filter="coin" class="chip">سکه</button><button type="button" data-filter="crypto" class="chip">رمزارز</button><button type="button" data-filter="energy" class="chip">انرژی</button><button type="button" data-filter="stock" class="chip">بورس ایران</button><button type="button" data-filter="index" class="chip">شاخص‌ها</button><button type="button" data-filter="metal" class="chip">فلزات</button><button type="button" data-filter="agriculture" class="chip">کشاورزی</button><button type="button" data-filter="forex" class="chip">فارکس</button><button type="button" data-filter="bond" class="chip">اوراق</button><button type="button" data-filter="commodity" class="chip">کالاها</button></div>
         <div class="table-toolbar"><span id="marketCoverage">اطلاعات دریافت‌شده از منبع</span><span class="hint">برای مشاهده جزئیات، دارایی را انتخاب کنید</span></div>
-        <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر روزانه</th><th>بازه روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="5" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
+        <p class="daily-open-note">تغییر روزانه نسبت به اولین نرخ معتبری است که سیستم در همان روز به وقت تهران ثبت کرده؛ در صورت اعلام بسته‌بودن بازار، مبنا از نخستین ثبت پس از بازشدن آن است. این لزوماً قیمت رسمی گشایش نیست.</p>
+        <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>بازه روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="5" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
         <div id="errorMessage" role="alert" class="error-message" hidden></div>
       </section>
       <section id="tools" class="section tools-section"><div class="section-heading"><div><div class="eyebrow">TOOLS & INSIGHTS</div><h2>تحلیل و ابزارها</h2><p class="muted">اطلاعاتی مبتنی بر گزارش‌های ثبت‌شده، نه قیمت‌سازی یا پیش‌بینی</p></div></div>

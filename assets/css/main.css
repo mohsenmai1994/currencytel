@@ -184,3 +184,59 @@ h1,h2,h3,p{margin:0}h1{font-size:clamp(23px,3vw,36px);line-height:1.35;letter-sp
   .chart-headline .chart-value{font-size:20px}
   .chart-tooltip{padding:6px 8px;min-width:95px}
 }
+
+/* v3.4 — quiet mobile-first live clock and swipeable headline prices */
+.compact-hero{grid-template-columns:minmax(0,1fr) minmax(225px,290px);padding:21px 25px;gap:15px;background:linear-gradient(120deg,rgba(42,154,151,.11),transparent 68%),var(--panel)}
+.compact-hero h1{font-size:clamp(23px,2.7vw,31px);margin:5px 0 4px}
+.compact-hero .hero-main p{font-size:12px}
+.compact-hero .hero-meta{font-size:10px;margin-top:10px}
+.compact-hero .hero-meta strong{font-size:10px;font-weight:650}
+.data-icon{color:var(--teal);font-size:8px}
+.clock-panel{align-items:center;padding:13px 18px;background:var(--panel2);gap:12px}
+.clock-panel .clock-icon{color:var(--teal);font-size:26px;line-height:1}
+.clock-panel > div{gap:0}
+.clock-panel .live-clock{font-size:clamp(22px,2.5vw,28px);line-height:1.35;font-weight:800;letter-spacing:-.7px;direction:ltr;unicode-bidi:isolate;text-align:right}
+.clock-panel small{display:block!important;font-size:10px;white-space:normal}
+.spotlight-heading{display:flex;justify-content:space-between;align-items:center;margin:21px 0 9px;gap:12px}
+.spotlight-heading h2{font-size:16px;line-height:1.5}
+.spotlight-heading span{font-size:10px;color:var(--muted)}
+.carousel-controls{display:flex;align-items:center;gap:7px;direction:rtl}
+.carousel-controls button{width:34px;height:34px;border-radius:11px;background:var(--panel);color:var(--text);border:1px solid var(--border);font-size:20px;line-height:1}
+.carousel-controls button:hover{border-color:var(--teal);color:var(--teal)}
+.summary-grid.summary-carousel{display:flex!important;grid-template-columns:none!important;gap:12px!important;margin-top:0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;padding:3px 2px 8px;scroll-padding-inline:2px;direction:rtl;-webkit-overflow-scrolling:touch}
+.summary-carousel::-webkit-scrollbar{display:none}
+.summary-carousel .summary-card{scroll-snap-align:start;scroll-snap-stop:always;flex:0 0 calc((100% - 24px)/3);max-width:none;min-height:139px;padding:17px 19px;border-radius:19px}
+.summary-carousel .summary-number{margin:11px 0 7px;font-size:clamp(19px,2.2vw,26px)}
+.card-footnote{font-size:9px;color:var(--muted);opacity:.82;margin-top:9px;border-top:1px solid var(--border);padding-top:6px}
+.carousel-dots{display:flex;align-items:center;justify-content:center;gap:6px;min-height:20px}
+.carousel-dots button{border:0;background:var(--border);width:6px;height:6px;border-radius:30px;padding:0;transition:width .25s,background .25s}
+.carousel-dots button.active{width:20px;background:var(--teal)}
+.carousel-dots button:focus-visible{outline:2px solid var(--teal);outline-offset:4px}
+.daily-open-note{font-size:10px;line-height:1.9;color:var(--muted);margin:0 5px 12px}
+@media(max-width:800px){
+ .compact-hero{grid-template-columns:1fr auto;gap:10px;padding:18px 18px}
+ .clock-panel{padding:11px 12px;min-width:165px}
+ .summary-carousel .summary-card{flex-basis:calc((100% - 12px)/2);padding:15px}
+}
+@media(max-width:590px){
+ .compact-hero{display:grid;grid-template-columns:minmax(0,1fr);padding:17px 17px;gap:12px;border-radius:20px}
+ .compact-hero .hero-main p{font-size:11px}
+ .compact-hero .hero-meta{margin-top:7px}
+ .compact-hero .hero-meta strong{font-size:9px}
+ .clock-panel{min-width:0;display:flex;padding:8px 12px;border-radius:12px}
+ .clock-panel .clock-icon{font-size:20px}
+ .clock-panel > div{display:flex!important;align-items:baseline;flex-wrap:wrap;gap:3px 9px}
+ .clock-panel .live-clock{font-size:19px}
+ .clock-panel small{font-size:9px}
+ .spotlight-heading{margin:17px 0 9px}.spotlight-heading h2{font-size:15px}
+ .spotlight-heading span{font-size:9px}
+ .summary-grid.summary-carousel{gap:9px!important;padding:3px 1px 8px}
+ .summary-carousel .summary-card{flex-basis:82%;max-width:360px;min-height:164px;padding:17px 18px}
+ .summary-carousel .summary-number{font-size:clamp(25px,7vw,31px);margin:14px 0 8px}
+ .summary-carousel .summary-kicker{font-size:12px}.summary-carousel .summary-unit{font-size:11px}
+ .summary-carousel .summary-bottom .change{font-size:12px}
+ .carousel-controls button{width:32px;height:32px}
+ .market-pulse{margin-top:8px}
+}
+@media(max-width:370px){.summary-carousel .summary-card{flex-basis:89%}}
+@media(prefers-reduced-motion:reduce){.summary-grid.summary-carousel{scroll-behavior:auto!important}.carousel-dots button{transition:none}}

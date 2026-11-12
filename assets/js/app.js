@@ -3,7 +3,20 @@ import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,pa
 import {drawHistory} from './chart.js';
 import {PERIODS} from './history.js';
 const el=id=>document.getElementById(id);
-const state={items:[],history:[],filter:'all',query:'',sort:'default',favorites:new Set(),snapshot:null,loading:false,chartRange:'24h'};
+const state={items:[],history:[],filter:'all',query:'',sort:'default',favorites:new Set(),snapshot:null,loading:false,chartRange:'24h',slide:0,slidePaused:false};
+const tehranDay=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+function dailyChange(q){
+  if(!q || state.snapshot?.market_day !== tehranDay())return null;
+  const raw=q.day_change_pct;
+  return raw===undefined||raw===null||raw===''||!Number.isFinite(Number(raw))?null:Number(raw);
+}
+function changeLabel(q){return changeText(dailyChange(q));}
+function dailyAmount(q){
+  if(!q || state.snapshot?.market_day!==tehranDay() || q.day_change===undefined || !Number.isFinite(Number(q.day_change)))return null;
+  const amount=Number(q.day_change);
+  return `${amount>0?'+':''}${number(amount,4)} ${q.unit}`;
+}
+
 try{state.favorites=new Set(JSON.parse(localStorage.getItem('ct-favorites')||'[]'));}catch{}
 
 function status(kind,text){const e=el('status');e.className=`status ${kind}`;el('statusLabel').textContent=text;}
@@ -14,19 +27,35 @@ function addFavorites(id){
   renderRows();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${number(state.favorites.size,0)}`;
 }
 function cards(){
-  const ids=['usd','18ayar','bahar','btc'];
-  const meta={'usd':['دلار آمریکا','$'],'18ayar':['طلای ۱۸ عیار','✦'],'bahar':['سکه بهار آزادی','◉'],'btc':['بیت کوین','₿']};
-  el('summaryGrid').innerHTML=ids.map(id=>{
+  const ids=['usd','18ayar','bahar','btc','usdt','eur'];
+  const meta={'usd':['دلار آمریکا','$'],'18ayar':['طلای ۱۸ عیار','✦'],'bahar':['سکه بهار آزادی','◉'],'btc':['بیت کوین','₿'],'usdt':['تتر','₮'],'eur':['یورو','€']};
+  const available=ids.filter(id=>state.items.some(q=>q.id===id));
+  const container=el('summaryGrid');
+  container.innerHTML=available.map((id,index)=>{
     const q=state.items.find(x=>x.id===id),[title,icon]=meta[id];
-    const [movement,kind]=changeText(q?.change_pct);
-    return `<button type="button" class="summary-card" data-summary="${safe(id)}" aria-label="مشاهده جزئیات ${safe(title)}"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${q?number(q.value):'—'}</div><div class="summary-bottom"><span class="summary-unit">${q?safe(q.unit):'ناموجود'}</span><span class="change ${kind}" dir="ltr">${movement}</span></div></button>`;
+    const [movement,kind]=changeLabel(q);
+    return `<button type="button" class="summary-card" data-summary="${safe(id)}" data-slide="${index}" aria-label="جزئیات ${safe(title)}"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${number(q.value)}</div><div class="summary-bottom"><span class="summary-unit">${safe(q.unit)}</span><span class="change ${kind}" dir="ltr">${movement}</span></div><div class="card-footnote">${safe(dailyAmount(q)??"مبنای تغییر امروز ثبت نشده")}</div></button>`;
   }).join('');
+  state.slide=Math.min(state.slide,Math.max(0,available.length-1));
+  el('carouselDots').innerHTML=available.map((_,i)=>`<button type="button" data-carousel-dot="${i}" aria-label="نمایش قیمت ${safe(meta[available[i]][0])}" aria-pressed="${i===state.slide}"></button>`).join('');
+  selectSlide(state.slide,false);
+}
+function selectSlide(index,animate=true){
+  const container=el('summaryGrid');
+  const cards=[...container.querySelectorAll('[data-slide]')];
+  if(!cards.length)return;
+  state.slide=(index+cards.length)%cards.length;
+  const slideRight=cards[state.slide].getBoundingClientRect().right;
+  const viewRight=container.getBoundingClientRect().right;
+  const left=container.scrollLeft + (slideRight-viewRight);
+  container.scrollTo({left,behavior:animate?'smooth':'instant'});
+  el('carouselDots').querySelectorAll('button').forEach((dot,i)=>{dot.classList.toggle('active',i===state.slide);dot.setAttribute('aria-pressed',String(i===state.slide));});
 }
 function marketPulse(){
-  const eligible=state.items.filter(q=>q.change_pct!==undefined&&q.change_pct!==null&&Number.isFinite(Number(q.change_pct)));
+  const eligible=state.items.filter(q=>dailyChange(q)!==null);
   el('pulseAssets').textContent=number(state.items.length,0);
-  el('pulseUp').textContent=number(eligible.filter(q=>Number(q.change_pct)>0).length,0);
-  el('pulseDown').textContent=number(eligible.filter(q=>Number(q.change_pct)<0).length,0);
+  el('pulseUp').textContent=number(eligible.filter(q=>dailyChange(q)>0).length,0);
+  el('pulseDown').textContent=number(eligible.filter(q=>dailyChange(q)<0).length,0);
   el('pulseMarkets').textContent=number(new Set(state.items.map(q=>q.category)).size,0);
 }
 
@@ -39,7 +68,7 @@ function filteredItems(){
   });
   if(state.sort==='name')items.sort((a,b)=>a.label.localeCompare(b.label,'fa'));
   if(state.sort==='price_desc')items.sort((a,b)=>Number(b.value)-Number(a.value));
-  if(state.sort==='change_desc')items.sort((a,b)=>Number(b.change_pct??-999)-Number(a.change_pct??-999));
+  if(state.sort==='change_desc')items.sort((a,b)=>Number(dailyChange(b)??-999)-Number(dailyChange(a)??-999));
   return items;
 }
 function renderRows(){
@@ -49,7 +78,7 @@ function renderRows(){
   const tbody=el('priceRows');
   if(!data.length){tbody.innerHTML='<tr><td class="blank-state" colspan="5">موردی پیدا نشد. فیلتر یا عبارت جستجو را تغییر دهید.</td></tr>';return;}
   tbody.innerHTML=data.map(q=>{
-    const [text,kind]=changeText(q.change_pct);
+    const [text,kind]=changeLabel(q);
     const hi=q.day_high===undefined?'—':number(q.day_high);
     const lo=q.day_low===undefined?'—':number(q.day_low);
     return `<tr data-detail="${safe(q.id)}" tabindex="0" aria-label="جزئیات ${safe(q.label)}"><td><div class="asset-title"><span class="asset-symbol">${safe(categoryIcons[q.category]||'◌')}</span><div>${safe(q.label)}<span class="asset-source">${safe(q.id.toUpperCase())} · ${safe(categories[q.category]||'سایر')}</span></div></div></td><td><span class="money-number">${number(q.value)}</span><span class="money-unit">${safe(q.unit)}</span></td><td><span class="change ${kind}">${text}</span></td><td><span class="day-range">${lo} / ${hi}</span></td><td><button class="favorite-btn ${state.favorites.has(q.id)?'saved':''}" type="button" data-favorite="${safe(q.id)}" aria-pressed="${state.favorites.has(q.id)}" aria-label="${safe(q.label)}: علاقه‌مندی">${state.favorites.has(q.id)?'★':'☆'}</button></td></tr>`;
@@ -104,39 +133,45 @@ function renderConverter(){
   el('conversionNote').textContent=`${number(amount,4)} × ${number(item.value)} ${item.unit}؛${base?' تبدیل با نرخ ارز آزاد؛':''} بدون کارمزد یا هزینه معامله`;
 }
 function renderTime(){
+  const now=new Date();
+  const clock=new Intl.DateTimeFormat('fa-IR',{timeZone:'Asia/Tehran',hour:'2-digit',minute:'2-digit',hour12:false}).format(now);
+  const date=new Intl.DateTimeFormat('fa-IR',{timeZone:'Asia/Tehran',weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(now);
+  el('ageLabel').textContent=clock;
+  el('currentDate').textContent=date;
   const snapshot=state.snapshot;
-  el('updatedAt').textContent=when(snapshot?.fetched_at);
-  el('footerTime').textContent=when(snapshot?.fetched_at);
+  const actual=when(snapshot?.fetched_at);
+  el('updatedAt').textContent=snapshot?.bootstrap?'نمونه آرشیوی':actual;
+  el('footerTime').textContent=actual;
   const age=ageMinutes(snapshot?.fetched_at);
-  if(snapshot?.bootstrap || !Number.isFinite(age)){
-    status('stale','آخرین گزارش آرشیوی');el('ageLabel').textContent='نمونه برگرفته از گزارش قبلی؛ زمان آخرین به‌روزرسانی مشخص نیست';return;
-  }
-  el('ageLabel').textContent=age<1?'همین حالا دریافت شده':`${number(age,0)} دقیقه از آخرین دریافت گذشته است`;
-  if(age<=90)status('ok','داده دریافت‌شده');else status('stale','ممکن است داده‌ها قدیمی باشند');
+  if(snapshot?.bootstrap||!Number.isFinite(age)) status('stale','داده آزمایشی');
+  else if(age<=90)status('ok','آخرین داده ثبت‌شده');
+  else status('stale','داده قدیمی');
 }
 function renderAll(){cards();marketPulse();renderRows();selectOptions();renderChart();renderConverter();renderTime();el('favoriteCount').textContent=`★ علاقه‌مندی‌ها: ${number(state.favorites.size,0)}`;}
 async function refresh({showToast=false}={}){
   if(state.loading)return;
-  state.loading=true;el('refreshBtn').disabled=true;
+  state.loading=true;
   el('errorMessage').hidden=true;
   try{
     const [snapshot,history]=await Promise.all([getSnapshot(),getHistory()]);
     if(!snapshot.items.length)throw new Error('هنوز داده‌ای ثبت نشده؛ ابتدا اجرای GitHub Actions باید موفق شود.');
-    state.items=snapshot.items;state.history=history;state.snapshot=snapshot;renderAll();
+    state.items=snapshot.items;state.history=history;state.snapshot=snapshot;state.renderedDay=tehranDay();renderAll();
     if(showToast)toast('داده‌های ثبت‌شده بررسی شدند.');
   }catch(error){
     const message=error instanceof Error?error.message:'خطا در دریافت داده';
     el('errorMessage').textContent=message;el('errorMessage').hidden=false;
     if(!state.items.length){el('priceRows').innerHTML='<tr><td colspan="5" class="blank-state">امکان بارگیری نرخ‌ها وجود ندارد. اتصال اینترنت و اجرای پروژه را بررسی کنید.</td></tr>';status('error','عدم دسترسی به اطلاعات');}
     else{status('stale','نمایش آخرین داده در دسترس');toast('بارگیری تازه موفق نبود؛ داده قبلی نمایش داده می‌شود.');}
-  }finally{state.loading=false;el('refreshBtn').disabled=false;}
+  }finally{state.loading=false;}
 }
 const detailMetric=(label,value)=>`<div class="detail-stat"><small>${safe(label)}</small><b>${safe(value)}</b></div>`;
 function openDetail(id){
   const q=state.items.find(x=>x.id===id);if(!q)return;
-  const [change,kind]=changeText(q.change_pct);
+  const [change,kind]=changeLabel(q);
   const metrics=[];
-  metrics.push(detailMetric('تغییر روزانه',change));
+  metrics.push(detailMetric('تغییر از شروع روز',change));
+  if(dailyAmount(q)!==null)metrics.push(detailMetric('مقدار تغییر امروز',dailyAmount(q)));
+  if(q.day_open!==undefined && state.snapshot?.market_day===tehranDay()){metrics.push(detailMetric('اولین نرخ ثبت‌شده امروز',`${number(q.day_open)} ${q.unit}`));metrics.push(detailMetric('زمان مبنا',when(q.day_open_at)));}
   if(q.buy!==undefined)metrics.push(detailMetric('نرخ خرید',`${number(q.buy)} ${q.unit}`));
   if(q.day_low!==undefined)metrics.push(detailMetric('کمترین روز',`${number(q.day_low)} ${q.unit}`));
   if(q.day_high!==undefined)metrics.push(detailMetric('بیشترین روز',`${number(q.day_high)} ${q.unit}`));
@@ -207,16 +242,44 @@ function events(){
   }
   el('converterAsset').addEventListener('change',renderConverter);
   el('converterAmount').addEventListener('input',renderConverter);
-  el('refreshBtn').addEventListener('click',()=>refresh({showToast:true}));
   const theme=()=>{document.body.classList.toggle('light');try{localStorage.setItem('ct-theme',document.body.classList.contains('light')?'light':'dark');}catch{}};
   el('themeBtn').addEventListener('click',theme);
   try{if(localStorage.getItem('ct-theme')==='light')document.body.classList.add('light');}catch{}
-  let installPrompt=null;
-  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;el('installBtn').hidden=false;});
-  el('installBtn').addEventListener('click',async()=>{if(!installPrompt)return;installPrompt.prompt();try{await installPrompt.userChoice;}catch{}installPrompt=null;el('installBtn').hidden=true;});
-  window.addEventListener('appinstalled',()=>{el('installBtn').hidden=true;toast('CurrencyTel نصب شد.');});
+  const carousel=el('summaryGrid');
+  carousel.addEventListener('mouseenter',()=>{state.slidePaused=true;});
+  carousel.addEventListener('mouseleave',()=>{state.slidePaused=false;});
+  carousel.addEventListener('focusin',()=>{state.slidePaused=true;});
+  carousel.addEventListener('focusout',e=>{if(!carousel.contains(e.relatedTarget))state.slidePaused=false;});
+  carousel.addEventListener('touchstart',()=>{state.slidePaused=true;},{passive:true});
+  carousel.addEventListener('touchend',()=>{setTimeout(()=>{state.slidePaused=false;},5000);},{passive:true});
+  el('carouselPrev').addEventListener('click',()=>selectSlide(state.slide-1));
+  el('carouselNext').addEventListener('click',()=>selectSlide(state.slide+1));
+  el('carouselDots').addEventListener('click',e=>{const dot=e.target.closest('[data-carousel-dot]');if(dot)selectSlide(Number(dot.dataset.carouselDot));});
+  carousel.addEventListener('scroll',()=>{
+    clearTimeout(carousel._scrollTimer);
+    carousel._scrollTimer=setTimeout(()=>{
+      const cards=[...carousel.querySelectorAll('[data-slide]')];
+      if(!cards.length)return;
+      const x=carousel.getBoundingClientRect().right;
+      const closest=cards.reduce((best,card,i)=>Math.abs(card.getBoundingClientRect().right-x)<best.dist?{i,dist:Math.abs(card.getBoundingClientRect().right-x)}:best,{i:0,dist:Infinity});
+      state.slide=closest.i;
+      el('carouselDots').querySelectorAll('button').forEach((dot,i)=>{dot.classList.toggle('active',i===state.slide);dot.setAttribute('aria-pressed',String(i===state.slide));});
+    },180);
+  },{passive:true});
   window.addEventListener('online',()=>refresh());
   window.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.snapshot)renderTime();});
 }
-function init(){events();refresh();setInterval(()=>{if(!document.hidden)refresh();},15*60*1000);if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+function init(){
+  events();refresh();
+  setInterval(()=>{if(!document.hidden)refresh();},15*60*1000);
+  setInterval(()=>{if(!document.hidden){
+    renderTime();
+    const today=tehranDay();
+    if(state.renderedDay!==today){state.renderedDay=today;if(state.items.length){cards();marketPulse();renderRows();}}
+  }},30000);
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    setInterval(()=>{if(!document.hidden&&!state.slidePaused&&state.items.length)selectSlide(state.slide+1);},6500);
+  }
+  if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 init();

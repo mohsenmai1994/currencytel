@@ -64,6 +64,6 @@ def test_ui_and_worker_include_new_chart_module():
     sw=(ROOT/'sw.js').read_text()
     assert all(f'data-range="{key}"' in index for key in ('24h', '7d', '30d', '90d'))
     assert 'chartTooltip' in index
-    assert 'history.js' in sw and 'v3.3' in sw
+    assert 'history.js' in sw and 'v3.4' in sw
     assert 'data/history.json' in (ROOT/'assets/js/data.js').read_text()
     assert 'slice(-336)' not in (ROOT/'assets/js/data.js').read_text()

@@ -11,7 +11,7 @@ class Settings:
     strict_prices: bool = True
     post_unchanged: bool = False
     dry_run: bool = False
-    max_history_points: int = 336
+    max_history_points: int = 2500
 
     @classmethod
     def from_env(cls):
@@ -20,7 +20,7 @@ class Settings:
             strict_prices=os.getenv('STRICT_PRICES','1') == '1',
             post_unchanged=os.getenv('POST_UNCHANGED','0') == '1',
             dry_run=os.getenv('DRY_RUN','0') == '1',
-            max_history_points=int(os.getenv('MAX_HISTORY_POINTS','336')),
+            max_history_points=int(os.getenv('MAX_HISTORY_POINTS','2500')),
         )
 
 
