@@ -52,3 +52,10 @@
 - PWA در مرورگر سبک و قابل نصب است؛ نمودار آن بر مبنای **تاریخچه ثبت‌شده همین پروژه** است نه آرشیو کامل سایت منبع.
 - انتشار اینستاگرام با `instagrapi` غیررسمی است و ممکن است درخواست تأیید حساب یا محدودیت داشته باشد. نشست را فقط پس از ورود موفق ذخیره کنید؛ هرگز رمز/توکن را در کد یا چت منتشر نکنید.
 - این نسخه با تست‌های آفلاین و بررسی نحوی JavaScript آزموده شده است؛ استخراج از سایت زنده، انتشار واقعی در کانال‌ها، و رندر گرافیکی در مرورگر کاربر بعد از استقرار باید تأیید شوند.
+
+
+## v3.0: Instagram email/SMS verification in GitHub Actions
+
+Workflow `CurrencyTel | Instagram verification and posting` has a `Run workflow` form: `mode=verify_login` (does **not** publish), optional `verification_code` (6–8 digits), and `mode=publish`. Normal scheduled publication uses the stored encrypted session. See `INSTAGRAM_SETUP_FA.md`.
+
+Security note: GitHub `workflow_dispatch` inputs are **not secrets**. For sensitive codes, use a **temporary** `INSTAGRAM_ONE_TIME_CODE` repository Secret, leave the form input blank, run `verify_login`, then delete that temporary Secret. Only `INSTAGRAM_USERNAME` and `INSTAGRAM_PASSWORD` remain permanent.

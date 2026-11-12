@@ -1,12 +1,9 @@
-"""Optional unofficial Instagram publishing with only two GitHub Secrets.
+"""Unofficial Instagram publishing with optional one-time confirmation.
 
-Secrets: INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD.
-The AES-256-GCM key is derived from the password using scrypt and a fresh salt;
-no separate key or manual session setup is required. The encrypted session is
-persisted by the GitHub Actions workflow after successful login.
-
-WARNING: this is an unofficial API. Email/2FA checkpoints cannot be completed
-non-interactively with only the username and password.
+Only INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD are long-term credentials.
+When Instagram requests a code, a new, manually triggered GitHub Actions run
+may supply it via INSTAGRAM_VERIFICATION_CODE. This is not a live prompt.
+The encrypted session is committed after login; raw codes are never persisted.
 """
 from __future__ import annotations
 
@@ -14,6 +11,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -86,15 +84,43 @@ def load_settings(username: str, password: str, path: Path = SESSION_PATH) -> di
     return decrypt_settings(Path(path).read_bytes(), username, password)
 
 
+def _clean_verification_code(code: str | None) -> str:
+    """Accept common Instagram numeric codes; never log or persist them."""
+    code = (code or "").strip()
+    if code and not re.fullmatch(r"[0-9]{6,8}", code):
+        raise PublishError("Instagram verification code must contain 6–8 digits")
+    return code
+
+
+def _save_partial_challenge_state(client, username: str, password: str,
+                                  session_file: Path) -> None:
+    """Keep Instagram's device profile for the next run; never keep the code."""
+    try:
+        settings = client.get_settings()
+        if isinstance(settings, dict) and settings:
+            save_settings(settings, username, password, session_file)
+    except Exception:
+        # Persistence is best effort. Do not expose partial session contents.
+        pass
+
+
 def authenticate(username: str, password: str, *, client_factory=None,
-                 session_file: Path = SESSION_PATH):
-    """Reuses an encrypted session; auto-creates one on the first successful run."""
+                 session_file: Path = SESSION_PATH,
+                 verification_code: str | None = None):
+    """Load encrypted session and attempt login with optional email/2FA code.
+
+    Important: GitHub Actions cannot pause and receive input within a run.
+    The code is provided when starting a *new* manual workflow run.
+    """
+    code = _clean_verification_code(verification_code)
     if client_factory is None:
         try:
             from instagrapi import Client
         except ImportError:
             raise PublishError("instagrapi is missing; install requirements-instagram.txt") from None
-        client_factory = lambda: Client(with_challenge_flow=False)
+        # For unattended normal runs, do not enter a blocking interactive challenge.
+        # For manual runs with a supplied code, enable supported challenge handling.
+        client_factory = lambda: Client(with_challenge_flow=bool(code))
 
     client = client_factory()
     session_file = Path(session_file)
@@ -102,36 +128,55 @@ def authenticate(username: str, password: str, *, client_factory=None,
         try:
             client.set_settings(load_settings(username, password, session_file))
         except PublishError:
-            # Password may have changed. Do not delete/overwrite the old state
-            # unless Instagram actually confirms a fresh login below.
+            # A changed password makes the previous session inaccessible.
+            # Leave that file intact until a new login succeeds.
             pass
+
+    if code:
+        # Instagrapi calls this callback when it requests the EMAIL/SMS code.
+        # Do not print or log the supplied code.
+        client.challenge_code_handler = lambda _username, _choice: code
+
     try:
-        if not client.login(username, password):
-            raise PublishError("Instagram rejected the account login")
+        if code:
+            success = client.login(username, password, verification_code=code)
+        else:
+            success = client.login(username, password)
+        if not success:
+            raise PublishError("Instagram rejected account login")
     except PublishError:
         raise
     except Exception as exc:
-        # Never echo credentials, cookies, request URLs or challenge codes.
+        name = type(exc).__name__
+        if name in {"ChallengeRequired", "TwoFactorRequired", "ChallengeRedirection"}:
+            _save_partial_challenge_state(client, username, password, session_file)
+            extra = (
+                "Use the newest code and run the manual verification workflow again."
+                if not code else
+                "The code was rejected or this challenge needs confirmation in the Instagram app."
+            )
+            raise PublishError(f"Instagram verification required ({name}). {extra}") from None
+        # Never print raw exceptions: they can include credentials or code values.
         raise PublishError(
-            f"Instagram authentication needs attention ({type(exc).__name__}). "
-            "Approve any security challenge in the official Instagram app. "
-            "Email/2FA verification cannot be automatically completed from GitHub with two Secrets."
+            f"Instagram login failed ({name}); Email/2FA verification or approval in the official app may be required"
         ) from None
+
     save_settings(client.get_settings(), username, password, session_file)
     return client
 
 
 def publish(image_path: Path | str, caption: str, *, client_factory=None,
-            session_file: Path = SESSION_PATH) -> Receipt:
+            session_file: Path = SESSION_PATH,
+            verification_code: str | None = None) -> Receipt:
     username = os.getenv("INSTAGRAM_USERNAME", "").strip().lstrip("@")
     password = os.getenv("INSTAGRAM_PASSWORD", "")
     if not username or not password:
-        raise PublishError("Only INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD Secrets are required")
+        raise PublishError("INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD Secrets are required")
     path = Path(image_path)
     if not path.is_file() or path.suffix.lower() not in (".jpg", ".jpeg"):
         raise PublishError("Instagram prepared JPEG was not found")
     client = authenticate(username, password, client_factory=client_factory,
-                          session_file=session_file)
+                          session_file=session_file, verification_code=verification_code)
     try:
         media = client.photo_upload(path, caption=caption)
     except Exception as exc:

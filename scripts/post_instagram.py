@@ -8,13 +8,30 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from currencytel.storage import DATA, ROOT, read_json, write_atomic
-from currencytel.publishers.instagram import publish
+from currencytel.publishers.instagram import publish, authenticate
 from currencytel.publishers.base import PublishError
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 
 
 def run() -> int:
+    # In GitHub, manual "Verify login only" is separated from publishing;
+    # no price card or post is required to complete a login checkpoint.
+    code = os.getenv("INSTAGRAM_VERIFICATION_CODE", "").strip()
+    if os.getenv("INSTAGRAM_AUTH_ONLY", "0") == "1":
+        username = os.getenv("INSTAGRAM_USERNAME", "").strip().lstrip("@")
+        password = os.getenv("INSTAGRAM_PASSWORD", "")
+        if not username or not password:
+            print("Instagram credentials missing: set the two GitHub Secrets")
+            return 1
+        try:
+            authenticate(username, password, verification_code=code)
+        except PublishError as exc:
+            print("Instagram verification not completed:", exc)
+            return 1
+        print("Instagram authentication successful; encrypted session saved; NO POST SENT")
+        return 0
+
     if os.getenv("ENABLE_INSTAGRAM", "0") != "1":
         print("Instagram disabled; no post sent")
         return 0
@@ -60,7 +77,7 @@ def run() -> int:
         print("Prepared Instagram image path is outside assets/generated; aborting")
         return 1
     try:
-        receipt = publish(image, queue["report"])
+        receipt = publish(image, queue["report"], verification_code=code)
     except PublishError as exc:
         print("Instagram not published:", exc)
         return 1
