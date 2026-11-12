@@ -15,6 +15,14 @@
       "digest": "c6c77a78491312a4c0dba210921bcddc52c1c20d1ea05f7d0ef903ea51defd78",
       "message_id": "1969301727323442753",
       "sent_at": "2026-11-12T05:36:32+00:00"
+    },
+    "instagram": {
+      "digest": "c6c77a78491312a4c0dba210921bcddc52c1c20d1ea05f7d0ef903ea51defd78",
+      "message_id": "4028560180433444870_51097762279",
+      "sent_at": "2026-11-12T05:37:03+00:00"
     }
+  },
+  "instagram_daily": {
+    "2026-11-12": 1
   }
 }
