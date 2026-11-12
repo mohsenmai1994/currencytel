@@ -1,8 +1,11 @@
-name: CurrencyTel | Publish prepared Instagram image
+name: CurrencyTel | Instagram auto-post (two Secrets)
 on:
   workflow_dispatch:
   repository_dispatch:
     types: [instagram_publish]
+  workflow_run:
+    workflows: ['CurrencyTel | Fetch & publish']
+    types: [completed]
 permissions:
   contents: write
 concurrency:
@@ -10,30 +13,37 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install API dependencies
-        run: pip install requests
-      - name: Publish latest card after GitHub Pages deployment
+      - name: Install Instagram dependencies
+        run: python -m pip install -r requirements-instagram.txt
+      - name: Publish newest prepared card (first run creates encrypted session)
         env:
           ENABLE_INSTAGRAM: ${{ vars.ENABLE_INSTAGRAM || '0' }}
-          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
-          INSTAGRAM_API_VERSION: ${{ vars.INSTAGRAM_API_VERSION || 'v25.0' }}
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          INSTAGRAM_MAX_DAILY_POSTS: ${{ vars.INSTAGRAM_MAX_DAILY_POSTS || '3' }}
+          INSTAGRAM_MIN_HOURS: ${{ vars.INSTAGRAM_MIN_HOURS || '4' }}
         run: python scripts/post_instagram.py
-      - name: Save Instagram publishing receipt
+      - name: Persist encrypted session and posting receipt
         if: always()
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- data/publish_state.json
+          # Remove v2.7 session, encrypted under an obsolete third Secret.
+          git rm -f --ignore-unmatch -- data/instagram_session.enc
+          for file in .github/state/instagram_session.enc data/publish_state.json; do
+            if [ -f "$file" ]; then git add -- "$file"; fi
+          done
           if ! git diff --cached --quiet; then
-            git commit -m 'Save Instagram publish state [skip ci]'
+            git commit -m 'Persist encrypted Instagram session and posting receipt [skip ci]'
             git push
           fi
