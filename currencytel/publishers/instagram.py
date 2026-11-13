@@ -185,3 +185,64 @@ def publish(image_path: Path | str, caption: str, *, client_factory=None,
     if not media_id:
         raise PublishError("Instagram did not confirm a published media ID")
     return Receipt("instagram", media_id)
+
+
+def publish_saved_session(image_path: Path | str, caption: str, *, client_factory=None,
+                          session_file: Path = SESSION_PATH) -> Receipt:
+    """Publish using ONLY a previously saved session; never call login/relogin.
+
+    The Instagram password is used locally only to decrypt the saved session.
+    If the session expired or a challenge is requested, stop and ask for
+    a separately initiated manual verification. No automatic recovery.
+    """
+    username = os.getenv("INSTAGRAM_USERNAME", "").strip().lstrip("@")
+    password = os.getenv("INSTAGRAM_PASSWORD", "")
+    if not username or not password:
+        raise PublishError("Instagram Secrets are needed to decrypt the saved session")
+    path = Path(image_path)
+    if not path.is_file() or path.suffix.lower() not in (".jpg", ".jpeg"):
+        raise PublishError("Prepared Instagram JPEG was not found")
+    session_file = Path(session_file)
+    if not session_file.is_file():
+        raise PublishError("Saved Instagram session missing; verify login manually first")
+
+    settings = load_settings(username, password, session_file)
+    if not settings:
+        raise PublishError("Saved Instagram session empty; verify manually")
+    if client_factory is None:
+        try:
+            from instagrapi import Client
+        except ImportError:
+            raise PublishError("instagrapi dependency missing") from None
+        client_factory = Client
+
+    # Restores the existing authorization/cookies without any login request.
+    # Importantly, never call authenticate(), login(), or relogin() here.
+    client = client_factory()
+    try:
+        client.set_settings(settings)
+    except Exception:
+        raise PublishError("Could not load saved Instagram session; verify manually") from None
+
+    # Hard block all password/session login fallbacks in this automated path.
+    # A stale session must fail rather than cause a new login/security challenge.
+    def _never_login(*_args, **_kwargs):
+        raise PublishError("Automated Instagram login forbidden; verify manually")
+
+    for method_name in ("login", "login_legacy", "relogin", "login_by_sessionid"):
+        if hasattr(client, method_name):
+            setattr(client, method_name, _never_login)
+
+    try:
+        media = client.photo_upload(path, caption=caption)
+    except Exception as exc:
+        # No automatic reauthentication, even on LoginRequired or ChallengeRequired.
+        raise PublishError(
+            f"Instagram upload failed ({type(exc).__name__}); no login retried. "
+            "If session expired, verify manually"
+        ) from None
+
+    media_id = str(getattr(media, "id", "") or getattr(media, "pk", ""))
+    if not media_id:
+        raise PublishError("Instagram did not confirm a published media ID")
+    return Receipt("instagram", media_id)

@@ -1,4 +1,4 @@
-"""Post the last prepared Instagram image using a saved private login session."""
+"""Post last prepared Instagram image using saved session ONLY (no login)."""
 import logging
 import os
 import sys
@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from currencytel.storage import DATA, ROOT, read_json, write_atomic
-from currencytel.publishers.instagram import publish, authenticate
+from currencytel.publishers.instagram import publish_saved_session as publish, authenticate
 from currencytel.publishers.base import PublishError
 from currencytel.instagram_caption import render_instagram_caption
 
@@ -79,7 +79,7 @@ def run() -> int:
         return 1
     try:
         caption = render_instagram_caption(queue["report"])
-        receipt = publish(image, caption, verification_code=code)
+        receipt = publish(image, caption)
     except (PublishError, ValueError) as exc:
         print("Instagram not published:", exc)
         return 1
