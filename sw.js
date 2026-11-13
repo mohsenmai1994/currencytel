@@ -1,4 +1,4 @@
-const APP_CACHE = 'currencytel-shell-v3.4.2';
+const APP_CACHE = 'currencytel-shell-v3.6.1-nobot';
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const shell = ['./','./index.html','./assets/css/main.css','./assets/js/app.js','./assets/js/data.js','./assets/js/format.js','./assets/js/chart.js','./assets/js/history.js','./assets/icons/icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(APP_CACHE).then(cache=>cache.addAll(shell)));self.skipWaiting();});
@@ -9,5 +9,10 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
   if(url.pathname.endsWith('/data/market.json')||url.pathname.endsWith('/data/history.json')){
     event.respondWith(fetch(request).then(response=>{if(response.ok){const clone=response.clone();caches.open(DATA_CACHE).then(cache=>cache.put(request,clone));}return response;}).catch(()=>caches.match(request)));
+  }else if(request.mode==='navigate'||url.pathname.endsWith('/index.html')){
+    event.respondWith(fetch(request).then(response=>{
+      if(response.ok){const copy=response.clone();event.waitUntil(caches.open(APP_CACHE).then(cache=>cache.put(request,copy)));}
+      return response;
+    }).catch(async()=>await caches.match(request)||await caches.match('./index.html')));
   }else{event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok)caches.open(APP_CACHE).then(cache=>cache.put(request,response.clone()));return response;})));}
 });
