@@ -11,7 +11,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,6 +39,23 @@ jobs:
           POST_UNCHANGED: ${{ vars.POST_UNCHANGED || '0' }}
           PAGE_TIMEOUT: '13'
         run: python main.py
+      # Instagram: publish ONLY with a previously saved session.
+      # This does not call login, verify_login or authenticate.
+      - name: Install Instagram upload dependencies
+        if: success()
+        run: python -m pip install -r requirements-instagram.txt
+
+      - name: Publish prepared Instagram card (saved session only)
+        if: success()
+        continue-on-error: true
+        env:
+          ENABLE_INSTAGRAM: ${{ vars.ENABLE_INSTAGRAM || '1' }}
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          INSTAGRAM_MAX_DAILY_POSTS: ${{ vars.INSTAGRAM_MAX_DAILY_POSTS || '3' }}
+          INSTAGRAM_MIN_HOURS: ${{ vars.INSTAGRAM_MIN_HOURS || '4' }}
+        run: python scripts/post_instagram.py
+
       - name: Commit only generated public data and publishing state
         if: always()
         run: |

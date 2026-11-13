@@ -2,23 +2,10 @@ name: CurrencyTel | Instagram verification and posting
 on:
   workflow_dispatch:
     inputs:
-      mode:
-        description: 'Action to perform'
-        required: true
-        type: choice
-        options:
-          - verify_login
-          - publish
-        default: verify_login
       verification_code:
-        description: 'One-time Instagram email/SMS code (plain workflow input; use a temporary Secret instead for privacy)'
+        description: 'One-time Instagram email/SMS code (prefer temporary Secret)'
         required: false
         type: string
-  repository_dispatch:
-    types: [instagram_publish]
-  workflow_run:
-    workflows: ['CurrencyTel | Fetch & publish']
-    types: [completed]
 permissions:
   contents: write
 concurrency:
@@ -26,7 +13,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   instagram:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -53,7 +39,7 @@ jobs:
           INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
           INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
           INSTAGRAM_VERIFICATION_CODE: ${{ secrets.INSTAGRAM_ONE_TIME_CODE || inputs.verification_code || '' }}
-          INSTAGRAM_AUTH_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify_login' && '1' || '0' }}
+          INSTAGRAM_AUTH_ONLY: '1'
           INSTAGRAM_MAX_DAILY_POSTS: ${{ vars.INSTAGRAM_MAX_DAILY_POSTS || '3' }}
           INSTAGRAM_MIN_HOURS: ${{ vars.INSTAGRAM_MIN_HOURS || '4' }}
         run: python scripts/post_instagram.py
