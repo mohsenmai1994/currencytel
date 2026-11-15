@@ -263,7 +263,7 @@ function events(){
 }
 function init(){
   events();refresh();
-  setInterval(()=>{if(!document.hidden)refresh();},15*60*1000);
+  setInterval(()=>{if(!document.hidden)refresh();},30*60*1000);
   setInterval(()=>{if(!document.hidden){
     renderTime();
     const today=tehranDay();
