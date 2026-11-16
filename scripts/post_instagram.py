@@ -11,6 +11,7 @@ from currencytel.storage import DATA, ROOT, read_json, write_atomic
 from currencytel.publishers.instagram import publish_saved_session as publish, authenticate
 from currencytel.publishers.base import PublishError
 from currencytel.instagram_caption import render_instagram_caption
+from currencytel.media import template_index_from_filename, current_template_index
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 
@@ -78,6 +79,12 @@ def run() -> int:
         print("Prepared Instagram image path is outside assets/generated; aborting")
         return 1
     try:
+        # New image names identify the selected RTL design. Old queued image
+        # names remain supported during the one-time rollout.
+        try:
+            template_index = template_index_from_filename(image)
+        except ValueError:
+            template_index = current_template_index(state)
         caption = render_instagram_caption(queue["report"])
         receipt = publish(image, caption)
     except (PublishError, ValueError) as exc:
@@ -87,6 +94,7 @@ def run() -> int:
         "digest": queue["digest"],
         "message_id": receipt.message_id,
         "sent_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "template_index": template_index,
     }
     state["instagram_daily"] = {today: posted_today + 1}
     write_atomic(DATA / "publish_state.json", state)
