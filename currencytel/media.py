@@ -1,76 +1,145 @@
-"""Four RTL CurrencyTel Instagram templates, using the EXACT four selected images.
+"""CurrencyTel Instagram renderer with four clean approved RTL image templates.
 
-This renderer changes Instagram artwork ONLY. The original private-session
-publisher, caption, market collection, workflow frequency and other channels
-are left untouched. No illustrated sample price is ever put on a live post.
-
-Template selection advances only after a *confirmed* Instagram upload; a
-failed/blocked upload or repeated market polling reuses the pending template.
+The original 14-market semantic HTML function remains unchanged.
+Only Instagram post images rotate; saved session and publishing schedule remain
+untouched. Templates contain no baked-in prices, dates or daily percentages.
 """
 from __future__ import annotations
 
+import base64
+from html import escape
+import io
+from pathlib import Path
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from html import escape
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
-from .catalog import BY_KEY
+from .report import SOCIAL_GROUPS, fmt
 from .instagram_caption import persian_digits
-from .report import fmt
-from .storage import DATA, ROOT, read_json
+from .storage import ROOT, DATA, read_json
 
+# Pixel geometry of the exact approved original artwork (1122 x 1402).
+# The master artwork has had ONLY its 14 example prices/units erased.
+_ART_W, _ART_H = 1122, 1402
+_ROW_CENTERS = (
+    269, 321, 373, 425, 477, 529,
+    694, 744, 795, 846, 896,
+    1078, 1132, 1184,
+)
+_ART_RELATIVE = '../assets/img/instagram-market-template.png'
+
+
+def card_html(quotes: dict) -> str:
+    """Return the dynamic Instagram card HTML for the confirmed 14 rates.
+
+    Artwork, names and category illustrations stay identical to the approved
+    design. Only values are laid over the cleared glass capsules.
+    """
+    assets = [asset for _heading, items in SOCIAL_GROUPS for asset in items]
+    if len(assets) != len(_ROW_CENTERS):
+        raise ValueError('Instagram layout needs exactly 14 market assets')
+    missing = [asset.key for asset in assets if asset.key not in quotes]
+    if missing:
+        raise ValueError('Incomplete Instagram card: missing ' + ', '.join(missing))
+
+    groups = []
+    overlays = []
+    current_index = 0
+    for heading, items in SOCIAL_GROUPS:
+        semantic_rows = []
+        for asset in items:
+            value = persian_digits(fmt(quotes[asset.key].value))
+            unit = asset.unit
+            # At very high prices the typeset number must remain inside the
+            # left portion of the card rather than overlap its separator.
+            count = len(value)
+            size = 30 if count <= 8 else 28 if count <= 11 else 24
+            center = _ROW_CENTERS[current_index]
+            semantic_rows.append(
+                f'<div class="price-row" data-key="{escape(asset.key)}">'
+                f'<span class="asset-name">{escape(asset.label)}</span>'
+                f'</div>'
+            )
+            overlays.append(
+                f'<div class="rate" style="top:{center - 24}px" '
+                f'role="img" aria-label="{escape(value)} {escape(unit)}">'
+                f'<strong dir="ltr" style="font-size:{size}px">{escape(value)}</strong>'
+                f'<span class="unit">{escape(unit)}</span>'
+                f'</div>'
+            )
+            current_index += 1
+        groups.append(
+            f'<section class="group"><div class="group-title">{escape(heading)}</div>'
+            f'<div class="semantic-rows">{"".join(semantic_rows)}</div></section>'
+        )
+
+    return f'''<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{{box-sizing:border-box}}
+html,body{{margin:0;padding:0;width:{_ART_W}px;height:{_ART_H}px;overflow:hidden;background:#001927}}
+body{{font-family:"Noto Sans Arabic","Vazirmatn",Tahoma,sans-serif;color:#f8ffff}}
+.art{{position:absolute;left:0;top:0;width:{_ART_W}px;height:{_ART_H}px;display:block}}
+.rate{{position:absolute;left:425px;width:300px;height:48px;display:flex;align-items:center;
+  justify-content:flex-start;gap:14px;direction:ltr;white-space:nowrap;overflow:visible}}
+.rate strong{{font-family:"Noto Sans Arabic",Tahoma,sans-serif;font-weight:900;
+  font-variant-numeric:tabular-nums;color:#f6fdff;line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.55)}}
+.rate .unit{{font-family:"Noto Sans Arabic",Tahoma,sans-serif;font-size:19px;
+  font-weight:500;color:#d9ecf0;line-height:1;direction:rtl}}
+/* The approved artwork already depicts section titles, icons, flags and
+   Persian asset labels. Semantic data stays accessible, not duplicated. */
+.semantics{{position:absolute;overflow:hidden;width:1px;height:1px;left:-9999px;top:0}}
+</style></head><body>
+<img class="art" src="{_ART_RELATIVE}" alt="" aria-hidden="true">
+<div class="semantics">{''.join(groups)}<span>@currencytel</span></div>
+{''.join(overlays)}
+</body></html>'''
+
+
+def _font(size: int, *, bold: bool = True):
+    """Select common installed Unicode fonts; do not bundle/distribute fonts."""
+    from PIL import ImageFont
+    paths = (
+        ('/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf' if bold
+         else '/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf'),
+        ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf' if bold
+         else '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'),
+    )
+    for candidate in paths:
+        if Path(candidate).is_file():
+            return ImageFont.truetype(candidate, size=size)
+    # Pillow can locate these by name on most Debian/Ubuntu runners.
+    return ImageFont.truetype('DejaVuSans-Bold.ttf' if bold else 'DejaVuSans.ttf', size=size)
+
+
+def _draw_text_centered(draw, x: int, center_y: int, content: str, font,
+                        fill: tuple[int, int, int, int], direction='ltr') -> int:
+    """Draw one string at its physical midline; return rendered pixel width."""
+    bbox = draw.textbbox((0, 0), content, font=font, direction=direction)
+    width = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1]
+    y = int(center_y - height / 2 - bbox[1])
+    x = int(x - bbox[0])
+    draw.text((x + 1, y + 2), content, font=font, direction=direction,
+              fill=(0, 8, 17, 145))
+    draw.text((x, y), content, font=font, direction=direction, fill=fill)
+    return width
+
+
+
+# Instagram post templates use the original four selected 1080x1350 styles.
+# Legacy Instagram output filenames ended in -fa.jpg; rotating designs use -igN-rtl.jpg.
 WIDTH, HEIGHT = 1080, 1350
 TEMPLATE_COUNT = 4
 TEMPLATE_DIR = Path(__file__).resolve().parents[1] / 'assets' / 'img' / 'instagram-templates'
 TEHRAN = ZoneInfo('Asia/Tehran')
-WHITE = (255, 255, 255)
-INK = (10, 33, 76)
-MUTED = (103, 123, 151)
-BLUE = (22, 112, 243)
-CYAN = (16, 181, 240)
-GREEN = (9, 155, 100)
-RED = (205, 52, 80)
-
-# Six verified core market quotes. Always put Bitcoin last in RTL reading order.
-# Optional Emami coin is shown in model 1 only when real data is available;
-# otherwise the sixth slot uses the always-available euro quote.
-COMMON_KEYS = ('usd', '18ayar', 'bahar', 'usd_xau', 'eur', 'btc')
-
-
-def _font(size: int, bold: bool = True):
-    candidates = [
-        '/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf' if bold
-        else '/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf',
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf' if bold
-        else '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-    ]
-    for path in candidates:
-        if Path(path).exists():
-            return ImageFont.truetype(path, size)
-    return ImageFont.truetype('DejaVuSans.ttf', size)
-
-
-def _latin_font(size: int, bold: bool = True):
-    candidate = ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-                 if bold else '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
-    return ImageFont.truetype(candidate, size)
-
-
-def _txt(draw, xy, text, size=26, *, color=INK, bold=True, align='right',
-         direction='rtl', max_width=None):
-    content = str(text)
-    font = (_latin_font(size, bold) if direction == 'ltr' else _font(size, bold))
-    if max_width:
-        while size > 15 and draw.textlength(content, font=font, direction=direction) > max_width:
-            size -= 1
-            font = (_latin_font(size, bold) if direction == 'ltr' else _font(size, bold))
-    draw.text(xy, content, fill=color, font=font, anchor={
-        'right': 'ra', 'left': 'la', 'center': 'ma'
-    }[align], direction=direction)
-
+INK=(10,33,76)
+GREEN=(9,155,100)
+RED=(205,52,80)
+COMMON_KEYS = ('usd','18ayar','bahar','usd_xau','eur','btc')
 
 def _jalali(gy,gm,gd):
     """Convert Gregorian to Jalali without installing an extra package."""
@@ -126,20 +195,36 @@ def _daily_changes(quotes):
 
 
 def _spark_data():
+    """Draw only real observations from the same Tehran market day.
+
+    Historical samples from earlier days must not be presented as today's
+    price movement, especially when the daily badge says the rate is flat.
+    """
+    snapshot=read_json(DATA/'market.json',{})
+    try:
+        day=datetime.fromisoformat(snapshot['fetched_at']).astimezone(TEHRAN).date()
+    except (ValueError,KeyError,TypeError):
+        return {}
     points=read_json(DATA/'history.json',{}).get('points',[])
-    if not isinstance(points,list): return {}
+    if not isinstance(points,list):return {}
     history={key:[] for key in COMMON_KEYS+('sekkeh',)}
-    # True recorded prices only; the last 30 usable samples for each asset.
-    for item in points[-120:]:
-        vals=item.get('values',{}) if isinstance(item,dict) else {}
+    for point in points[-180:]:
+        if not isinstance(point,dict) or not isinstance(point.get('values'),dict):
+            continue
+        try:
+            at=datetime.fromisoformat(point['at']).astimezone(TEHRAN)
+        except (TypeError,ValueError,KeyError):
+            continue
+        if at.date()!=day:continue
         for key in history:
-            if key in vals:
-                try:
-                    number=float(vals[key])
-                except (TypeError,ValueError,OverflowError):
-                    continue
-                if 0<number<float('inf'): history[key].append(number)
-    return {k:vals[-30:] for k,vals in history.items()}
+            raw=point['values'].get(key)
+            if raw is None:continue
+            try:
+                value=float(raw)
+                if 0<value<float('inf'):history[key].append(value)
+            except (ValueError,TypeError,OverflowError):
+                continue
+    return {key:values[-30:] for key,values in history.items()}
 
 
 def _sparkline(draw, rect, values, color):
@@ -158,7 +243,7 @@ def _sparkline(draw, rect, values, color):
 
 
 def current_template_index(state=None):
-    """The NEXT template to use, calculated from the last successful upload."""
+    """The next design, calculated only from a successful post."""
     if state is None:
         state=read_json(DATA/'publish_state.json',{})
     last=(state.get('platforms') or {}).get('instagram') or {}
@@ -179,229 +264,171 @@ def template_index_from_filename(path):
     raise ValueError('Instagram rendered path does not include a known template index')
 
 
-def card_html(quotes):
-    """Keep the previous all-14 semantic/debug output unchanged in spirit.
-
-    Instagram JPEG posts now show the six most useful rates, while this helper
-    still covers all 14 prices for existing integration checks. Legacy output
-    image names ended in -fa.jpg; new JPEGs end in -igN-rtl.jpg.
-    """
-    from .report import SOCIAL_GROUPS
-    sections=[]
-    for heading,assets in SOCIAL_GROUPS:
-        rows=[]
-        for asset in assets:
-            if asset.key not in quotes:
-                raise ValueError('Missing Instagram quote: '+asset.key)
-            price=persian_digits(fmt(quotes[asset.key].value))
-            rows.append(f'<li class="price-row" data-key="{escape(asset.key)}">'
-                        f'{escape(asset.label)}: {escape(price)} '
-                        f'{escape(asset.unit)}</li>')
-        sections.append(f'<section><h2 class="group-title">{escape(heading)}</h2>'
-                        f'<ul>{"".join(rows)}</ul></section>')
-    return ('<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8">'
-            '<style>body{font-family:Vazirmatn,Arial,sans-serif}</style>'
-            '<body><h1>نرخ‌های امروز بازار</h1>' + ''.join(sections)
-            + '<footer>@currencytel</footer></body></html>')
-
-
-
-# Per-design coordinates measured from the actual selected 1080×1350 artwork.
-# Only the already-illustrated numeric data and timestamp are replaced.
-# Right-to-left reading order is preserved: the final bottom-left card is BTC.
-# Cards use their printed labels and illustrations, not a substitute icon layout.
+# These clean PNGs were derived from the four approved 1080x1350 layouts.
+# All sample prices, percentage indicators and timestamps were removed
+# during asset preparation, not merely hidden at runtime.
+# Index mapping is LEFT, RIGHT for each visual row. Reading RTL from right to
+# left makes the final left-hand bottom card Bitcoin in ALL four templates.
 DESIGNS = (
-    dict(date=(260,272,820,349), rows=(
-        (385, 'usd','18ayar'), (667,'bahar','usd_xau'), (949,'btc','sekkeh')),
-         prices=((157,445),(657,954)), badges=((77,260),(590,774)),
-         sparklines=((324,506),(834,1015)), heights=(498,783,1065),
-         badgetops=(577,859,1140), card_widths=((40,527),(552,1041)),
-         swap_y=(938,1216)),
-    dict(date=(559,52,1014,116), rows=(
-        (324,'usd','bahar'),(607,'18ayar','usd_xau'),(889,'btc','eur')),
-         prices=((137,320),(638,860)), badges=((78,267),(585,775)),
-         heights=(437,721,1003), badgetops=(509,793,1078),
-         card_widths=((42,527),(551,1036)),swap_y=(880,1163)),
-    dict(date=(245,283,834,351), rows=(
-        (390,'usd','18ayar'),(660,'bahar','usd_xau'),(933,'btc','eur')),
-         prices=((140,325),(652,853)), badges=((61,216),(579,732)),
-         heights=(491,760,1035), badgetops=(573,844,1120),
-         card_widths=((36,530),(551,1048)),swap_y=(925,1192)),
-    dict(date=(582,54,1035,120), rows=(
-        (327,'usd','bahar'),(609,'18ayar','usd_xau'),(895,'btc','eur')),
-         prices=((130,324),(640,860)), badges=((54,226),(576,747)),
-         heights=(428,715,998), badgetops=(510,796,1080),
-         card_widths=((28,525),(551,1050)),swap_y=(883,1162))
+    {"rows": (("usd", "18ayar"), ("bahar", "usd_xau"), ("btc", "sekkeh")),
+     "date": ((308,290,384,332), (524,290,739,333)),
+     "prices": (((156,500,354,566),(662,503,944,562)),
+                ((160,789,449,849),(665,791,830,850)),
+                ((119,1062,316,1136),(697,1062,991,1137))),
+     "badges": (((75,577,264,628),(588,577,773,628)),
+                ((75,859,263,914),(588,859,773,914)),
+                ((47,1140,234,1192),(615,1140,804,1192))),
+     "charts": (((320,557,511,633),(835,557,1020,634)),
+                ((320,840,511,918),(834,840,1020,921)),
+                ((295,1122,479,1194),(860,1122,1050,1194)))},
+    {"rows": (("usd", "bahar"), ("18ayar", "usd_xau"), ("btc", "eur")),
+     "date": ((585,63,654,104),(756,61,952,110)),
+     "prices": (((139,442,314,509),(639,440,877,512)),
+                ((136,728,356,793),(642,725,807,791)),
+                ((105,1007,286,1072),(679,1007,862,1073))),
+     "badges": (((76,511,268,567),(585,511,776,567)),
+                ((76,792,269,850),(585,793,774,848)),
+                ((44,1077,235,1135),(616,1077,808,1135)))},
+    {"rows": (("usd", "18ayar"), ("bahar", "usd_xau"), ("btc", "eur")),
+     "date": ((339,292,481,338),(541,288,745,340)),
+     "prices": (((135,493,324,554),(648,492,861,555)),
+                ((135,770,359,831),(647,765,810,832)),
+                ((103,1038,280,1108),(675,1038,863,1109))),
+     "badges": (((61,572,218,618),(579,573,732,620)),
+                ((62,843,221,889),(579,842,731,891)),
+                ((38,1120,193,1168),(601,1120,757,1168)))},
+    {"rows": (("usd", "bahar"), ("18ayar", "usd_xau"), ("btc", "eur")),
+     "date": ((605,67,668,108),(777,66,975,110)),
+     "prices": (((128,433,308,497),(646,431,871,502)),
+                ((125,716,334,787),(648,715,814,789)),
+                ((104,1001,282,1072),(671,1001,852,1074))),
+     "badges": (((52,508,223,566),(573,507,748,565)),
+                ((51,796,224,851),(574,795,751,851)),
+                ((33,1078,211,1138),(592,1078,763,1138)))}
 )
 
 
-def _swap_bottom_cards(img, spec):
-    """Swap pre-existing bottom cards, preserving their original artwork.
-
-    This moves Bitcoin to the final (bottom-left) RTL reading position.
-    No individual artwork is regenerated or replaced with icons.
-    """
-    (lx0,lx1),(rx0,rx1)=spec['card_widths']
-    y0,y1=spec['swap_y']
-    left=img.crop((lx0,y0,lx1,y1))
-    right=img.crop((rx0,y0,rx1,y1))
-    # The layouts use equal-width card cells; keep the narrow area overhang.
-    left=left.resize((rx1-rx0,y1-y0),Image.Resampling.LANCZOS)
-    right=right.resize((lx1-lx0,y1-y0),Image.Resampling.LANCZOS)
-    img.paste(right,(lx0,y0)); img.paste(left,(rx0,y0))
-
-
-def _text_fit(draw, value, x_right, y_top, width, height, *, initial=39,
-              min_size=20, color=INK):
-    """Render the formatted number centered in its white price field."""
-    value=value.replace(',', '٬').replace('.', '٫')
-    size=initial
-    while size>min_size:
-        font=_font(size)
-        bounds=draw.textbbox((0,0),value,font=font,direction='rtl')
-        if bounds[2]-bounds[0]<=width-18 and bounds[3]-bounds[1]<=height-12:
+def _place_text(draw, value, bounds, *, color=INK, requested=42, minimum=16, bold=True, direction='rtl'):
+    """Fit a complete Persian-digit value inside the original price slot."""
+    x0,y0,x1,y1=bounds
+    value=str(value).replace(',', '٬').replace('.', '٫')
+    size=requested
+    while size >= minimum:
+        font=_font(size, bold=bold)
+        box=draw.textbbox((0,0),value,font=font,direction=direction)
+        if box[2]-box[0] <= x1-x0-14 and box[3]-box[1] <= y1-y0-12:
             break
         size-=1
-    draw.text((x_right-width/2,y_top+height/2),value,
-              font=_font(size),anchor='mm',fill=color,direction='rtl')
+    if size < minimum:
+        raise ValueError('Instagram value cannot fit in its template slot')
+    draw.text(((x0+x1)/2,(y0+y1)/2),value,font=font,fill=color,
+              anchor='mm',direction=direction)
 
 
-def _rate_str(quotes, key):
-    q=quotes.get(key)
-    if q is None:
-        # Optional Emami coin is not part of the 14 mandatory social rates.
-        return '—'
-    return persian_digits(fmt(q.value))
-
-
-def _change_badge(draw, coords, top, pct):
-    x0,x1=coords
-    try:
-        val=Decimal(str(pct)) if pct is not None else None
-        if val is not None and not val.is_finite(): val=None
-    except (ValueError,TypeError,InvalidOperation): val=None
-    if val is None:
-        shade=(232,239,247);fg=(102,121,145);text='—';direction=0
-    elif abs(val)<Decimal('0.005'):
-        shade=(232,239,247);fg=(102,121,145);text='بدون تغییر';direction=0
-    else:
-        direction=1 if val>0 else -1
-        shade=(219,249,228) if val>0 else (254,229,235)
-        fg=(8,151,78) if val>0 else (201,36,69)
-        text=persian_digits(f'{abs(val):.2f}').replace('.', '٫')+'٪'
-    draw.rounded_rectangle((x0,top,x1,top+50),radius=25,fill=shade)
-    if direction:
-        xx=x0+22;yy=top+25
-        if direction>0:
-            draw.polygon(((xx-9,yy+6),(xx+9,yy+6),(xx,yy-9)),fill=fg)
-        else:
-            draw.polygon(((xx-9,yy-6),(xx+9,yy-6),(xx,yy+9)),fill=fg)
-    available=x1-x0-(40 if direction else 12)
-    size=24
-    while size>16 and draw.textlength(text,font=_font(size),direction='rtl')>available:
-        size-=1
-    xc=(x0+x1)//2+(13 if direction else 0)
-    draw.text((xc,top+25),text,font=_font(size),fill=fg,
-              anchor='mm',direction='rtl')
-
-
-def _replace_timestamp(draw, rect):
-    x0,y0,x1,y1=rect
-    draw.rounded_rectangle(rect,radius=min(36,(y1-y0)//2),
-       fill=(248,251,255),outline=(181,216,252),width=2)
+def _live_date(draw, spec):
     day,clock=_snapshot_time()
-    if not clock: clock='—'
-    cy=(y0+y1)//2
-    w=x1-x0
-    # Live date/time plus small original-style calendar and clock glyphs.
-    divider=x0+int(w*.39)
-    draw.line((divider,y0+14,divider,y1-14),fill=(170,206,241),width=2)
-    cx=x0+int(w*.31)
-    draw.ellipse((cx-11,cy-11,cx+11,cy+11),outline=BLUE,width=3)
-    draw.line((cx,cy,cx,cy-7),fill=BLUE,width=2)
-    draw.line((cx,cy,cx+6,cy+4),fill=BLUE,width=2)
-    ix=x1-35
-    draw.rounded_rectangle((ix-11,cy-10,ix+11,cy+11),radius=2,
-                           outline=BLUE,width=2)
-    draw.line((ix-11,cy-3,ix+11,cy-3),fill=BLUE,width=2)
-    _txt(draw,(x1-56,cy-14),day,21,max_width=(x1-divider)-76)
-    _txt(draw,(x0+20,cy-14),clock,21,direction='ltr',align='left',color=BLUE,
-         max_width=(divider-x0)-90)
+    # Show no invented value if the source snapshot timestamp is invalid.
+    _place_text(draw,clock if clock else '—',spec['date'][0],
+                color=INK,requested=23,minimum=17,direction='ltr')
+    _place_text(draw,day if clock else '—',spec['date'][1],
+                color=INK,requested=23,minimum=16)
 
 
-def _overlay_rates(im, quotes, idx):
+def _price_of(quotes,key):
+    quote=quotes.get(key)
+    if quote is None:  # Sikkeh Emami is an optional extra price.
+        return '—'
+    value=Decimal(str(quote.value))
+    if not value.is_finite() or value<=0:
+        raise ValueError('Instagram invalid verified price: '+key)
+    return persian_digits(fmt(value))
+
+
+def _pct_of(changes,key):
+    value=changes.get(key)
+    if value is None:return None
+    try:
+        value=Decimal(str(value))
+        return value if value.is_finite() else None
+    except (TypeError, ValueError, InvalidOperation):
+        return None
+
+
+def _live_badge(draw, rect, pct):
+    x0,y0,x1,y1=rect
+    if pct is None:
+        bg=(235,242,250);ink=(100,119,144);label='—';sign=0
+    elif abs(pct) < Decimal('0.005'):
+        bg=(235,242,250);ink=(100,119,144);label='ثابت';sign=0
+    else:
+        sign=1 if pct>0 else -1
+        bg=(222,248,230) if sign==1 else (255,230,236)
+        ink=(7,145,69) if sign==1 else (202,44,74)
+        label=persian_digits(f'{abs(pct):.2f}').replace('.', '٫') + '٪'
+    draw.rounded_rectangle((x0,y0,x1,y1),radius=min(25,(y1-y0)//2),fill=bg)
+    # Direction icon on the left, price-change figure on the right.
+    if sign:
+        cx=x0+23;cy=(y0+y1)/2
+        if sign==1:
+            draw.polygon(((cx-9,cy+7),(cx+9,cy+7),(cx,cy-9)),fill=ink)
+        else:
+            draw.polygon(((cx-9,cy-7),(cx+9,cy-7),(cx,cy+9)),fill=ink)
+    text_box=(x0+(37 if sign else 8),y0+2,x1-4,y1-2)
+    _place_text(draw,label,text_box,color=ink,requested=25,minimum=16,direction='ltr')
+
+
+def _render_clean(quotes, idx):
     spec=DESIGNS[idx]
-    # Preserve every decorative element and illustrated asset of the ORIGINAL
-    # image. Only current data overlays and date bar are opaque.
-    _swap_bottom_cards(im,spec)
+    missing=set(COMMON_KEYS)-set(quotes)
+    if missing:
+        raise ValueError('Instagram missing verified prices: '+', '.join(sorted(missing)))
+    path=TEMPLATE_DIR/f'model-{idx+1}.png'
+    if not path.is_file():
+        raise FileNotFoundError('Approved CLEAN Instagram template is missing: '+str(path))
+    with Image.open(path) as raw:
+        if raw.size!=(WIDTH,HEIGHT):
+            raise ValueError('Instagram clean template dimensions must be 1080 x 1350')
+        im=raw.convert('RGB')
     draw=ImageDraw.Draw(im)
-    _replace_timestamp(draw,spec['date'])
+    _live_date(draw,spec)
     changes=_daily_changes(quotes)
-    sparklines=_spark_data() if idx==0 else {}
-    for rownum, (_, leftkey, rightkey) in enumerate(spec['rows']):
-        price_y=spec['heights'][rownum]
-        badge_y=spec['badgetops'][rownum]
-        for side,key in enumerate((leftkey,rightkey)):
-            x0,x1=spec['prices'][side]
-            # Neutral price slot on top of the old sample figures.
-            if idx==2:
-                # Model 3 already has pale blue price capsules.
-                price_fill=(235,245,255)
-            else:
-                price_fill=(251,253,255)
-            draw.rounded_rectangle((x0-5,price_y-8,x1+6,price_y+75),
-                radius=20,fill=price_fill)
-            value=_rate_str(quotes,key)
-            _text_fit(draw,value,x1,price_y-1,x1-x0,54,
-                      initial=39 if idx!=1 else 36)
-            _change_badge(draw,spec['badges'][side],badge_y,changes.get(key))
-            if idx==0:
-                # Original illustrations contain sample market lines. Only a
-                # real recorded historical line may be drawn in a live post.
-                sx0,sx1=spec['sparklines'][side]
-                ry=badge_y-9
-                draw.rounded_rectangle((sx0-5,ry-16,sx1+8,ry+44),
-                    radius=18,fill=(248,252,255))
-                hist=sparklines.get(key,[])
-                if len(hist)>1:
-                    green=GREEN if hist[-1]>=hist[0] else RED
-                    _sparkline(draw,(sx0,ry-4,sx1,ry+35),hist,green)
+    for rownum, keys in enumerate(spec['rows']):
+        for side,key in enumerate(keys):
+            _place_text(draw,_price_of(quotes,key),spec['prices'][rownum][side],requested=41,
+                        minimum=16)
+            _live_badge(draw,spec['badges'][rownum][side],_pct_of(changes,key))
+    # Only model 1 has mini-chart slots. Never resurrect sample graphs.
+    if idx==0:
+        history=_spark_data()
+        for rownum, keys in enumerate(spec['rows']):
+            for side,key in enumerate(keys):
+                series=history.get(key,[])
+                if len(series)>1:
+                    color=GREEN if series[-1]>=series[0] else RED
+                    x0,y0,x1,y1=spec['charts'][rownum][side]
+                    _sparkline(draw,(x0+8,y0+16,x1-8,y1-12),series,color)
     return im
 
 
 def _image_for(quotes,template_index):
     if template_index not in range(TEMPLATE_COUNT):
-        raise ValueError('Unknown Instagram template')
-    spec=DESIGNS[template_index]
-    required={key for _y, left,right in spec['rows'] for key in (left,right)}
-    required.discard('sekkeh')  # Optional seventh market, never fake its value.
-    missing=sorted(required.difference(quotes))
-    if missing:
-        raise ValueError('Instagram missing verified rates: '+', '.join(missing))
-    path=TEMPLATE_DIR/f'model-{template_index+1}.png'
-    if not path.is_file():
-        raise FileNotFoundError('Approved Instagram template missing: '+str(path))
-    with Image.open(path) as source:
-        if source.size != (WIDTH,HEIGHT):
-            raise ValueError('Instagram master template must be 1080 x 1350')
-        im=source.convert('RGB').copy()
-    return _overlay_rates(im,quotes,template_index)
+        raise ValueError('Unknown Instagram template index')
+    return _render_clean(quotes,template_index)
 
 
 def render_card(driver,quotes,digest):
-    """Use one of the four original approved PNG masters, in rotation.
+    """Only the image artwork changes; the existing Instagram publisher stays.
 
-    Existing publishing frequency, saved session, caption, retry behavior and
-    workflow are controlled by the unchanged Instagram publishing script.
+    On each confirmed post scripts/post_instagram.py stores template_index.
+    A failure, retry or rate refresh does not advance this counter.
     """
     index=current_template_index()
     folder=ROOT/'assets'/'generated'
     folder.mkdir(parents=True,exist_ok=True)
     file=folder/f'post-{digest[:16]}-ig{index+1}-rtl.jpg'
-    if file.exists(): return file
+    if file.exists():return file
     im=_image_for(quotes,index)
-    im.save(file,'JPEG',quality=94,optimize=True,subsampling=0)
-    for old in sorted(folder.glob('post-*.jpg'),key=lambda p:p.stat().st_mtime,
-                      reverse=True)[16:]:
+    im.save(file,'JPEG',quality=95,optimize=True,subsampling=0)
+    for old in sorted(folder.glob('post-*.jpg'),key=lambda p:p.stat().st_mtime,reverse=True)[16:]:
         old.unlink(missing_ok=True)
     return file

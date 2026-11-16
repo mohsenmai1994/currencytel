@@ -79,8 +79,7 @@ def run() -> int:
         print("Prepared Instagram image path is outside assets/generated; aborting")
         return 1
     try:
-        # New image names identify the selected RTL design. Old queued image
-        # names remain supported during the one-time rollout.
+        # Store the selected layout only after the actual upload succeeds.
         try:
             template_index = template_index_from_filename(image)
         except ValueError:
