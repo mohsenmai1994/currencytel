@@ -1,6 +1,7 @@
 """Optional opt-in Rubino publisher: never touches Telegram/Bale/Rubika/Instagram."""
 import os
 import sys
+import io
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from pathlib import Path
@@ -72,10 +73,24 @@ def main():
     rpc = RubinoRPC(load_auth())
     profile_id = resolve_owned_profile(rpc, configured)
     caption = render_instagram_caption(queue['report'])
+    # Instagram uses 1080x1350; several third-party Rubino clients submit
+    # much smaller dimensions (typically 720x720 or <= 848x862). Keep the
+    # same artwork, but upload an in-memory 4:5 resized JPEG to Rubino.
+    # The file queued for Instagram is NEVER changed.
     with Image.open(path) as im:
         if im.format != 'JPEG' or im.width < 300 or im.height < 300:
             raise RubinoError('Generated Rubino photo invalid')
-        size = im.size
+        if im.width > 848 or im.height > 860:
+            outgoing = im.convert('RGB')
+            outgoing.thumbnail((848, 860), Image.Resampling.LANCZOS)
+            size = outgoing.size
+            with io.BytesIO() as encoded:
+                outgoing.save(encoded, format='JPEG', quality=91, optimize=True)
+                image_bytes = encoded.getvalue()
+            print(f'Rubino: photo resized in memory to {size[0]}x{size[1]} for addPost.', flush=True)
+        else:
+            size = im.size
+            image_bytes = path.read_bytes()
     # Only mark an ambiguous attempt when the image has uploaded successfully
     # and we are about to make the non-idempotent addPost RPC.
     def mark_submit():
@@ -85,7 +100,7 @@ def main():
             'status': 'post_submission_uncertain_until_receipt',
         })
 
-    result = publish_photo(rpc, profile_id, path.read_bytes(), caption, size,
+    result = publish_photo(rpc, profile_id, image_bytes, caption, size,
                            before_post=mark_submit)
     post_id = str(result.get('post_id') or result.get('id') or '')
     if not post_id:

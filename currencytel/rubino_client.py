@@ -281,6 +281,28 @@ def load_auth() -> str:
     return auth
 
 
+def _safe_api_code(value) -> str:
+    """Expose server error codes, never arbitrary response text or secrets.
+
+    The unofficial API sometimes includes profile identifiers, auth keys, or
+    other private fields in nested errors. Public Actions logs must not dump
+    the full response. A short ASCII status token is safe to show.
+    """
+    if isinstance(value, dict):
+        for key in ('code', 'error_code', 'status', 'status_det'):
+            token = _safe_api_code(value.get(key))
+            if token != 'unavailable':
+                return token
+        return 'unavailable'
+    if not isinstance(value, str):
+        return 'unavailable'
+    token = value.strip()
+    if (re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{1,55}', token)
+            and not re.search(r'\d{4,}', token)):
+        return token
+    return 'unavailable'
+
+
 class RubinoRPC:
     def __init__(self, auth: str, session=None):
         self.auth = auth
@@ -297,8 +319,11 @@ class RubinoRPC:
         except (requests.RequestException, ValueError) as exc:
             raise RubinoError(f'{method} network or response error ({type(exc).__name__}); not retried') from None
         if not isinstance(payload, dict) or str(payload.get('status', '')).upper() not in ('OK', 'SUCCESS'):
-            # Avoid leaking credentials or response body to public GitHub logs.
-            raise RubinoError(f'{method} not accepted by Rubino (status not OK)')
+            # Never log the raw JSON response, authorization, phone, upload
+            # hash, or free-text message. This diagnostic is safe for Actions.
+            status = _safe_api_code(payload.get('status')) if isinstance(payload, dict) else 'unavailable'
+            detail = _safe_api_code(payload.get('status_det')) if isinstance(payload, dict) else 'unavailable'
+            raise RubinoError(f'{method} rejected (status={status}, status_det={detail}); no automatic retry')
         data = payload.get('data')
         if not isinstance(data, dict):
             raise RubinoError(f'{method}: response lacks data object')
