@@ -2,6 +2,12 @@ name: CurrencyTel | Rubino publish once
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_previous_not_published:
+        description: 'Only enable AFTER checking Rubino: the previous post did NOT appear'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -28,6 +34,8 @@ jobs:
 
       - name: Ensure the current Instagram image is ready
         shell: bash
+        env:
+          CONFIRM_NOT_POSTED: ${{ inputs.confirm_previous_not_published }}
         run: |
           python - <<'PYCODE'
           from pathlib import Path
@@ -64,8 +72,22 @@ jobs:
           last = (previous.get('platforms') or {}).get('rubino') or {}
           if last.get('digest') == queue['digest']:
               raise SystemExit('This market snapshot has already been published to Rubino.')
-          if (DATA / 'rubino_publish_attempt.json').exists():
-              raise SystemExit('Previous publish outcome uncertain; check Rubino before retrying.')
+          pending = DATA / 'rubino_publish_attempt.json'
+          if pending.exists():
+              # Never blindly retry a post with an unknown outcome.
+              from os import environ
+              if environ.get('CONFIRM_NOT_POSTED') != 'true':
+                  raise SystemExit('Previous publish outcome uncertain. Check Rubino. '
+                                   'If the post is definitely absent, re-run this workflow '
+                                   'with confirm_previous_not_published=true.')
+              attempt = read_json(pending, {})
+              if not isinstance(attempt, dict) or not attempt.get('digest'):
+                  raise SystemExit('Pending marker is invalid; review it manually before retrying.')
+              if (last.get('digest') == attempt['digest']):
+                  raise SystemExit('Publish record already shows this attempt as published; '
+                                   'do not send again. Reconcile the pending marker manually.')
+              pending.unlink()
+              print('Operator confirmed previous post absent; cleared one pending marker.', flush=True)
           print('Ready: existing Instagram RTL image validated; Rubino only.', flush=True)
           PYCODE
 
