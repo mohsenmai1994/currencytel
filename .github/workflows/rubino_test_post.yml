@@ -1,0 +1,100 @@
+name: CurrencyTel | Rubino publish once
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: currencytel-commit
+  cancel-in-progress: false
+
+jobs:
+  rubino_publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout CurrencyTel
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install existing Rubino dependencies
+        run: python -m pip install -r requirements-rubino.txt
+
+      - name: Ensure the current Instagram image is ready
+        shell: bash
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+          from datetime import datetime, timedelta, timezone
+          import re
+          from PIL import Image
+          from currencytel.storage import DATA, ROOT, read_json
+
+          queue = read_json(DATA / 'instagram_queue.json', {})
+          required = ('digest', 'image_path', 'report', 'fetched_at')
+          if not all(queue.get(key) for key in required):
+              raise SystemExit('No ready Instagram market image; run the normal market workflow first.')
+          image = (ROOT / str(queue['image_path'])).resolve()
+          generated = (ROOT / 'assets' / 'generated').resolve()
+          if (generated not in image.parents or not image.is_file() or
+                  not re.search(r'-ig[1-4]-rtl\.jpe?g$', image.name, re.I)):
+              raise SystemExit('Not one of the four queued Instagram RTL JPEGs; no post sent.')
+          market = read_json(DATA / 'market.json', {})
+          if not market.get('complete') or market.get('fetched_at') != queue['fetched_at']:
+              raise SystemExit('Instagram photo does not match the last complete market snapshot.')
+          try:
+              recorded = datetime.fromisoformat(str(queue['fetched_at']))
+              if recorded.tzinfo is None:
+                  raise ValueError('missing timezone')
+              age = datetime.now(timezone.utc) - recorded.astimezone(timezone.utc)
+              if not timedelta(0) <= age <= timedelta(hours=8):
+                  raise ValueError('stale market snapshot')
+          except (TypeError, ValueError):
+              raise SystemExit('Market image is stale or its timestamp is invalid.')
+          with Image.open(image) as photo:
+              if photo.format != 'JPEG' or photo.size != (1080, 1350):
+                  raise SystemExit('Expected a 1080x1350 JPEG Instagram template.')
+          previous = read_json(DATA / 'publish_state.json', {})
+          last = (previous.get('platforms') or {}).get('rubino') or {}
+          if last.get('digest') == queue['digest']:
+              raise SystemExit('This market snapshot has already been published to Rubino.')
+          if (DATA / 'rubino_publish_attempt.json').exists():
+              raise SystemExit('Previous publish outcome uncertain; check Rubino before retrying.')
+          print('Ready: existing Instagram RTL image validated; Rubino only.', flush=True)
+          PYCODE
+
+      - name: Publish ONE real post to Rubino using saved session
+        env:
+          ENABLE_RUBINO: '1'
+          RUBINO_MAX_DAILY_POSTS: '24'
+          RUBINO_MIN_HOURS: '0'
+          RUBINO_PHONE: ${{ secrets.RUBINO_PHONE }}
+          RUBINO_PAGE_ID: ${{ secrets.RUBINO_PAGE_ID }}
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        run: python -u scripts/post_rubino.py
+
+      - name: Persist only Rubino publishing status
+        if: always()
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if [ -f data/publish_state.json ]; then
+            git add -- data/publish_state.json
+          fi
+          if [ -f data/rubino_publish_attempt.json ]; then
+            git add -- data/rubino_publish_attempt.json
+          else
+            git rm --cached -f --ignore-unmatch -- data/rubino_publish_attempt.json
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m 'Save manual Rubino publish status [skip ci]'
+            git push
+          fi
