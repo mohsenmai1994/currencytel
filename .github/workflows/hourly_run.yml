@@ -56,6 +56,25 @@ jobs:
           INSTAGRAM_MIN_HOURS: ${{ vars.INSTAGRAM_MIN_HOURS || '4' }}
         run: python scripts/post_instagram.py
 
+      # Rubino social post: optional step in the SAME market publishing workflow.
+      # Separate from the Rubika channel bot; no login/SMS is attempted here.
+      - name: Install Rubino publisher dependencies (opt-in)
+        if: success() && vars.ENABLE_RUBINO == '1'
+        run: python -m pip install -r requirements-rubino.txt
+
+      - name: Publish prepared CurrencyTel image to Rubino (saved session)
+        if: success() && vars.ENABLE_RUBINO == '1'
+        continue-on-error: true
+        env:
+          ENABLE_RUBINO: ${{ vars.ENABLE_RUBINO || '0' }}
+          RUBINO_PHONE: ${{ secrets.RUBINO_PHONE }}
+          RUBINO_PAGE_ID: ${{ secrets.RUBINO_PAGE_ID }}
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          RUBINO_MAX_DAILY_POSTS: ${{ vars.RUBINO_MAX_DAILY_POSTS || '3' }}
+          RUBINO_MIN_HOURS: ${{ vars.RUBINO_MIN_HOURS || '4' }}
+        run: python scripts/post_rubino.py
+
       - name: Commit only generated public data and publishing state
         if: always()
         run: |

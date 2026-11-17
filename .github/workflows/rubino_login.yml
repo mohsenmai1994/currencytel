@@ -1,0 +1,70 @@
+name: CurrencyTel | Rubino SMS login
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Step 1: send_code; step 2: verify_code; optional: check_session'
+        type: choice
+        required: true
+        options:
+          - send_code
+          - verify_code
+          - check_session
+      verification_code:
+        description: 'Code from Rubino SMS. Enter here for verify_code only (workflow input is NOT a GitHub Secret).'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: currencytel-commit
+  cancel-in-progress: false
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Rubino login dependencies
+        run: python -m pip install -r requirements-rubino.txt
+      - name: Mask verification code in logs
+        env:
+          CODE_FROM_INPUT: ${{ inputs.verification_code || '' }}
+        shell: bash
+        run: |
+          if [ -n "$CODE_FROM_INPUT" ]; then echo "::add-mask::$CODE_FROM_INPUT"; fi
+      - name: Send SMS, verify OTP, or check session
+        env:
+          RUBINO_ACTION: ${{ inputs.action }}
+          RUBINO_PHONE: ${{ secrets.RUBINO_PHONE }}
+          RUBINO_PAGE_ID: ${{ secrets.RUBINO_PAGE_ID }}
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          RUBINO_VERIFICATION_CODE: ${{ inputs.verification_code || '' }}
+        run: python scripts/rubino_auth.py
+      - name: Persist ONLY encrypted Rubino state
+        if: always()
+        shell: bash
+        run: |
+          if [ -d .github/state ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            for f in .github/state/rubino_auth.enc .github/state/rubino_challenge.enc; do
+              if [ -f "$f" ]; then git add -- "$f"; else git rm --cached -f --ignore-unmatch -- "$f"; fi
+            done
+            if ! git diff --cached --quiet; then
+              git commit -m 'Save encrypted Rubino login state [skip ci]'
+              git push
+            fi
+          fi
