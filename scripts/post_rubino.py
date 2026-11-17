@@ -7,9 +7,8 @@ from zoneinfo import ZoneInfo
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from PIL import Image
+from PIL import Image, ImageOps
 from currencytel.rubino_client import RubinoRPC, RubinoError, RubinoRejectedError, load_auth, resolve_owned_profile, publish_photo
-from currencytel.instagram_caption import render_instagram_caption
 from currencytel.storage import DATA, ROOT, read_json, write_atomic
 
 
@@ -72,25 +71,26 @@ def main():
         raise RubinoError('Previous Rubino publish status is uncertain; review the page and pending marker before retrying')
     rpc = RubinoRPC(load_auth())
     profile_id = resolve_owned_profile(rpc, configured)
-    caption = render_instagram_caption(queue['report'])
-    # Instagram uses 1080x1350; several third-party Rubino clients submit
-    # much smaller dimensions (typically 720x720 or <= 848x862). Keep the
-    # same artwork, but upload an in-memory 4:5 resized JPEG to Rubino.
-    # The file queued for Instagram is NEVER changed.
+    # Diagnostic first publish: use a conservative caption. The Instagram
+    # 14-market caption (emoji, full report and hashtags) is not a validated
+    # Rubino format. The actual values remain in the shared image.
+    caption = 'نرخ‌های لحظه‌ای ارز، طلا و سکه | CurrencyTel\n@currencytel'
+    # Use a true 720x720 JPEG, rather than sending 4:5 pixels with arbitrary
+    # metadata dimensions. PIL padding preserves the entire Instagram design.
+    # This does NOT modify the original Instagram file or its dimensions.
     with Image.open(path) as im:
         if im.format != 'JPEG' or im.width < 300 or im.height < 300:
             raise RubinoError('Generated Rubino photo invalid')
-        if im.width > 848 or im.height > 860:
-            outgoing = im.convert('RGB')
-            outgoing.thumbnail((848, 860), Image.Resampling.LANCZOS)
-            size = outgoing.size
-            with io.BytesIO() as encoded:
-                outgoing.save(encoded, format='JPEG', quality=91, optimize=True)
-                image_bytes = encoded.getvalue()
-            print(f'Rubino: photo resized in memory to {size[0]}x{size[1]} for addPost.', flush=True)
-        else:
-            size = im.size
-            image_bytes = path.read_bytes()
+        im.load()
+        square = ImageOps.pad(im.convert('RGB'), (720,720),
+                              method=Image.Resampling.LANCZOS,
+                              color=(255,255,255), centering=(0.5,0.5))
+        size = square.size
+        with io.BytesIO() as encoded:
+            square.save(encoded, format='JPEG', quality=91, optimize=True)
+            image_bytes = encoded.getvalue()
+    print('Rubino: prepared 720x720 actual JPEG with original artwork preserved; '
+          'Instagram image unchanged.', flush=True)
     # Only mark an ambiguous attempt when the image has uploaded successfully
     # and we are about to make the non-idempotent addPost RPC.
     def mark_submit():
@@ -111,7 +111,10 @@ def main():
         if marker.get('digest') == digest and marker.get('status') == 'post_submission_uncertain_until_receipt':
             pending.unlink(missing_ok=True)
         raise
-    post_id = str(result.get('post_id') or result.get('id') or '')
+    # Different clients wrap a confirmed ID in data['post'] or return it flat.
+    post = result.get('post') if isinstance(result.get('post'), dict) else {}
+    post_id = str(result.get('post_id') or result.get('id')
+                  or post.get('post_id') or post.get('id') or '')
     if not post_id:
         raise RubinoError('Rubino response did not confirm a post ID; check page before retrying')
     state['platforms']['rubino'] = {'digest': digest, 'post_id': post_id,

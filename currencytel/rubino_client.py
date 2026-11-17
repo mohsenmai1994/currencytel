@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import io
 import os
 import re
 import secrets
@@ -18,6 +19,7 @@ from urllib.parse import urlparse
 from contextlib import redirect_stdout
 
 import requests
+from PIL import Image
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
 
@@ -375,8 +377,23 @@ def _upload_url(raw: str):
 
 
 def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: str, size: tuple[int,int], *, before_post=None) -> dict:
+    # Reject locally invalid payloads BEFORE requesting/uploading any image.
     if not image_bytes or len(image_bytes) > 18 * 1024 * 1024:
         raise RubinoError('Photo is missing or too large')
+    if not isinstance(size, tuple) or len(size) != 2 or any(type(x) is not int for x in size):
+        raise RubinoError('Rubino picture dimensions must be two integers')
+    width, height = size
+    if (width, height) != (720, 720):
+        raise RubinoError('Strict Rubino picture publisher requires a genuine 720x720 JPEG')
+    if not isinstance(caption, str) or not caption.strip() or len(caption) > 300:
+        raise RubinoError('Rubino short caption must be 1-300 characters')
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as probe:
+            if probe.format != 'JPEG' or probe.size != (width,height):
+                raise RubinoError('JPEG dimensions do not match addPost metadata')
+            probe.verify()
+    except (OSError, ValueError, SyntaxError) as exc:
+        raise RubinoError('Rubino uploaded photo must be a readable JPEG') from None
     result = rpc.call('requestUploadFile', {
         'file_name': 'currencytel.jpg', 'file_size': str(len(image_bytes)),
         'file_type': 'Picture', 'profile_id': profile_id,
@@ -416,28 +433,30 @@ def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: 
         shape = 'nested data' if isinstance(upload_data, dict) else 'no data object'
         raise RubinoError('Rubino upload response lacks a valid hash_file_receive '
                           f'({shape}); addPost was NOT called')
-    # A pending marker is needed ONLY immediately before the irreversible post call.
-    # A failed image upload is not an ambiguous social post.
-    if before_post is not None:
-        before_post()
-    # This is a publishing call: no automatic retry after timeout / uncertain result.
-    # Explicitly match the field set and types used by recent third-party
-    # Rubino addPost(Picture) clients. Older PWA clients sometimes use ints;
-    # this compatibility variant uses decimal strings and an empty tagged list.
-    # No automatic retry or second addPost is allowed.
+    # A failed upload or local payload validation is not an ambiguous post.
+    # Create the pending marker ONLY immediately before the irreversible RPC.
+    # Prefer the smallest common Picture payload used by independent clients.
+    # https://github.com/shayanheidari01/rubika/blob/master/rubpy/rubino/client.py
+    # https://github.com/MamdMehrabi/Rubika-Bot/blob/main/rubino.py
+    # No tagged_profiles, no filename, no arbitrary extra metadata.
+    # Width/height must be the *actual* pixel dimensions and integer JSON types.
     payload = {
-        'rnd': secrets.randbelow(900_000_000) + 100_000_000,
-        'width': str(int(size[0])),
-        'height': str(int(size[1])),
+        'rnd': secrets.randbelow(1_000_000) + 1,
+        'width': width,
+        'height': height,
         'caption': caption,
         'post_type': 'Picture',
         'profile_id': profile_id,
         'is_multi_file': False,
-        'tagged_profiles': [],
         'file_id': file_id,
         'hash_file_receive': hash_receive,
         'thumbnail_file_id': file_id,
         'thumbnail_hash_file_receive': hash_receive,
     }
-    print('Rubino: submitting one addPost with picture receipt, string dimensions, and empty tags.', flush=True)
+    # Public workflow-safe diagnostics: never print auth, ids, hashes or caption.
+    print('Rubino: addPost minimal Picture payload; '
+          f'actual_dimensions={width}x{height}, '
+          f'caption_chars={len(caption)}, extras=none; one submission.', flush=True)
+    if before_post is not None:
+        before_post()
     return rpc.call('addPost', payload)
