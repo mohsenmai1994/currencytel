@@ -1,0 +1,5 @@
+# Separate from existing Instagram and Telegram dependencies.
+rulog==1.0.3
+cryptography>=43,<48
+requests>=2.32,<3
+Pillow>=10.4,<13
