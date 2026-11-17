@@ -33,6 +33,14 @@ class RubinoError(RuntimeError):
     pass
 
 
+class RubinoRejectedError(RubinoError):
+    """Server explicitly returned a non-success result for the RPC.
+
+    Unlike network/timeouts this response is a definitive server-side rejection.
+    """
+    pass
+
+
 def normalize_phone(raw: str) -> str:
     number = re.sub(r'[\s\-()]+', '', raw or '')
     if number.startswith('+'):
@@ -323,7 +331,7 @@ class RubinoRPC:
             # hash, or free-text message. This diagnostic is safe for Actions.
             status = _safe_api_code(payload.get('status')) if isinstance(payload, dict) else 'unavailable'
             detail = _safe_api_code(payload.get('status_det')) if isinstance(payload, dict) else 'unavailable'
-            raise RubinoError(f'{method} rejected (status={status}, status_det={detail}); no automatic retry')
+            raise RubinoRejectedError(f'{method} rejected (status={status}, status_det={detail}); no automatic retry')
         data = payload.get('data')
         if not isinstance(data, dict):
             raise RubinoError(f'{method}: response lacks data object')
@@ -413,10 +421,23 @@ def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: 
     if before_post is not None:
         before_post()
     # This is a publishing call: no automatic retry after timeout / uncertain result.
-    return rpc.call('addPost', {
-        'rnd': secrets.randbelow(1_000_000) + 1, 'width': int(size[0]),
-        'height': int(size[1]), 'caption': caption, 'post_type': 'Picture',
-        'profile_id': profile_id, 'is_multi_file': False, 'file_id': file_id,
-        'hash_file_receive': hash_receive, 'thumbnail_file_id': file_id,
+    # Explicitly match the field set and types used by recent third-party
+    # Rubino addPost(Picture) clients. Older PWA clients sometimes use ints;
+    # this compatibility variant uses decimal strings and an empty tagged list.
+    # No automatic retry or second addPost is allowed.
+    payload = {
+        'rnd': secrets.randbelow(900_000_000) + 100_000_000,
+        'width': str(int(size[0])),
+        'height': str(int(size[1])),
+        'caption': caption,
+        'post_type': 'Picture',
+        'profile_id': profile_id,
+        'is_multi_file': False,
+        'tagged_profiles': [],
+        'file_id': file_id,
+        'hash_file_receive': hash_receive,
+        'thumbnail_file_id': file_id,
         'thumbnail_hash_file_receive': hash_receive,
-    })
+    }
+    print('Rubino: submitting one addPost with picture receipt, string dimensions, and empty tags.', flush=True)
+    return rpc.call('addPost', payload)

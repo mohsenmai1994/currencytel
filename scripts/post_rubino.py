@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PIL import Image
-from currencytel.rubino_client import RubinoRPC, RubinoError, load_auth, resolve_owned_profile, publish_photo
+from currencytel.rubino_client import RubinoRPC, RubinoError, RubinoRejectedError, load_auth, resolve_owned_profile, publish_photo
 from currencytel.instagram_caption import render_instagram_caption
 from currencytel.storage import DATA, ROOT, read_json, write_atomic
 
@@ -100,8 +100,17 @@ def main():
             'status': 'post_submission_uncertain_until_receipt',
         })
 
-    result = publish_photo(rpc, profile_id, image_bytes, caption, size,
-                           before_post=mark_submit)
+    try:
+        result = publish_photo(rpc, profile_id, image_bytes, caption, size,
+                               before_post=mark_submit)
+    except RubinoRejectedError:
+        # A structured negative server response is distinct from an unknown
+        # network outcome. Do not leave a false "unknown publish" lock behind.
+        # Only clear the marker for this very attempt and matching digest.
+        marker = read_json(pending, {})
+        if marker.get('digest') == digest and marker.get('status') == 'post_submission_uncertain_until_receipt':
+            pending.unlink(missing_ok=True)
+        raise
     post_id = str(result.get('post_id') or result.get('id') or '')
     if not post_id:
         raise RubinoError('Rubino response did not confirm a post ID; check page before retrying')
