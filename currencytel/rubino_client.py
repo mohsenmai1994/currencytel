@@ -369,9 +369,20 @@ def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: 
             raise RubinoError('Rubino image upload failed (' + type(exc).__name__ + ')') from None
         if not isinstance(final_response, dict) or str(final_response.get('status', '')).upper() != 'OK':
             raise RubinoError('Rubino rejected image upload; post was not submitted')
-    hash_receive = final_response.get('hash_file_receive') if final_response else None
-    if not hash_receive:
-        raise RubinoError('Rubino upload did not return hash_file_receive')
+    # The Rubino upload endpoint usually wraps its receipt in response["data"].
+    # Older/alternate endpoints may return it at the root. Do NOT invent a
+    # receipt or submit addPost unless the upload service returned one.
+    upload_data = final_response.get('data') if isinstance(final_response, dict) else None
+    hash_receive = (upload_data.get('hash_file_receive')
+                    if isinstance(upload_data, dict) else None)
+    if not hash_receive and isinstance(final_response, dict):
+        hash_receive = final_response.get('hash_file_receive')
+    if not isinstance(hash_receive, str) or not hash_receive.strip():
+        # Keep the diagnostic safe for public Actions logs: never print response
+        # bodies, auth, file IDs, upload URLs or hash values.
+        shape = 'nested data' if isinstance(upload_data, dict) else 'no data object'
+        raise RubinoError('Rubino upload response lacks a valid hash_file_receive '
+                          f'({shape}); addPost was NOT called')
     # A pending marker is needed ONLY immediately before the irreversible post call.
     # A failed image upload is not an ambiguous social post.
     if before_post is not None:
