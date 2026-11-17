@@ -34,12 +34,8 @@ def main() -> int:
         raise RubinoError('Set RUBINO_PHONE and RUBINO_PAGE_ID GitHub Secrets')
 
     if action == 'send_code':
-        print('Rubino SMS: loading the rulog library...', flush=True)
-        from rulog import Client
-        print('Rubino SMS: constructing the client...', flush=True)
-        client = Client()
-        print('Rubino SMS: requesting a code (Android; Web fallback on explicit error)...', flush=True)
-        request_sms(phone, client=client)
+        print('Rubino SMS: bounded discovery and single SMS request...', flush=True)
+        request_sms(phone)
     elif action == 'verify_code':
         print('Rubino OTP: loading challenge and verifying received code...', flush=True)
         verify_sms(phone, os.environ.get('RUBINO_VERIFICATION_CODE', ''))

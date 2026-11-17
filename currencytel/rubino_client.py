@@ -15,6 +15,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
+from contextlib import redirect_stdout
 
 import requests
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -120,29 +121,100 @@ def _read_code_hash(response: dict) -> str:
     return str(data['phone_code_hash'])
 
 
+# rulog 1.0.3 has an unbounded server-discovery loop in GtM.defaultapi.
+# The helper below discovers an HTTPS endpoint exactly once with bounded timeouts,
+# then replaces only the rulog in-memory resolver. It never sends an OTP by itself.
+_DISCOVERY_URL = 'https://getdcmess.iranlms.ir/'
+# A documented legacy Rubika messenger host, only used if discovery fails.
+_FALLBACK_LOGIN_ENDPOINT = 'https://messengerg2c4.iranlms.ir/'
+_ALLOWED_LOGIN_HOST = re.compile(r'messengerg2c[0-9]+\.iranlms\.ir', re.I)
+
+
+def _allow_login_endpoint(raw):
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    raw = raw.strip()
+    if '://' not in raw:
+        raw = 'https://' + raw
+    parsed = urlparse(raw)
+    if (parsed.scheme != 'https' or parsed.username or parsed.password
+            or parsed.port is not None or parsed.query or parsed.fragment
+            or not _ALLOWED_LOGIN_HOST.fullmatch(parsed.hostname or '')):
+        return None
+    return 'https://' + parsed.hostname.lower() + '/'
+
+
+def _bounded_login_endpoint():
+    """Return one validated HTTPS host; never retry endlessly or send an SMS."""
+    try:
+        response = requests.get(_DISCOVERY_URL, timeout=(3.0, 6.0))
+        response.raise_for_status()
+        data = response.json()
+        hosts = data.get('data', {}).get('API', {})
+        if not isinstance(hosts, dict):
+            raise ValueError('invalid server-list format')
+        valid = [_allow_login_endpoint(x) for x in hosts.values()]
+        valid = [host for host in valid if host]
+        if valid:
+            print('Rubino: discovery returned a valid messenger endpoint.', flush=True)
+            return valid[0]
+        raise ValueError('no validated messenger host in discovery response')
+    except (requests.RequestException, ValueError, TypeError, AttributeError) as exc:
+        # A separate, bounded non-OTP network probe; HTTP 4xx/405 still proves
+        # TCP/TLS connectivity but DOES NOT establish API compatibility.
+        print('Rubino: server discovery unavailable (' + type(exc).__name__ +
+              '); probing the known messenger host once.', flush=True)
+    try:
+        requests.get(_FALLBACK_LOGIN_ENDPOINT, timeout=(3.0, 5.0))
+    except requests.RequestException as exc:
+        raise RubinoError(
+            'Neither Rubika discovery nor fallback messenger HTTPS is reachable '
+            'from this GitHub runner (' + type(exc).__name__ + '). '
+            'This is a network/reachability problem; do not repeat send_code. '
+            'Try an authorized runner/network that can reach Rubika.'
+        ) from None
+    print('Rubino: fallback messenger host is reachable; API acceptance is NOT guaranteed.', flush=True)
+    return _FALLBACK_LOGIN_ENDPOINT
+
+
+def _login_client():
+    """Create rulog Client while bypassing its unbounded network host resolver."""
+    endpoint = _bounded_login_endpoint()
+    try:
+        from rulog import Client
+        # PostData imported `defaultapi` by value; patch BOTH bindings.
+        import rulog.PostData as postdata
+        import rulog.GtM as gtm
+        postdata.defaultapi = lambda: endpoint
+        gtm.defaultapi = lambda: endpoint
+        return Client()
+    except ImportError as exc:
+        raise RubinoError('rulog dependency unavailable: ' + type(exc).__name__) from None
+
+
 def request_sms(phone: str, client=None) -> None:
-    """One SMS request. Never prints the challenge or mobile number."""
+    """Make exactly one bounded SMS request; never echo the mobile in logs."""
     phone = normalize_phone(phone)
     if client is None:
-        from rulog import Client
-        client = Client()
-    # Keep the chosen platform with the challenge, so verify uses same path.
-    errors = []
-    for platform in ('android', 'web'):
-        try:
-            response = client.sendCode(platform, phone, send_type=True) if platform == 'android' else client.sendCode(platform, phone)
-            code_hash = _read_code_hash(response)
-            save_encrypted(CHALLENGE_FILE, {
-                'phone': phone, 'phone_code_hash': code_hash, 'platform': platform,
-                'requested_at': datetime.now(timezone.utc).isoformat()
-            })
-            print('SMS request accepted; run the SAME workflow again with action=verify_code.')
-            return
-        except RubinoError:
-            raise
-        except Exception as exc:
-            errors.append(type(exc).__name__)
-    raise RubinoError('SMS request failed on Android and Web paths (no sensitive response logged): ' + ', '.join(errors))
+        client = _login_client()
+    print('Rubino SMS: sending ONE SMS-code request (no automatic retry).', flush=True)
+    try:
+        # rulog.sendCode(..., send_type=True) means Internal, NOT SMS.
+        # rulog also prints the phone number; suppress its stdout to protect
+        # phone details from public GitHub Actions logs.
+        with open(os.devnull, 'w', encoding='utf-8') as sink, redirect_stdout(sink):
+            response = client.sendCode('android', phone, send_type=False)
+        code_hash = _read_code_hash(response)
+    except RubinoError:
+        raise
+    except Exception as exc:
+        raise RubinoError('SMS request failed (' + type(exc).__name__ +
+                          '); no automatic repeat or Web fallback performed') from None
+    save_encrypted(CHALLENGE_FILE, {
+        'phone': phone, 'phone_code_hash': code_hash, 'platform': 'android',
+        'requested_at': datetime.now(timezone.utc).isoformat()
+    })
+    print('SMS request accepted and challenge encrypted; run verify_code on the SAME workflow.', flush=True)
 
 
 def verify_sms(phone: str, otp: str, client=None) -> None:
@@ -160,10 +232,11 @@ def verify_sms(phone: str, otp: str, client=None) -> None:
     if datetime.now(timezone.utc) - requested_at > timedelta(minutes=MAX_CHALLENGE_MINUTES):
         raise RubinoError('SMS challenge is older than 12 minutes; request a new one')
     if client is None:
-        from rulog import Client
-        client = Client()
+        client = _login_client()
     try:
-        response = client.signIn(challenge['platform'], phone, challenge['phone_code_hash'], otp)
+        # Keep third-party library stdout (which may print credentials) out of public logs.
+        with open(os.devnull, 'w', encoding='utf-8') as sink, redirect_stdout(sink):
+            response = client.signIn(challenge['platform'], phone, challenge['phone_code_hash'], otp)
     except Exception as exc:
         raise RubinoError('Rubika signIn rejected code (' + type(exc).__name__ + ')') from None
     if not isinstance(response, dict):
@@ -177,7 +250,8 @@ def verify_sms(phone: str, otp: str, client=None) -> None:
     device_key = data.get('Key') or data.get('key')
     if device_key:
         try:
-            registered = client.register(platform=challenge['platform'], auths=auth, keys=device_key)
+            with open(os.devnull, 'w', encoding='utf-8') as sink, redirect_stdout(sink):
+                registered = client.register(platform=challenge['platform'], auths=auth, keys=device_key)
             if not registered:
                 raise RubinoError('Device registration was not accepted')
         except RubinoError:
