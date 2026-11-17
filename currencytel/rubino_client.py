@@ -29,6 +29,18 @@ CHALLENGE_FILE = ROOT / '.github' / 'state' / 'rubino_challenge.enc'
 RUBINO_ENDPOINT = 'https://rubino1.iranlms.ir/'
 MAX_CHALLENGE_MINUTES = 12
 CLIENT = {'app_name': 'Main', 'app_version': '2.4.6', 'platform': 'PWA', 'package': 'm.rubika.ir'}
+# An independent Rubino client sends Android metadata for publish operations.
+# Preserve PWA metadata for the already-working OTP/session workflows.
+# Source: Mahdy-Ahmadi/rubka, rubka/rubino.py, confing.android
+ANDROID_PUBLISH_CLIENT = {
+    'app_name': 'Main',
+    'app_version': '3.7.3',
+    'lang_code': 'fa',
+    'package': 'app.rbmain.a',
+    'platform': 'Android',
+    'store': 'Myket',
+    'temp_code': '34',
+}
 
 
 class RubinoError(RuntimeError):
@@ -314,14 +326,15 @@ def _safe_api_code(value) -> str:
 
 
 class RubinoRPC:
-    def __init__(self, auth: str, session=None):
+    def __init__(self, auth: str, session=None, *, client_descriptor=None):
         self.auth = auth
         self.session = session if session is not None else requests.Session()
+        self.client_descriptor = dict(CLIENT if client_descriptor is None else client_descriptor)
 
     def call(self, method: str, data: dict) -> dict:
         try:
             response = self.session.post(RUBINO_ENDPOINT, json={
-                'api_version': '0', 'auth': self.auth, 'client': CLIENT,
+                'api_version': '0', 'auth': self.auth, 'client': self.client_descriptor,
                 'method': method, 'data': data,
             }, timeout=24)
             response.raise_for_status()

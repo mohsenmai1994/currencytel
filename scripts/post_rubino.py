@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PIL import Image, ImageOps
-from currencytel.rubino_client import RubinoRPC, RubinoError, RubinoRejectedError, load_auth, resolve_owned_profile, publish_photo
+from currencytel.rubino_client import RubinoRPC, RubinoError, RubinoRejectedError, ANDROID_PUBLISH_CLIENT, load_auth, resolve_owned_profile, publish_photo
 from currencytel.storage import DATA, ROOT, read_json, write_atomic
 
 
@@ -69,7 +69,8 @@ def main():
     pending = DATA/'rubino_publish_attempt.json'
     if pending.exists():
         raise RubinoError('Previous Rubino publish status is uncertain; review the page and pending marker before retrying')
-    rpc = RubinoRPC(load_auth())
+    rpc = RubinoRPC(load_auth(), client_descriptor=ANDROID_PUBLISH_CLIENT)
+    print('Rubino: using Android client metadata for read, upload, and addPost; OTP/session unchanged.', flush=True)
     profile_id = resolve_owned_profile(rpc, configured)
     # Diagnostic first publish: use a conservative caption. The Instagram
     # 14-market caption (emoji, full report and hashtags) is not a validated
