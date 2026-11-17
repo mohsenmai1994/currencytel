@@ -76,10 +76,17 @@ def main():
         if im.format != 'JPEG' or im.width < 300 or im.height < 300:
             raise RubinoError('Generated Rubino photo invalid')
         size = im.size
-    # Failure-safe: leave an attempt marker if API times out after submission.
-    write_atomic(pending, {'digest': digest, 'started_at': datetime.now(timezone.utc).isoformat(),
-                           'status': 'uncertain_until_success'})
-    result = publish_photo(rpc, profile_id, path.read_bytes(), caption, size)
+    # Only mark an ambiguous attempt when the image has uploaded successfully
+    # and we are about to make the non-idempotent addPost RPC.
+    def mark_submit():
+        write_atomic(pending, {
+            'digest': digest,
+            'started_at': datetime.now(timezone.utc).isoformat(),
+            'status': 'post_submission_uncertain_until_receipt',
+        })
+
+    result = publish_photo(rpc, profile_id, path.read_bytes(), caption, size,
+                           before_post=mark_submit)
     post_id = str(result.get('post_id') or result.get('id') or '')
     if not post_id:
         raise RubinoError('Rubino response did not confirm a post ID; check page before retrying')

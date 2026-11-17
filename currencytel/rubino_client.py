@@ -341,7 +341,7 @@ def _upload_url(raw: str):
     return raw
 
 
-def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: str, size: tuple[int,int]) -> dict:
+def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: str, size: tuple[int,int], *, before_post=None) -> dict:
     if not image_bytes or len(image_bytes) > 18 * 1024 * 1024:
         raise RubinoError('Photo is missing or too large')
     result = rpc.call('requestUploadFile', {
@@ -372,6 +372,10 @@ def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: 
     hash_receive = final_response.get('hash_file_receive') if final_response else None
     if not hash_receive:
         raise RubinoError('Rubino upload did not return hash_file_receive')
+    # A pending marker is needed ONLY immediately before the irreversible post call.
+    # A failed image upload is not an ambiguous social post.
+    if before_post is not None:
+        before_post()
     # This is a publishing call: no automatic retry after timeout / uncertain result.
     return rpc.call('addPost', {
         'rnd': secrets.randbelow(1_000_000) + 1, 'width': int(size[0]),
