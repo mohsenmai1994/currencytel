@@ -69,8 +69,14 @@ def main():
     pending = DATA/'rubino_publish_attempt.json'
     if pending.exists():
         raise RubinoError('Previous Rubino publish status is uncertain; review the page and pending marker before retrying')
-    rpc = RubinoRPC(load_auth(), client_descriptor=ANDROID_PUBLISH_CLIENT)
-    print('Rubino: using Android client metadata for read, upload, and addPost; OTP/session unchanged.', flush=True)
+    # In the previous run Android requestUploadFile/upload failed. The earlier
+    # PWA route got an upload receipt, but its addPost failed. Keep these
+    # stages separate to isolate the acceptance issue without changing OTP.
+    rpc = RubinoRPC(load_auth())  # verified PWA read + upload path
+    post_rpc = RubinoRPC(rpc.auth, session=rpc.session,
+                         client_descriptor=ANDROID_PUBLISH_CLIENT)
+    print('Rubino: PWA for profile lookup and upload; Android for addPost only; '
+          'no change to OTP/session.', flush=True)
     profile_id = resolve_owned_profile(rpc, configured)
     # Diagnostic first publish: use a conservative caption. The Instagram
     # 14-market caption (emoji, full report and hashtags) is not a validated
@@ -103,7 +109,7 @@ def main():
 
     try:
         result = publish_photo(rpc, profile_id, image_bytes, caption, size,
-                               before_post=mark_submit)
+                               before_post=mark_submit, post_rpc=post_rpc)
     except RubinoRejectedError:
         # A structured negative server response is distinct from an unknown
         # network outcome. Do not leave a false "unknown publish" lock behind.

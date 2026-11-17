@@ -389,7 +389,9 @@ def _upload_url(raw: str):
     return raw
 
 
-def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: str, size: tuple[int,int], *, before_post=None) -> dict:
+def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: str,
+                  size: tuple[int,int], *, before_post=None,
+                  post_rpc: RubinoRPC | None = None) -> dict:
     # Reject locally invalid payloads BEFORE requesting/uploading any image.
     if not image_bytes or len(image_bytes) > 18 * 1024 * 1024:
         raise RubinoError('Photo is missing or too large')
@@ -431,7 +433,14 @@ def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: 
         except (requests.RequestException, ValueError) as exc:
             raise RubinoError('Rubino image upload failed (' + type(exc).__name__ + ')') from None
         if not isinstance(final_response, dict) or str(final_response.get('status', '')).upper() != 'OK':
-            raise RubinoError('Rubino rejected image upload; post was not submitted')
+            status = (_safe_api_code(final_response.get('status'))
+                      if isinstance(final_response, dict) else 'unavailable')
+            detail = (_safe_api_code(final_response.get('status_det'))
+                      if isinstance(final_response, dict) else 'unavailable')
+            raise RubinoRejectedError(
+                'Rubino image upload rejected '
+                f'(status={status}, status_det={detail}, part={i}/{len(chunks)}); '
+                'post was not submitted')
     # The Rubino upload endpoint usually wraps its receipt in response["data"].
     # Older/alternate endpoints may return it at the root. Do NOT invent a
     # receipt or submit addPost unless the upload service returned one.
@@ -472,4 +481,4 @@ def publish_photo(rpc: RubinoRPC, profile_id: str, image_bytes: bytes, caption: 
           f'caption_chars={len(caption)}, extras=none; one submission.', flush=True)
     if before_post is not None:
         before_post()
-    return rpc.call('addPost', payload)
+    return (post_rpc or rpc).call('addPost', payload)
