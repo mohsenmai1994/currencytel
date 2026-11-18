@@ -1,14 +1,14 @@
-"""CurrencyTel Instagram renderer with four clean approved RTL image templates.
+"""CurrencyTel Instagram renderer: TWO unmodified approved designs.
 
-The original 14-market semantic HTML function remains unchanged.
-Only Instagram post images rotate; saved session and publishing schedule remain
-untouched. Templates contain no baked-in prices, dates or daily percentages.
+The 14-market legacy HTML, other networks, login, and posting cadence are unchanged.
+Only four prices are added to generated JPEGs. No unit labels or change percentages; PNG masters never change.
 """
 from __future__ import annotations
 
 import base64
 from html import escape
 import io
+import json
 from pathlib import Path
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -130,305 +130,243 @@ def _draw_text_centered(draw, x: int, center_y: int, content: str, font,
 
 
 
-# Instagram post templates use the original four selected 1080x1350 styles.
-# Legacy Instagram output filenames ended in -fa.jpg; rotating designs use -igN-rtl.jpg.
+# Instagram-only, byte-identical approved WHITE and BLACK PNG masters.
+# The originals are never modified: only a transient generated JPEG is painted.
 WIDTH, HEIGHT = 1080, 1350
-TEMPLATE_COUNT = 4
+MASTER_W, MASTER_H = 1122, 1402
+TEMPLATE_COUNT = 2
+TEMPLATE_CYCLE = (0, 1)   # white, black; advances after confirmed publish
 TEMPLATE_DIR = Path(__file__).resolve().parents[1] / 'assets' / 'img' / 'instagram-templates'
 TEHRAN = ZoneInfo('Asia/Tehran')
-INK=(10,33,76)
-GREEN=(9,155,100)
-RED=(205,52,80)
-COMMON_KEYS = ('usd','18ayar','bahar','usd_xau','eur','btc')
+FOUR_KEYS = ('usd', '18ayar', 'bahar', 'usd_xau')
 
-def _jalali(gy,gm,gd):
-    """Convert Gregorian to Jalali without installing an extra package."""
-    days_offset=(0,31,59,90,120,151,181,212,243,273,304,334)
-    if gy>1600:
-        jy=979; gy-=1600
+# Native 1122x1402 coordinates, visually checked against BOTH approved masters.
+# Their 2x2 card layouts are pixel-aligned; prices never cover titles or borders.
+PRICE_PANELS = {
+    'usd':     (49, 683, 520, 810),
+    '18ayar':  (582, 683, 1052, 810),
+    'bahar':   (49, 1047, 520, 1177),
+    'usd_xau': (582, 1047, 1052, 1177),
+}
+
+
+def _jalali(gy, gm, gd):
+    """Gregorian to Jalali (identical formula used in existing Instagram module)."""
+    offset = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
+    if gy > 1600:
+        jy = 979
+        gy -= 1600
     else:
-        jy=0; gy-=621
-    gy2=gy+1 if gm>2 else gy
-    days=365*gy+(gy2+3)//4-(gy2+99)//100+(gy2+399)//400-80+gd+days_offset[gm-1]
-    jy+=33*(days//12053)
-    days%=12053
-    jy+=4*(days//1461)
-    days%=1461
-    if days>365:
-        jy+=(days-1)//365
-        days=(days-1)%365
-    if days<186:
-        jm=1+days//31; jd=1+days%31
+        jy = 0
+        gy -= 621
+    leap_gy = gy + 1 if gm > 2 else gy
+    days = (365 * gy + (leap_gy + 3) // 4 - (leap_gy + 99) // 100 +
+            (leap_gy + 399) // 400 - 80 + gd + offset[gm - 1])
+    jy += 33 * (days // 12053)
+    days %= 12053
+    jy += 4 * (days // 1461)
+    days %= 1461
+    if days > 365:
+        jy += (days - 1) // 365
+        days = (days - 1) % 365
+    if days < 186:
+        jm, jd = 1 + days // 31, 1 + days % 31
     else:
-        jm=7+(days-186)//30; jd=1+(days-186)%30
-    return jy,jm,jd
+        jm, jd = 7 + (days - 186) // 30, 1 + (days - 186) % 30
+    return jy, jm, jd
 
 
-def _snapshot_time():
-    snapshot=read_json(DATA/'market.json',{})
+def _snapshot_time(quotes=None):
+    """Use the saved market snapshot; fall back ONLY to an actual quote timestamp."""
+    snapshot = read_json(DATA / 'market.json', {})
+    raw = snapshot.get('fetched_at')
+    if not raw and quotes and 'usd' in quotes:
+        raw = quotes['usd'].received_at
     try:
-        at=datetime.fromisoformat(snapshot['fetched_at']).astimezone(TEHRAN)
-    except (ValueError, KeyError, TypeError):
-        # Never invent a published snapshot timestamp.
-        return 'زمان ثبت نامشخص', ''
-    jy,jm,jd=_jalali(at.year,at.month,at.day)
-    month_names=('فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور',
-                 'مهر','آبان','آذر','دی','بهمن','اسفند')
-    return (persian_digits(f'{jd} {month_names[jm-1]} {jy}'),
-            persian_digits(at.strftime('%H:%M')))
-
-
-def _daily_changes(quotes):
-    # The market snapshot is written by save_market just before render_card.
-    # Prefer its first-observed daily baseline over unrelated provider fields.
-    snapshot=read_json(DATA/'market.json',{})
-    values={}
-    for item in snapshot.get('items',[]):
-        if (isinstance(item,dict) and 'day_change_pct' in item
-                and item.get('id') in quotes
-                and str(item.get('value')) == str(quotes[item['id']].value)):
-            values[item.get('id')]=item['day_change_pct']
-    for key,quote in quotes.items():
-        if key not in values and getattr(quote,'change_pct',None) is not None:
-            values[key]=quote.change_pct
-    return values
-
-
-def _spark_data():
-    """Draw only real observations from the same Tehran market day.
-
-    Historical samples from earlier days must not be presented as today's
-    price movement, especially when the daily badge says the rate is flat.
-    """
-    snapshot=read_json(DATA/'market.json',{})
-    try:
-        day=datetime.fromisoformat(snapshot['fetched_at']).astimezone(TEHRAN).date()
-    except (ValueError,KeyError,TypeError):
-        return {}
-    points=read_json(DATA/'history.json',{}).get('points',[])
-    if not isinstance(points,list):return {}
-    history={key:[] for key in COMMON_KEYS+('sekkeh',)}
-    for point in points[-180:]:
-        if not isinstance(point,dict) or not isinstance(point.get('values'),dict):
-            continue
-        try:
-            at=datetime.fromisoformat(point['at']).astimezone(TEHRAN)
-        except (TypeError,ValueError,KeyError):
-            continue
-        if at.date()!=day:continue
-        for key in history:
-            raw=point['values'].get(key)
-            if raw is None:continue
-            try:
-                value=float(raw)
-                if 0<value<float('inf'):history[key].append(value)
-            except (ValueError,TypeError,OverflowError):
-                continue
-    return {key:values[-30:] for key,values in history.items()}
-
-
-def _sparkline(draw, rect, values, color):
-    if len(values)<2: return
-    x0,y0,x1,y1=rect
-    lowest,highest=min(values),max(values)
-    span=highest-lowest
-    xy=[]
-    for i,v in enumerate(values):
-        x=x0+(x1-x0)*i/(len(values)-1)
-        y=(y0+y1)/2 if not span else y1-(y1-y0)*(v-lowest)/span
-        xy.append((int(x),int(y)))
-    draw.line(xy,fill=color,width=4,joint='curve')
-    x,y=xy[-1]
-    draw.ellipse((x-5,y-5,x+5,y+5),fill=color)
+        parsed = datetime.fromisoformat(str(raw).replace('Z', '+00:00'))
+        if parsed.tzinfo is None:
+            return '', ''
+        at = parsed.astimezone(TEHRAN)
+    except (ValueError, TypeError):
+        return '', ''
+    jy, jm, jd = _jalali(at.year, at.month, at.day)
+    months = ('فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+              'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند')
+    weekdays = ('دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه', 'یکشنبه')
+    day = f'{weekdays[at.weekday()]} {jd} {months[jm-1]} {jy}'
+    return persian_digits(day), persian_digits(at.strftime('%H:%M'))
 
 
 def current_template_index(state=None):
-    """The next design, calculated only from a successful post."""
+    """Use persisted last SUCCESSFUL Instagram publish; no workflow changes."""
     if state is None:
-        state=read_json(DATA/'publish_state.json',{})
-    last=(state.get('platforms') or {}).get('instagram') or {}
-    try: prior=int(last.get('template_index',0))
-    except (ValueError,TypeError): prior=0
-    # Pre-patch accounts have no previous design index: begin with design 1.
-    if 'template_index' not in last:
-        return 0
-    return (prior+1)%TEMPLATE_COUNT
+        state = read_json(DATA / 'publish_state.json', {})
+    last = (state.get('platforms') or {}).get('instagram') or {}
+    try:
+        pos = TEMPLATE_CYCLE.index(int(last['template_index']))
+    except (ValueError, TypeError, KeyError):
+        return TEMPLATE_CYCLE[0]
+    return TEMPLATE_CYCLE[(pos + 1) % TEMPLATE_COUNT]
 
 
 def template_index_from_filename(path):
-    """Extract the layout number ONLY from our controlled generated filename."""
-    name=Path(path).name
-    for i in range(TEMPLATE_COUNT):
+    name = Path(path).name
+    for i in TEMPLATE_CYCLE:
         if name.endswith(f'-ig{i+1}-rtl.jpg'):
             return i
-    raise ValueError('Instagram rendered path does not include a known template index')
+    raise ValueError('Instagram image path lacks a recognized template index')
 
 
-# These clean PNGs were derived from the four approved 1080x1350 layouts.
-# All sample prices, percentage indicators and timestamps were removed
-# during asset preparation, not merely hidden at runtime.
-# Index mapping is LEFT, RIGHT for each visual row. Reading RTL from right to
-# left makes the final left-hand bottom card Bitcoin in ALL four templates.
-DESIGNS = (
-    {"rows": (("usd", "18ayar"), ("bahar", "usd_xau"), ("btc", "sekkeh")),
-     "date": ((308,290,384,332), (524,290,739,333)),
-     "prices": (((156,500,354,566),(662,503,944,562)),
-                ((160,789,449,849),(665,791,830,850)),
-                ((119,1062,316,1136),(697,1062,991,1137))),
-     "badges": (((75,577,264,628),(588,577,773,628)),
-                ((75,859,263,914),(588,859,773,914)),
-                ((47,1140,234,1192),(615,1140,804,1192))),
-     "charts": (((320,557,511,633),(835,557,1020,634)),
-                ((320,840,511,918),(834,840,1020,921)),
-                ((295,1122,479,1194),(860,1122,1050,1194)))},
-    {"rows": (("usd", "bahar"), ("18ayar", "usd_xau"), ("btc", "eur")),
-     "date": ((585,63,654,104),(756,61,952,110)),
-     "prices": (((139,442,314,509),(639,440,877,512)),
-                ((136,728,356,793),(642,725,807,791)),
-                ((105,1007,286,1072),(679,1007,862,1073))),
-     "badges": (((76,511,268,567),(585,511,776,567)),
-                ((76,792,269,850),(585,793,774,848)),
-                ((44,1077,235,1135),(616,1077,808,1135)))},
-    {"rows": (("usd", "18ayar"), ("bahar", "usd_xau"), ("btc", "eur")),
-     "date": ((339,292,481,338),(541,288,745,340)),
-     "prices": (((135,493,324,554),(648,492,861,555)),
-                ((135,770,359,831),(647,765,810,832)),
-                ((103,1038,280,1108),(675,1038,863,1109))),
-     "badges": (((61,572,218,618),(579,573,732,620)),
-                ((62,843,221,889),(579,842,731,891)),
-                ((38,1120,193,1168),(601,1120,757,1168)))},
-    {"rows": (("usd", "bahar"), ("18ayar", "usd_xau"), ("btc", "eur")),
-     "date": ((605,67,668,108),(777,66,975,110)),
-     "prices": (((128,433,308,497),(646,431,871,502)),
-                ((125,716,334,787),(648,715,814,789)),
-                ((104,1001,282,1072),(671,1001,852,1074))),
-     "badges": (((52,508,223,566),(573,507,748,565)),
-                ((51,796,224,851),(574,795,751,851)),
-                ((33,1078,211,1138),(592,1078,763,1138)))}
-)
-
-
-def _place_text(draw, value, bounds, *, color=INK, requested=42, minimum=16, bold=True, direction='rtl'):
-    """Fit a complete Persian-digit value inside the original price slot."""
-    x0,y0,x1,y1=bounds
-    value=str(value).replace(',', '٬').replace('.', '٫')
-    size=requested
-    while size >= minimum:
-        font=_font(size, bold=bold)
-        box=draw.textbbox((0,0),value,font=font,direction=direction)
-        if box[2]-box[0] <= x1-x0-14 and box[3]-box[1] <= y1-y0-12:
-            break
-        size-=1
-    if size < minimum:
-        raise ValueError('Instagram value cannot fit in its template slot')
-    draw.text(((x0+x1)/2,(y0+y1)/2),value,font=font,fill=color,
-              anchor='mm',direction=direction)
-
-
-def _live_date(draw, spec):
-    day,clock=_snapshot_time()
-    # Show no invented value if the source snapshot timestamp is invalid.
-    _place_text(draw,clock if clock else '—',spec['date'][0],
-                color=INK,requested=23,minimum=17,direction='ltr')
-    _place_text(draw,day if clock else '—',spec['date'][1],
-                color=INK,requested=23,minimum=16)
-
-
-def _price_of(quotes,key):
-    quote=quotes.get(key)
-    if quote is None:  # Sikkeh Emami is an optional extra price.
-        return '—'
-    value=Decimal(str(quote.value))
-    if not value.is_finite() or value<=0:
-        raise ValueError('Instagram invalid verified price: '+key)
-    return persian_digits(fmt(value))
-
-
-def _pct_of(changes,key):
-    value=changes.get(key)
-    if value is None:return None
+def _rate_value(quotes, key):
     try:
-        value=Decimal(str(value))
-        return value if value.is_finite() else None
-    except (TypeError, ValueError, InvalidOperation):
-        return None
+        number = Decimal(str(quotes[key].value))
+    except (InvalidOperation, TypeError, ValueError, KeyError) as exc:
+        raise ValueError(f'Instagram invalid price: {key}') from exc
+    if not number.is_finite() or number <= 0:
+        raise ValueError(f'Instagram invalid price: {key}')
+    return persian_digits(fmt(number))
 
 
-def _live_badge(draw, rect, pct):
-    x0,y0,x1,y1=rect
-    if pct is None:
-        bg=(235,242,250);ink=(100,119,144);label='—';sign=0
-    elif abs(pct) < Decimal('0.005'):
-        bg=(235,242,250);ink=(100,119,144);label='ثابت';sign=0
-    else:
-        sign=1 if pct>0 else -1
-        bg=(222,248,230) if sign==1 else (255,230,236)
-        ink=(7,145,69) if sign==1 else (202,44,74)
-        label=persian_digits(f'{abs(pct):.2f}').replace('.', '٫') + '٪'
-    draw.rounded_rectangle((x0,y0,x1,y1),radius=min(25,(y1-y0)//2),fill=bg)
-    # Direction icon on the left, price-change figure on the right.
-    if sign:
-        cx=x0+23;cy=(y0+y1)/2
-        if sign==1:
-            draw.polygon(((cx-9,cy+7),(cx+9,cy+7),(cx,cy-9)),fill=ink)
+def _bold_font(size):
+    from PIL import ImageFont
+    for f in (
+        '/usr/share/fonts/truetype/noto/NotoSansArabic-CondensedBlack.ttf',
+        '/usr/share/fonts/truetype/noto/NotoSansArabic-Black.ttf',
+        '/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf',
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+    ):
+        if Path(f).is_file():
+            return ImageFont.truetype(f, size)
+    return ImageFont.truetype('DejaVuSans-Bold.ttf', size)
+
+
+def _fit(draw, text, rect, *, start, minimum, fill, direction='rtl'):
+    """Draw a single sharp, shadow-free, untruncated line inside exact bounds."""
+    x0, y0, x1, y1 = rect
+    for size in range(start, minimum - 1, -1):
+        if str(text).endswith('%'):
+            # NotoSansArabic-CondensedBlack lacks the Latin + and % on runners;
+            # DejaVuSans-Bold prevents tofu squares in percentage changes.
+            from PIL import ImageFont
+            font = ImageFont.truetype('DejaVuSans-Bold.ttf', size)
         else:
-            draw.polygon(((cx-9,cy-7),(cx+9,cy-7),(cx,cy+9)),fill=ink)
-    text_box=(x0+(37 if sign else 8),y0+2,x1-4,y1-2)
-    _place_text(draw,label,text_box,color=ink,requested=25,minimum=16,direction='ltr')
+            font = _bold_font(size)
+        bb = draw.textbbox((0, 0), str(text), font=font, direction=direction)
+        if bb[2] - bb[0] <= x1-x0-12 and bb[3]-bb[1] <= y1-y0-8:
+            draw.text(((x0+x1)//2, (y0+y1)//2), str(text),
+                      font=font, fill=fill, anchor='mm', direction=direction)
+            return size
+    raise ValueError(f'Instagram text does not fit safely in template: {len(str(text))} chars')
 
 
-def _render_clean(quotes, idx):
-    spec=DESIGNS[idx]
-    missing=set(COMMON_KEYS)-set(quotes)
-    if missing:
-        raise ValueError('Instagram missing verified prices: '+', '.join(sorted(missing)))
-    path=TEMPLATE_DIR/f'model-{idx+1}.png'
-    if not path.is_file():
-        raise FileNotFoundError('Approved CLEAN Instagram template is missing: '+str(path))
-    with Image.open(path) as raw:
-        if raw.size!=(WIDTH,HEIGHT):
-            raise ValueError('Instagram clean template dimensions must be 1080 x 1350')
-        im=raw.convert('RGB')
-    draw=ImageDraw.Draw(im)
-    _live_date(draw,spec)
-    changes=_daily_changes(quotes)
-    for rownum, keys in enumerate(spec['rows']):
-        for side,key in enumerate(keys):
-            _place_text(draw,_price_of(quotes,key),spec['prices'][rownum][side],requested=41,
-                        minimum=16)
-            _live_badge(draw,spec['badges'][rownum][side],_pct_of(changes,key))
-    # Only model 1 has mini-chart slots. Never resurrect sample graphs.
-    if idx==0:
-        history=_spark_data()
-        for rownum, keys in enumerate(spec['rows']):
-            for side,key in enumerate(keys):
-                series=history.get(key,[])
-                if len(series)>1:
-                    color=GREEN if series[-1]>=series[0] else RED
-                    x0,y0,x1,y1=spec['charts'][rownum][side]
-                    _sparkline(draw,(x0+8,y0+16,x1-8,y1-12),series,color)
-    return im
+def _replace_sample_date(im, quotes, *, dark):
+    """Make the live date and time larger ONLY in the output JPEG.
 
-
-def _image_for(quotes,template_index):
-    if template_index not in range(TEMPLATE_COUNT):
-        raise ValueError('Unknown Instagram template index')
-    return _render_clean(quotes,template_index)
-
-
-def render_card(driver,quotes,digest):
-    """Only the image artwork changes; the existing Instagram publisher stays.
-
-    On each confirmed post scripts/post_instagram.py stores template_index.
-    A failure, retry or rate refresh does not advance this counter.
+    Both untouched approved PNG designs remain intact.  Clean the printed
+    example time/date inside the original pill, without painting over its
+    blue outline or center divider.  The full weekday is shown when it fits;
+    unusually long weekday/month combinations use date-only text to avoid
+    shrinking into illegibility in a three-column Instagram profile grid.
     """
-    index=current_template_index()
-    folder=ROOT/'assets'/'generated'
-    folder.mkdir(parents=True,exist_ok=True)
-    file=folder/f'post-{digest[:16]}-ig{index+1}-rtl.jpg'
-    if file.exists():return file
-    im=_image_for(quotes,index)
-    im.save(file,'JPEG',quality=95,optimize=True,subsampling=0)
-    for old in sorted(folder.glob('post-*.jpg'),key=lambda p:p.stat().st_mtime,reverse=True)[16:]:
+    d = ImageDraw.Draw(im)
+    bg = (0, 0, 0) if dark else (254, 254, 254)
+    ink = '#FFFFFF' if dark else '#06133B'
+    d.rectangle((255, 397, 437, 451), fill=bg)
+    d.rectangle((520, 397, 866, 451), fill=bg)
+    day, clock = _snapshot_time(quotes)
+    if clock:
+        _fit(d, clock, (227, 394, 446, 458), start=49, minimum=39,
+             fill=ink, direction='ltr')
+    if day:
+        # Retain full weekday when legible at >= 40px, else omit *only* the
+        # weekday (the Jalali date itself remains complete and accurate).
+        compact_day = day
+        full_font = _bold_font(40)
+        full_bbox = d.textbbox((0, 0), day, font=full_font, direction='rtl')
+        if full_bbox[2]-full_bbox[0] > 402:
+            compact_day = day.split(' ', 1)[-1]
+        _fit(d, compact_day, (480, 394, 884, 458), start=45, minimum=37,
+             fill=ink, direction='rtl')
+
+
+def _replace_channel_handle(im):
+    """Enlarge @CurrencyTel inside its existing blue pill in output only.
+
+    Source lettering is erased by repainting the pill's original blue from
+    sampled untouched edge pixels, preserving the surrounding blue geometry.
+    No master PNG is edited or re-encoded.
+    """
+    from PIL import ImageFont
+
+    # Original label is fully inside this interior region on BOTH originals.
+    x0, x1 = 421, 712
+    y0, y1 = 1295, 1340
+    pixels = im.load()
+    for y in range(y0, y1):
+        left = pixels[414, y]
+        right = pixels[719, y]
+        for x in range(x0, x1):
+            w = (x-x0) / (x1-x0-1)
+            pixels[x, y] = tuple(round(left[i]*(1-w)+right[i]*w) for i in range(3))
+
+    d = ImageDraw.Draw(im)
+    font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf'
+    if not Path(font_path).is_file():
+        font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+    # Fit the exact original pill x≈388…737; no resize and no new ornaments.
+    for size in range(48, 35, -1):
+        font = ImageFont.truetype(font_path, size)
+        bb = d.textbbox((0, 0), '@CurrencyTel', font=font)
+        if bb[2]-bb[0] <= 334 and bb[3]-bb[1] <= 53:
+            d.text((562, 1319), '@CurrencyTel', font=font, fill='#FFFFFF',
+                   anchor='mm')
+            return size
+    raise ValueError('Instagram footer handle cannot fit in approved pill')
+
+
+def _image_for(quotes, template_index):
+    """Add only four market prices to either untouched approved PNG."""
+    if template_index not in TEMPLATE_CYCLE:
+        raise ValueError('Unknown Instagram template index')
+    absent = [key for key in FOUR_KEYS if key not in quotes]
+    if absent:
+        raise ValueError('Instagram missing verified prices: ' + ', '.join(absent))
+    for key in FOUR_KEYS:
+        _rate_value(quotes, key)  # validate before output
+
+    image_path = TEMPLATE_DIR / f'model-{template_index+1}.png'
+    with Image.open(image_path) as original:
+        if original.size != (MASTER_W, MASTER_H):
+            raise ValueError('Approved Instagram master must remain 1122x1402')
+        output = original.convert('RGB').copy()
+    dark = (template_index == 1)
+    _replace_sample_date(output, quotes, dark=dark)
+    _replace_channel_handle(output)
+    d = ImageDraw.Draw(output)
+    ink = '#FFFFFF' if dark else '#08143D'
+    # Instagram artwork must show ONLY the four market prices:
+    # no percentage changes, no movement arrows, no تومان / دلار unit labels.
+    # Both approved master PNGs remain byte-for-byte untouched.
+    for key in FOUR_KEYS:
+        x0, y0, x1, y1 = PRICE_PANELS[key]
+        _fit(d, _rate_value(quotes, key),
+             (x0 + 10, y0 + 13, x1 - 10, y1 - 13),
+             start=108, minimum=30, fill=ink, direction='ltr')
+    # Instagram accepts JPEG; shrink only the transient copy (master PNGs intact).
+    return output.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
+
+
+def render_card(driver, quotes, digest):
+    """Keep existing queue/state contracts; use distinct filenames to avoid stale JPGs."""
+    index = current_template_index()
+    folder = ROOT / 'assets' / 'generated'
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f'post-{digest[:16]}-two-exact-v7-large-date-id-ig{index+1}-rtl.jpg'
+    if path.exists():
+        return path
+    rendered = _image_for(quotes, index)
+    rendered.save(path, 'JPEG', quality=97, optimize=True, subsampling=0)
+    for old in sorted(folder.glob('post-*.jpg'),
+                      key=lambda p: p.stat().st_mtime, reverse=True)[16:]:
         old.unlink(missing_ok=True)
-    return file
+    return path
