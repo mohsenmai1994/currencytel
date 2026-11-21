@@ -203,3 +203,77 @@ def send(text, session=None):
             f'Forward one post from @{name} to your Rubika bot, then run again so getUpdates can discover it. '
             f'Direct API error: {detail}'
         ) from None
+
+
+def send_news(story, on_photo_sent=None, previous_photo_id=None, session=None):
+    """Publish article picture and an adjacent formatted reply with clickable source.
+
+    Rubika's documented sendFile accepts text but does not document metadata;
+    sendMessage DOES document Bold/Link metadata. We deliberately use a photo
+    followed by a formatted reply instead of silently showing unlinked markup.
+    Photo receipt is checkpointed before the text call, so retries do not
+    duplicate the photo when the text request fails.
+    """
+    from ..news.formatting import rubika_caption_metadata
+    from ..news.image_fetch import first_usable_article_image, _public_http
+
+    token = os.getenv('RUBIKA_BOT_TOKEN', '').strip()
+    raw_chat = os.getenv('RUBIKA_CHAT_ID', '@currencytel').strip()
+    if not token or not raw_chat:
+        raise PublishError('Rubika bot token or channel is missing')
+    username = _username(raw_chat)
+    chat = raw_chat if username is None else (resolve_username(username, token, session) or '@'+username)
+    caption, metadata = rubika_caption_metadata(story)
+    photo_message_id = previous_photo_id
+
+    if not photo_message_id:
+        import requests
+        photo = first_usable_article_image(story, session=session)
+        if not photo:
+            raise PublishError('NEWS_IMAGE_UNAVAILABLE: Rubika photo was not downloaded; no text-only post sent')
+        content, filename, mimetype = photo
+        grant = _api(token, 'requestSendFile', {'type': 'Image'}, session)
+        upload_url = str(grant.get('upload_url') or '')
+        if not upload_url.startswith('https://') or not _public_http(upload_url):
+            raise PublishError('Rubika returned an unsafe/invalid image upload URL')
+        client = session or requests
+        try:
+            upload = client.post(upload_url,
+                                 files={'file': (filename, content, mimetype)}, timeout=(6, 35))
+        except requests.RequestException as error:
+            raise PublishError('Rubika news image upload: ' + type(error).__name__) from None
+        if not upload.ok:
+            try:
+                detail = safe_error_details(upload.json())
+            except ValueError:
+                detail = ''
+            raise PublishError('Rubika news image upload HTTP ' + str(upload.status_code)
+                               + (f' ({detail})' if detail else ''))
+        try:
+            payload = upload.json()
+        except ValueError:
+            raise PublishError('Rubika news image upload: invalid JSON') from None
+        if not isinstance(payload, dict):
+            raise PublishError('Rubika news image upload: invalid response structure')
+        nested = payload.get('data') if isinstance(payload.get('data'), dict) else {}
+        file_id = str(payload.get('file_id') or nested.get('file_id') or '')
+        if not file_id:
+            raise PublishError('Rubika news image upload returned no file_id')
+        LOG.info('NEWS_IMAGE_UPLOADED platform=rubika')
+        record = _api(token, 'sendFile', {'chat_id': chat, 'file_id': file_id}, session)
+        photo_message_id = str(record.get('message_id') or '')
+        if not photo_message_id:
+            raise PublishError('Rubika photo delivered with missing message_id; verify channel')
+        if on_photo_sent:
+            on_photo_sent(photo_message_id)
+        LOG.info('NEWS_PHOTO_SENT platform=rubika')
+
+    body = {'chat_id':chat, 'text':caption, 'metadata':metadata}
+    if photo_message_id:
+        body['reply_to_message_id'] = photo_message_id
+    message = _api(token, 'sendMessage', body, session)
+    message_id = str(message.get('message_id') or '')
+    if not message_id:
+        raise PublishError('Rubika news reply missing message_id; verify channel')
+    LOG.info('NEWS_SOURCE_LINK_SENT platform=rubika')
+    return Receipt('rubika', message_id)

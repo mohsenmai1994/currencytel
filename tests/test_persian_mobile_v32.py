@@ -21,7 +21,7 @@ def test_localized_ig_caption_without_changing_messenger_report():
     assert '۲۶۳٬۱۰۰' in result
     assert '۴٬۱۱۶٫۷۳' in result
     assert not re.search('[0-9]',result)
-    assert result.endswith('#قیمت_دلار #قیمت_طلا #قیمت_سکه #نرخ_ارز #بیتکوین')
+    assert result.endswith('#قیمت_دلار #قیمت_طلا #قیمت_سکه #نرخ_ارز #اونس_طلا')
     assert 'ID: @currencytel' in result
 
 
@@ -31,7 +31,7 @@ def test_instagram_image_uses_persian_numerals_and_fresh_file_name():
     assert '۴٬۱۱۶٫۷۳' in html
     assert 'Vazirmatn' in html
     assert 'dir="ltr">263' not in html
-    assert '-fa.jpg' in (ROOT/'currencytel'/'media.py').read_text()
+    assert '-two-exact-v7-large-date-id-ig' in (ROOT/'currencytel'/'media.py').read_text()
 
 
 def test_pwa_has_no_sidebar_and_localized_js_numbers():
