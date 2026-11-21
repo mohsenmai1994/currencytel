@@ -55,7 +55,9 @@ jobs:
             case "$MANUAL_TARGET" in
               both|market)
                 echo "market=1" >> "$GITHUB_OUTPUT"
-                echo "market_targets=telegram,bale,rubika" >> "$GITHUB_OUTPUT"
+                # Manual force is deliberately limited to domestic networks.
+                # Telegram is ALWAYS restricted by the Tehran-time Python router.
+                echo "market_targets=bale,rubika" >> "$GITHUB_OUTPUT"
                 echo "news=$([ "$MANUAL_TARGET" = both ] && echo 1 || echo 0)" >> "$GITHUB_OUTPUT"
                 echo "instagram=0" >> "$GITHUB_OUTPUT"
                 ;;
@@ -120,10 +122,10 @@ jobs:
           RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
           RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID || vars.RUBIKA_CHAT_ID || '@currencytel' }}
           PUBLISH_ONLY: ${{ steps.slot.outputs.market_targets }}
-          # Defense in depth: main.py refuses off-slot or repeated auto posts.
+          # Telegram hard guard in dispatch.py applies even to manual market runs.
           AUTO_SCHEDULED: ${{ steps.slot.outputs.auto_scheduled || '0' }}
           SCHEDULED_TICK: ${{ steps.slot.outputs.tick || '' }}
-          ENABLE_TELEGRAM: ${{ vars.ENABLE_TELEGRAM || '1' }}
+          ENABLE_TELEGRAM: ${{ vars.ENABLE_TELEGRAM || '0' }}
           ENABLE_BALE: ${{ vars.ENABLE_BALE || '0' }}
           ENABLE_RUBIKA: ${{ vars.ENABLE_RUBIKA || '0' }}
           GENERATE_INSTAGRAM_CARD: ${{ (steps.slot.outputs.instagram == '1' || vars.ENABLE_RUBINO == '1') && '1' || '0' }}
