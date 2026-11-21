@@ -14,8 +14,35 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css">
-  <script src="./assets/js/app.js" type="module" defer></script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261121-1">
+  <script src="./assets/js/app.js?v=20261121-1" type="module" defer></script>
+  <!-- Check for newly installed versions and refresh the open PWA once. -->
+  <script>
+  (() => {
+    if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+    const wasControlled = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (wasControlled && !reloading) {
+        reloading = true;
+        location.reload();
+      }
+    });
+    let lastChecked = 0;
+    const checkForUpdates = () => {
+      if (Date.now() - lastChecked < 5 * 60 * 1000) return;
+      lastChecked = Date.now();
+      navigator.serviceWorker.getRegistration()
+        .then(registration => registration && registration.update())
+        .catch(() => {});
+    };
+    window.addEventListener('pageshow', checkForUpdates);
+    window.addEventListener('online', checkForUpdates);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkForUpdates();
+    });
+  })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#prices">رفتن به قیمت‌ها</a>

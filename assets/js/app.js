@@ -1,8 +1,8 @@
-import {refreshNews} from './news.js';
-import {getSnapshot,getHistory} from './data.js';
-import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,parseLocalizedNumber} from './format.js';
-import {drawHistory} from './chart.js';
-import {PERIODS} from './history.js';
+import {refreshNews} from './news.js?v=20261121-1';
+import {getSnapshot,getHistory} from './data.js?v=20261121-1';
+import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,parseLocalizedNumber} from './format.js?v=20261121-1';
+import {drawHistory} from './chart.js?v=20261121-1';
+import {PERIODS} from './history.js?v=20261121-1';
 const el=id=>document.getElementById(id);
 const state={items:[],history:[],filter:'all',query:'',sort:'default',favorites:new Set(),snapshot:null,loading:false,chartRange:'24h',slide:0,slidePaused:false};
 const tehranDay=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());

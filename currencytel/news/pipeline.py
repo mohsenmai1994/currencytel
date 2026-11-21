@@ -55,7 +55,11 @@ def run_news(now=None):
     now = now or datetime.now(timezone.utc)
     path = DATA / "news_state.json"
     state = read_json(path, {"seen": {}, "pending": {}})
-    articles = read_json(DATA / "news.json", [])[:16]
+    articles_path = DATA / "news.json"
+    articles = read_json(articles_path, [])[:16]
+    # Keep the public endpoint valid even if no feed has an eligible article yet.
+    if not articles_path.is_file():
+        write_atomic(articles_path, articles)
     # Hashes only, with expiry beyond the RSS age window.
     state["seen"] = {key: expiry for key, expiry in state["seen"].items()
                      if expiry > now.timestamp()}

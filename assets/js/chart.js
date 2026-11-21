@@ -1,5 +1,5 @@
-import {number,when} from './format.js';
-import {historyWindow,PERIODS} from './history.js';
+import {number,when} from './format.js?v=20261121-1';
+import {historyWindow,PERIODS} from './history.js?v=20261121-1';
 
 const NS = 'http://www.w3.org/2000/svg';
 const node = (tag, attrs = {}, text = null) => {
