@@ -206,13 +206,19 @@ def send(text, session=None):
 
 
 def send_news(story, on_photo_sent=None, previous_photo_id=None, session=None):
-    """Publish article picture and an adjacent formatted reply with clickable source.
+    """Publish a news image and caption as ONE Rubika media message.
 
-    Rubika's documented sendFile accepts text but does not document metadata;
-    sendMessage DOES document Bold/Link metadata. We deliberately use a photo
-    followed by a formatted reply instead of silently showing unlinked markup.
-    Photo receipt is checkpointed before the text call, so retries do not
-    duplicate the photo when the text request fails.
+    Rubika Bot API documents the `text` field for `sendFile`, so photo and
+    caption can be delivered atomically in a single channel message. The API
+    documents rich `metadata` for sendMessage, but not explicitly for
+    sendFile: we supply it as best-effort so that a capable server can render
+    bold title and a clickable source. If Rubika rejects the metadata field
+    explicitly, retry WITHOUT it (on a proven rejection, not network errors).
+    Neither variant prints the original URL in the caption.
+
+    Old, partly delivered news may carry a photo checkpoint from a previous
+    two-message release. Finish that legacy post as a reply without uploading
+    a second photo; new posts always use a single sendFile call.
     """
     from ..news.formatting import rubika_caption_metadata
     from ..news.image_fetch import first_usable_article_image, _public_http
@@ -224,56 +230,76 @@ def send_news(story, on_photo_sent=None, previous_photo_id=None, session=None):
     username = _username(raw_chat)
     chat = raw_chat if username is None else (resolve_username(username, token, session) or '@'+username)
     caption, metadata = rubika_caption_metadata(story)
-    photo_message_id = previous_photo_id
 
-    if not photo_message_id:
-        import requests
-        photo = first_usable_article_image(story, session=session)
-        if not photo:
-            raise PublishError('NEWS_IMAGE_UNAVAILABLE: Rubika photo was not downloaded; no text-only post sent')
-        content, filename, mimetype = photo
-        grant = _api(token, 'requestSendFile', {'type': 'Image'}, session)
-        upload_url = str(grant.get('upload_url') or '')
-        if not upload_url.startswith('https://') or not _public_http(upload_url):
-            raise PublishError('Rubika returned an unsafe/invalid image upload URL')
-        client = session or requests
+    if previous_photo_id:
+        # Complete old, partially delivered posts. We cannot edit a picture
+        # that was already sent by a previous version through this Bot API.
+        LOG.warning('NEWS_LEGACY_PHOTO_CHECKPOINT platform=rubika: completing previous two-message post')
+        old = _api(token, 'sendMessage', {
+            'chat_id': chat, 'text': caption, 'metadata': metadata,
+            'reply_to_message_id': previous_photo_id,
+        }, session)
+        message_id = str(old.get('message_id') or '')
+        if not message_id:
+            raise PublishError('Rubika legacy news reply missing message_id; verify channel')
+        LOG.info('NEWS_DELIVERED platform=rubika layout=legacy_reply')
+        return Receipt('rubika', message_id)
+
+    import requests
+    photo = first_usable_article_image(story, session=session)
+    if not photo:
+        raise PublishError('NEWS_IMAGE_UNAVAILABLE: Rubika photo not downloaded; no text-only post sent')
+    content, filename, mimetype = photo
+    grant = _api(token, 'requestSendFile', {'type': 'Image'}, session)
+    upload_url = str(grant.get('upload_url') or '')
+    if not upload_url.startswith('https://') or not _public_http(upload_url):
+        raise PublishError('Rubika returned an unsafe/invalid image upload URL')
+    client = session or requests
+    try:
+        upload = client.post(upload_url,
+                             files={'file': (filename, content, mimetype)}, timeout=(6, 35))
+    except requests.RequestException as error:
+        raise PublishError('Rubika news image upload: ' + type(error).__name__) from None
+    if not upload.ok:
         try:
-            upload = client.post(upload_url,
-                                 files={'file': (filename, content, mimetype)}, timeout=(6, 35))
-        except requests.RequestException as error:
-            raise PublishError('Rubika news image upload: ' + type(error).__name__) from None
-        if not upload.ok:
-            try:
-                detail = safe_error_details(upload.json())
-            except ValueError:
-                detail = ''
-            raise PublishError('Rubika news image upload HTTP ' + str(upload.status_code)
-                               + (f' ({detail})' if detail else ''))
-        try:
-            payload = upload.json()
+            detail = safe_error_details(upload.json())
         except ValueError:
-            raise PublishError('Rubika news image upload: invalid JSON') from None
-        if not isinstance(payload, dict):
-            raise PublishError('Rubika news image upload: invalid response structure')
-        nested = payload.get('data') if isinstance(payload.get('data'), dict) else {}
-        file_id = str(payload.get('file_id') or nested.get('file_id') or '')
-        if not file_id:
-            raise PublishError('Rubika news image upload returned no file_id')
-        LOG.info('NEWS_IMAGE_UPLOADED platform=rubika')
-        record = _api(token, 'sendFile', {'chat_id': chat, 'file_id': file_id}, session)
-        photo_message_id = str(record.get('message_id') or '')
-        if not photo_message_id:
-            raise PublishError('Rubika photo delivered with missing message_id; verify channel')
-        if on_photo_sent:
-            on_photo_sent(photo_message_id)
-        LOG.info('NEWS_PHOTO_SENT platform=rubika')
+            detail = ''
+        raise PublishError('Rubika news image upload HTTP ' + str(upload.status_code)
+                           + (f' ({detail})' if detail else ''))
+    try:
+        payload = upload.json()
+    except ValueError:
+        raise PublishError('Rubika news image upload: invalid JSON') from None
+    if not isinstance(payload, dict):
+        raise PublishError('Rubika news image upload: invalid response structure')
+    nested = payload.get('data') if isinstance(payload.get('data'), dict) else {}
+    file_id = str(payload.get('file_id') or nested.get('file_id') or '')
+    if not file_id:
+        raise PublishError('Rubika news image upload returned no file_id')
+    LOG.info('NEWS_IMAGE_UPLOADED platform=rubika')
 
-    body = {'chat_id':chat, 'text':caption, 'metadata':metadata}
-    if photo_message_id:
-        body['reply_to_message_id'] = photo_message_id
-    message = _api(token, 'sendMessage', body, session)
-    message_id = str(message.get('message_id') or '')
+    body = {'chat_id': chat, 'file_id': file_id, 'text': caption,
+            'metadata': metadata}
+    try:
+        result = _api(token, 'sendFile', body, session)
+    except PublishError as error:
+        # Only a *definitive metadata validation rejection* licenses a retry.
+        # Never repeat after timeouts/5xx/429 or unclear failures: original
+        # media message could already be present in the channel.
+        explanation = str(error).lower()
+        if 'metadata' not in explanation and 'meta_data_parts' not in explanation:
+            raise
+        if not any(word in explanation for word in ('invalid', 'unsupported', 'unknown', 'not allowed', 'not permitted', 'unexpected', 'unrecognized')):
+            raise
+        LOG.warning('NEWS_RUBIKA_MEDIA_METADATA_UNSUPPORTED: sending same caption without rich formatting')
+        result = _api(token, 'sendFile', {
+            'chat_id': chat, 'file_id': file_id, 'text': caption,
+        }, session)
+
+    message_id = str(result.get('message_id') or '')
     if not message_id:
-        raise PublishError('Rubika news reply missing message_id; verify channel')
-    LOG.info('NEWS_SOURCE_LINK_SENT platform=rubika')
+        raise PublishError('Rubika news media message missing message_id; verify channel')
+    LOG.info('NEWS_PHOTO_SENT platform=rubika combined_caption=true')
+    LOG.info('NEWS_DELIVERED platform=rubika layout=single_media_post')
     return Receipt('rubika', message_id)
