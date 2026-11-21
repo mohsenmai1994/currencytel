@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Send now (ignores the automatic 09:00–21:30 Tehran schedule)'
+        description: 'Manual publish: price/news or one daily Instagram card (Tehran schedule bypass)'
         required: true
         type: choice
         default: both
@@ -12,6 +12,9 @@ on:
           - market
           - news
           - news-replay
+          - instagram
+  # Only the external cron-job.org dispatcher sends market_update every 5 minutes.
+  # There is deliberately NO GitHub Actions cron/schedule trigger.
   repository_dispatch:
     types: [market_update]
 permissions:
@@ -31,38 +34,50 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-      - name: Select Tehran publishing slot
+      - name: Select independent Tehran publishing slots
         id: slot
         env:
           EVENT_NAME: ${{ github.event_name }}
           MANUAL_TARGET: ${{ inputs.publish || 'both' }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            # Manual runs are explicitly initiated by the operator.
-            # Do not change scheduler.json; automatic ticks keep their cadence.
+            # Manual runs are explicit and bypass clock limits. Instagram still
+            # cannot exceed its hard one-post-per-day guard.
             case "$MANUAL_TARGET" in
-              both|market|news|news-replay) ;;
+              both|market)
+                echo "market=1" >> "$GITHUB_OUTPUT"
+                echo "market_targets=telegram,bale,rubika" >> "$GITHUB_OUTPUT"
+                echo "news=$([ "$MANUAL_TARGET" = both ] && echo 1 || echo 0)" >> "$GITHUB_OUTPUT"
+                echo "instagram=1" >> "$GITHUB_OUTPUT"
+                ;;
+              news|news-replay)
+                echo "market=0" >> "$GITHUB_OUTPUT"
+                echo "market_targets=none" >> "$GITHUB_OUTPUT"
+                echo "news=1" >> "$GITHUB_OUTPUT"
+                echo "instagram=0" >> "$GITHUB_OUTPUT"
+                ;;
+              instagram)
+                echo "market=1" >> "$GITHUB_OUTPUT"
+                echo "market_targets=none" >> "$GITHUB_OUTPUT"
+                echo "news=0" >> "$GITHUB_OUTPUT"
+                echo "instagram=1" >> "$GITHUB_OUTPUT"
+                ;;
               *) echo "::error::Unknown manual target: $MANUAL_TARGET"; exit 1 ;;
             esac
-            if [ "$MANUAL_TARGET" = "news-replay" ]; then
-              echo "mode=news" >> "$GITHUB_OUTPUT"
+            if [ "$MANUAL_TARGET" = news-replay ]; then
               echo "replay_latest=1" >> "$GITHUB_OUTPUT"
             else
-              echo "mode=$MANUAL_TARGET" >> "$GITHUB_OUTPUT"
               echo "replay_latest=0" >> "$GITHUB_OUTPUT"
             fi
           else
-            # External repository_dispatch ticks retain the existing hours.
+            # External cron-job.org sends repository_dispatch; Python picks channel slots.
             python -m currencytel.schedule
+            echo "replay_latest=0" >> "$GITHUB_OUTPUT"
           fi
-          MODE=$(grep '^mode=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
-          echo "Selected publishing mode: $MODE"
-          echo "### CurrencyTel: $MODE" >> "$GITHUB_STEP_SUMMARY"
-          if [ "$MODE" = "idle" ]; then
-            echo "::notice::No publishing this tick (outside hours or already processed)."
-          fi
+          echo "### Tehran publication slots" >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_OUTPUT" | grep -E '^(market|market_targets|news|instagram|replay_latest)=' >> "$GITHUB_STEP_SUMMARY"
       - name: Check news and publish to enabled channels
-        if: steps.slot.outputs.mode == 'news' || steps.slot.outputs.mode == 'both'
+        if: steps.slot.outputs.news == '1'
         env:
           ENABLE_BALE: ${{ vars.ENABLE_BALE || '0' }}
           ENABLE_RUBIKA: ${{ vars.ENABLE_RUBIKA || '0' }}
@@ -77,14 +92,14 @@ jobs:
           python -c 'import logging; logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s"); from currencytel.news.pipeline import run_news; raise SystemExit(run_news())'
       - name: Install dependencies
         id: market_deps
-        if: always() && (steps.slot.outputs.mode == 'market' || steps.slot.outputs.mode == 'both')
+        if: always() && steps.slot.outputs.market == '1'
         run: |
           python -m pip install -r requirements.txt
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-core >/dev/null
       - name: Run market collector and enabled publishers
         id: market_publish
-        if: always() && steps.market_deps.outcome == 'success' && (steps.slot.outputs.mode == 'market' || steps.slot.outputs.mode == 'both')
+        if: always() && steps.market_deps.outcome == 'success' && steps.slot.outputs.market == '1'
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -93,29 +108,29 @@ jobs:
           BALE_CHAT_ID: ${{ secrets.BALE_CHAT_ID }}
           RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
           RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID || vars.RUBIKA_CHAT_ID || '@currencytel' }}
+          PUBLISH_ONLY: ${{ steps.slot.outputs.market_targets }}
           ENABLE_TELEGRAM: ${{ vars.ENABLE_TELEGRAM || '1' }}
           ENABLE_BALE: ${{ vars.ENABLE_BALE || '0' }}
           ENABLE_RUBIKA: ${{ vars.ENABLE_RUBIKA || '0' }}
-          GENERATE_INSTAGRAM_CARD: ${{ vars.GENERATE_INSTAGRAM_CARD || '1' }}
-          POST_UNCHANGED: ${{ vars.POST_UNCHANGED || '1' }}
+          GENERATE_INSTAGRAM_CARD: ${{ (steps.slot.outputs.instagram == '1' || vars.ENABLE_RUBINO == '1') && '1' || '0' }}
           PAGE_TIMEOUT: '13'
         run: python main.py
       # Instagram: publish ONLY with a previously saved session.
       # This does not call login, verify_login or authenticate.
       - name: Install Instagram upload dependencies
         id: instagram_deps
-        if: always() && steps.market_publish.outcome == 'success'
+        if: always() && steps.market_publish.outcome == 'success' && steps.slot.outputs.instagram == '1'
         run: python -m pip install -r requirements-instagram.txt
 
       - name: Publish prepared Instagram card (saved session only)
-        if: always() && steps.instagram_deps.outcome == 'success' && steps.market_publish.outcome == 'success'
+        if: always() && steps.instagram_deps.outcome == 'success' && steps.market_publish.outcome == 'success' && steps.slot.outputs.instagram == '1'
         continue-on-error: true
         env:
           ENABLE_INSTAGRAM: ${{ vars.ENABLE_INSTAGRAM || '1' }}
           INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
           INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
-          INSTAGRAM_MAX_DAILY_POSTS: ${{ vars.INSTAGRAM_MAX_DAILY_POSTS || '3' }}
-          INSTAGRAM_MIN_HOURS: ${{ vars.INSTAGRAM_MIN_HOURS || '4' }}
+          INSTAGRAM_MAX_DAILY_POSTS: '1'
+          INSTAGRAM_MIN_HOURS: '0'
         run: python scripts/post_instagram.py
 
       # Rubino social post: optional step in the SAME market publishing workflow.
