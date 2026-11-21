@@ -3,16 +3,22 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Manual publish: price/news or one daily Instagram card (Tehran schedule bypass)'
+        description: 'auto follows Tehran schedule; force publishing only with confirmation below'
         required: true
         type: choice
-        default: both
+        default: auto
         options:
+          - auto
           - both
           - market
           - news
           - news-replay
           - instagram
+      confirm_manual:
+        description: 'I intentionally want to bypass schedule (never enable on cron-job.org)'
+        required: false
+        type: boolean
+        default: false
   # Only the external cron-job.org dispatcher sends market_update every 5 minutes.
   # There is deliberately NO GitHub Actions cron/schedule trigger.
   repository_dispatch:
@@ -38,17 +44,20 @@ jobs:
         id: slot
         env:
           EVENT_NAME: ${{ github.event_name }}
-          MANUAL_TARGET: ${{ inputs.publish || 'both' }}
+          MANUAL_TARGET: ${{ inputs.publish || 'auto' }}
+          # Both web-button runs and cron-job.org API runs can be workflow_dispatch.
+          # A force publish requires a second, explicit confirmation input.
+          ALLOW_MANUAL_OVERRIDE: ${{ inputs.confirm_manual == true && '1' || '0' }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            # Manual runs are explicit and bypass clock limits. Instagram still
-            # cannot exceed its hard one-post-per-day guard.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$ALLOW_MANUAL_OVERRIDE" = "1" ] && [ "$MANUAL_TARGET" != "auto" ]; then
+            echo "auto_scheduled=0" >> "$GITHUB_OUTPUT"
+            # Only an explicitly confirmed manual run may bypass Tehran slots.
             case "$MANUAL_TARGET" in
               both|market)
                 echo "market=1" >> "$GITHUB_OUTPUT"
                 echo "market_targets=telegram,bale,rubika" >> "$GITHUB_OUTPUT"
                 echo "news=$([ "$MANUAL_TARGET" = both ] && echo 1 || echo 0)" >> "$GITHUB_OUTPUT"
-                echo "instagram=1" >> "$GITHUB_OUTPUT"
+                echo "instagram=0" >> "$GITHUB_OUTPUT"
                 ;;
               news|news-replay)
                 echo "market=0" >> "$GITHUB_OUTPUT"
@@ -70,12 +79,14 @@ jobs:
               echo "replay_latest=0" >> "$GITHUB_OUTPUT"
             fi
           else
-            # External cron-job.org sends repository_dispatch; Python picks channel slots.
+            # DEFAULT and all cron invocations obey the Python schedule,
+            # whether cron-job.org uses workflow_dispatch or repository_dispatch.
+            echo "auto_scheduled=1" >> "$GITHUB_OUTPUT"
             python -m currencytel.schedule
             echo "replay_latest=0" >> "$GITHUB_OUTPUT"
           fi
           echo "### Tehran publication slots" >> "$GITHUB_STEP_SUMMARY"
-          cat "$GITHUB_OUTPUT" | grep -E '^(market|market_targets|news|instagram|replay_latest)=' >> "$GITHUB_STEP_SUMMARY"
+          grep -E '^(auto_scheduled|tick|market|market_targets|news|instagram|replay_latest)=' "$GITHUB_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
       - name: Check news and publish to enabled channels
         if: steps.slot.outputs.news == '1'
         env:
@@ -109,6 +120,9 @@ jobs:
           RUBIKA_BOT_TOKEN: ${{ secrets.RUBIKA_BOT_TOKEN }}
           RUBIKA_CHAT_ID: ${{ secrets.RUBIKA_CHAT_ID || vars.RUBIKA_CHAT_ID || '@currencytel' }}
           PUBLISH_ONLY: ${{ steps.slot.outputs.market_targets }}
+          # Defense in depth: main.py refuses off-slot or repeated auto posts.
+          AUTO_SCHEDULED: ${{ steps.slot.outputs.auto_scheduled || '0' }}
+          SCHEDULED_TICK: ${{ steps.slot.outputs.tick || '' }}
           ENABLE_TELEGRAM: ${{ vars.ENABLE_TELEGRAM || '1' }}
           ENABLE_BALE: ${{ vars.ENABLE_BALE || '0' }}
           ENABLE_RUBIKA: ${{ vars.ENABLE_RUBIKA || '0' }}
