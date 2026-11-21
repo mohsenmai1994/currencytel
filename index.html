@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css?v=20261121-ux7">
-  <script src="./assets/js/app.js?v=20261121-ux7" type="module" defer></script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261121-ux8">
+  <script src="./assets/js/app.js?v=20261121-ux8" type="module" defer></script>
   <!-- Check for newly installed versions and refresh the open PWA once. -->
   <script>
   (() => {
@@ -49,21 +49,14 @@
   <div class="app-main">
     <header class="site-header">
       <div class="shell header-inner">
-        <a class="mobile-brand" href="#home" aria-label="CurrencyTel، صفحه اصلی"><b>CurrencyTel</b></a>
         <nav class="header-nav" aria-label="منوی اصلی"><a href="#home" data-nav="home" class="active">بازار</a><a href="#news" data-nav="news">خبرها</a><a href="#tools" data-nav="tools">ابزارها</a><a href="#connect" data-nav="connect">کانال‌ها</a></nav>
         <div class="header-actions">
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال بارگیری</span></div>
           <div class="header-search" id="headerSearch">
-            <button id="searchToggle" type="button" class="icon-button header-search-toggle" aria-label="جست‌وجوی قیمت‌ها" aria-expanded="false" aria-controls="searchPanel" title="جست‌وجو">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 4.4 4.4"/></svg>
-            </button>
-            <div id="searchPanel" class="header-search-panel" hidden>
-              <label class="header-search-field" for="searchInput">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 4.4 4.4"/></svg>
-                <input id="searchInput" type="search" placeholder="جست‌وجوی ارز، طلا، سکه و نماد…" autocomplete="off" aria-label="جست‌وجوی دارایی‌ها">
-              </label>
-              <button id="searchClose" type="button" class="search-close" aria-label="بستن جست‌وجو">×</button>
-            </div>
+            <label class="header-search-field" for="searchInput">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 4.4 4.4"/></svg>
+              <input id="searchInput" type="search" placeholder="جست‌وجوی ارز، طلا، سکه و نماد…" autocomplete="off" aria-label="جست‌وجوی دارایی‌ها">
+            </label>
           </div>
           <button id="themeBtn" type="button" class="icon-button" aria-label="تغییر حالت روشن و تاریک" title="تغییر تم">☼</button>
         </div>
@@ -82,10 +75,10 @@
             <div><span>زمان فعلی تهران</span><strong id="ageLabel" class="live-clock">—</strong><small id="currentDate">—</small></div>
           </div>
         </div>
-        <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2></div><div class="carousel-controls"><button type="button" id="carouselPrev" aria-label="اسلاید قبلی">→</button><button type="button" id="carouselNext" aria-label="اسلاید بعدی">←</button></div></div>
+        <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2></div></div>
         <div id="summaryGrid" class="summary-grid summary-carousel" aria-label="اسلایدر قیمت‌های شاخص" aria-roledescription="اسلایدر"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
         <div id="carouselDots" class="carousel-dots" aria-label="انتخاب اسلاید قیمت‌ها"></div>
-        <div class="pulse-toolbar"><span>آمار بازار</span><div class="compact-arrows"><button type="button" id="pulsePrev" aria-label="آمار قبلی">→</button><button type="button" id="pulseNext" aria-label="آمار بعدی">←</button></div></div>
+        <div class="pulse-toolbar"><span>آمار بازار</span></div>
         <div class="market-pulse" id="marketPulse" role="region" aria-label="آمار قابل پیمایش بازار" aria-live="polite">
           <div class="pulse-card"><small>نمادهای بازار</small><strong id="pulseAssets">—</strong><span class="pulse-decor">◈</span></div>
           <div class="pulse-card up"><small>افزایش قیمت</small><strong id="pulseUp">—</strong><span class="pulse-decor">↗</span></div>
@@ -95,7 +88,7 @@
       <section class="section" id="prices" aria-labelledby="pricesTitle">
         <div class="section-heading price-section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><div class="price-heading-actions"><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div></div>
         <div class="filter-shell" aria-label="انتخاب دسته بازار">
-          <div class="filter-toolbar"><span>دسته‌بندی بازار</span><div class="compact-arrows"><button id="filterPrev" type="button" aria-label="دسته‌های قبلی">→</button><button id="filterNext" type="button" aria-label="دسته‌های بعدی">←</button></div></div>
+          <div class="filter-toolbar"><span>دسته‌بندی بازار</span></div>
           <div id="filterBar" class="filter-bar" role="group" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip" aria-pressed="false">☆ منتخب</button><button type="button" data-filter="currency" class="chip" aria-pressed="false">ارز</button><button type="button" data-filter="gold" class="chip" aria-pressed="false">طلا</button><button type="button" data-filter="coin" class="chip" aria-pressed="false">سکه</button><button type="button" data-filter="crypto" class="chip" aria-pressed="false">رمزارز</button><button type="button" data-filter="forex" class="chip" aria-pressed="false">فارکس</button><button type="button" data-filter="metal" class="chip" aria-pressed="false">فلزات</button><button type="button" data-filter="energy" class="chip" aria-pressed="false">انرژی</button><button type="button" data-filter="commodity" class="chip" aria-pressed="false">کالاها</button><button type="button" data-filter="stock" class="chip" aria-pressed="false">بورس ایران</button><button type="button" data-filter="index" class="chip" aria-pressed="false">شاخص‌ها</button><button type="button" data-filter="bond" class="chip" aria-pressed="false">اوراق</button><button type="button" data-filter="agriculture" class="chip" aria-pressed="false">کشاورزی</button></div>
         </div>
         <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="4" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
@@ -104,10 +97,6 @@
       </section>
       <section id="news" class="section news-section" aria-labelledby="newsTitle" hidden>
         <div class="spotlight-heading"><h2 id="newsTitle">آخرین خبرها</h2>
-          <div class="carousel-controls" id="newsControls" hidden>
-            <button id="newsPrev" type="button" aria-label="خبر قبلی">→</button>
-            <button id="newsNext" type="button" aria-label="خبر بعدی">←</button>
-          </div>
         </div>
         <div id="newsTrack" class="news-track" role="region" aria-label="اسلایدر خبرها"></div>
         <p id="newsStatus" class="muted" role="status">در حال دریافت خبرها…</p>

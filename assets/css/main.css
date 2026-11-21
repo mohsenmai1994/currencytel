@@ -406,3 +406,35 @@ main > section[hidden], #newsControls[hidden] { display: none !important; }
   .bottom-nav svg {transition:none}
   .compact-arrows button {transition:none}
 }
+
+/* v8: always-visible header search, no brand and no slider arrow controls. */
+.header-inner {gap:clamp(9px,1.5vw,18px);justify-content:space-between}
+.header-nav {flex:0 1 auto;justify-content:flex-start;min-width:0}
+.header-actions {flex:1 1 295px;min-width:0;justify-content:flex-end;gap:10px}
+.header-search {flex:1 1 180px;min-width:0;max-width:470px}
+.header-search-field {min-height:43px;width:100%;padding-inline:12px;background:var(--panel);border-radius:12px}
+.header-search-field input {width:100%;min-width:0;font-size:clamp(11px,1vw,13px)}
+.header-search-field svg {flex:0 0 18px;width:18px;height:18px}
+.header-actions .status {flex:0 0 auto;margin:0}
+.header-actions #themeBtn {flex:0 0 40px}
+/* Keep swipe and slide dots, but do not show navigation arrows. */
+.carousel-controls,.compact-arrows {display:none!important}
+.summary-grid.summary-carousel,.market-pulse,.filter-bar,.news-track {-webkit-overflow-scrolling:touch}
+@media(max-width:800px) {
+  .header-inner {gap:9px;min-height:65px}
+  .header-actions {width:100%;flex:1 1 auto;gap:9px}
+  .header-search {max-width:none}
+  .header-search-field {min-height:42px}
+}
+@media(max-width:590px) {
+  .header-inner {gap:7px}
+  .header-actions {gap:7px}
+  .header-search-field {min-height:39px;padding-inline:10px;border-radius:11px;gap:7px}
+  .header-search-field input {font-size:11px}
+  .header-search-field input::placeholder {text-overflow:ellipsis}
+  .header-actions #themeBtn {flex:0 0 36px}
+}
+@media(max-width:360px) {
+  .header-search-field input {font-size:10px}
+  .header-search-field svg {flex-basis:16px;width:16px;height:16px}
+}

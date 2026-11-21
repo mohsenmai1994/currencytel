@@ -1,8 +1,5 @@
 const track = document.getElementById('newsTrack');
 const status = document.getElementById('newsStatus');
-const controls = document.getElementById('newsControls');
-const prev = document.getElementById('newsPrev');
-const next = document.getElementById('newsNext');
 const dateFormat = new Intl.DateTimeFormat('fa-IR', {
   timeZone:'Asia/Tehran', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'
 });
@@ -58,9 +55,6 @@ function indicator() {
   document.getElementById('newsMore').hidden = articles.length < 2;
   const rows = document.getElementById('newsList').children;
   for (let i = 0; i < rows.length; i++) rows[i].hidden = i === active;
-  prev.disabled = active === 0;
-  next.disabled = active >= articles.length - 1;
-  controls.hidden = articles.length < 2;
   // Only show useful state messages; never show redundant 'news N of M' labels.
   const label = offline
     ? (articles.length ? 'به‌روزرسانی خبرها در دسترس نیست.' : 'دریافت خبرها ممکن نیست.')
@@ -74,8 +68,6 @@ function go(index, smooth) {
   const offset = target.getBoundingClientRect().right - track.getBoundingClientRect().right;
   track.scrollBy({left:offset, behavior:smooth && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'instant'});
 }
-prev.onclick = () => go(active-1,true);
-next.onclick = () => go(active+1,true);
 track.addEventListener('scroll', () => {
   const right = track.getBoundingClientRect().right;
   let closest = Infinity;

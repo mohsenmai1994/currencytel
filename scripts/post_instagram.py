@@ -42,14 +42,11 @@ def run() -> int:
         print("No prepared Instagram image and caption found; run market workflow first")
         return 1
     state = read_json(DATA / "publish_state.json", {"schema_version": 1, "platforms": {}})
-    if state.get("platforms", {}).get("instagram", {}).get("digest") == queue["digest"]:
-        print("Instagram already published this market snapshot; skipped")
-        return 0
-    # A few posts per day is safer than publishing a new feed post at every
-    # five-minute currency update. Adjustable via repository Variables.
+    # Hard business rule: at most ONE photo per Tehran calendar day, even if
+    # repository Variables were previously set to 3 or more.
     now = datetime.now(timezone.utc)
-    max_per_day = max(1, min(12, int(os.getenv("INSTAGRAM_MAX_DAILY_POSTS", "3"))))
-    min_hours = max(0, float(os.getenv("INSTAGRAM_MIN_HOURS", "4")))
+    max_per_day = 1
+    min_hours = 0
     previous = state.get("platforms", {}).get("instagram", {})
     if previous.get("sent_at"):
         try:
@@ -61,6 +58,13 @@ def run() -> int:
             pass
     today = now.astimezone(ZoneInfo("Asia/Tehran")).date().isoformat()
     posted_today = state.get("instagram_daily", {}).get(today, 0)
+    if previous.get("sent_at"):
+        try:
+            if datetime.fromisoformat(previous["sent_at"]).astimezone(ZoneInfo("Asia/Tehran")).date().isoformat() == today:
+                print("Instagram skipped: already posted today in Tehran")
+                return 0
+        except (ValueError, TypeError):
+            pass
     if posted_today >= max_per_day:
         print("Instagram skipped: daily post limit reached")
         return 0

@@ -205,40 +205,24 @@ function setupNavigation(){
 }
 function events(){
   el('summaryGrid').addEventListener('click',e=>{const card=e.target.closest('[data-summary]');if(card)openDetail(card.dataset.summary);});
-  // Search stays a single shared input, now accessible from the header on every page.
-  const searchPanel=el('searchPanel');
-  function setSearchOpen(open){
-    searchPanel.hidden=!open;
-    el('searchToggle').setAttribute('aria-expanded',String(open));
-    if(open){
-      if(location.hash!=='#prices')location.hash='#prices';
-      requestAnimationFrame(()=>el('searchInput').focus());
+  // The search field is always visible in the header; filtering remains global.
+  const searchInput=el('searchInput');
+  searchInput.addEventListener('focus',()=>{
+    if(!['', '#home', '#prices'].includes(location.hash)) location.hash='#prices';
+  });
+  searchInput.addEventListener('input',event=>{
+    state.query=clean(event.target.value);
+    if(!['', '#home', '#prices'].includes(location.hash)) location.hash='#prices';
+    renderRows();
+  });
+  searchInput.addEventListener('keydown',event=>{
+    if(event.key==='Enter'){
+      event.preventDefault();
+      if(location.hash!=='#prices') location.hash='#prices';
+      else el('prices').scrollIntoView({behavior:'smooth',block:'start'});
     }
-  }
-  el('searchToggle').addEventListener('click',()=>setSearchOpen(searchPanel.hidden));
-  el('searchClose').addEventListener('click',()=>{setSearchOpen(false);el('searchToggle').focus();});
-  document.addEventListener('pointerdown',event=>{
-    if(!searchPanel.hidden&&!el('headerSearch').contains(event.target))setSearchOpen(false);
   });
-  document.addEventListener('keydown',event=>{
-    if(event.key==='Escape'&&!searchPanel.hidden){setSearchOpen(false);el('searchToggle').focus();}
-  });
-  el('searchInput').addEventListener('input',e=>{state.query=clean(e.target.value);renderRows();});
-  el('searchInput').addEventListener('keydown',event=>{
-    if(event.key==='Enter'){event.preventDefault();setSearchOpen(false);el('prices').scrollIntoView({behavior:'smooth',block:'start'});}
-  });
-  // RTL snapping sliders: progress to the visually next card without changing data.
-  function slideByCard(trackId,direction){
-    const track=el(trackId),card=track.firstElementChild;
-    if(!card)return;
-    const gap=parseFloat(getComputedStyle(track).columnGap)||0;
-    const rtl=getComputedStyle(track).direction==='rtl';
-    track.scrollBy({left:(rtl?-1:1)*direction*(card.getBoundingClientRect().width+gap),behavior:'smooth'});
-  }
-  el('pulsePrev').addEventListener('click',()=>slideByCard('marketPulse',-1));
-  el('pulseNext').addEventListener('click',()=>slideByCard('marketPulse',1));
-  el('filterPrev').addEventListener('click',()=>slideByCard('filterBar',-2));
-  el('filterNext').addEventListener('click',()=>slideByCard('filterBar',2));
+  // All carousels remain touch/trackpad scrollable; arrow buttons are removed.
   el('filterBar').addEventListener('click',e=>{
     const button=e.target.closest('[data-filter]');if(!button)return;
     state.filter=button.dataset.filter;
@@ -288,8 +272,6 @@ function events(){
   carousel.addEventListener('focusout',e=>{if(!carousel.contains(e.relatedTarget))state.slidePaused=false;});
   carousel.addEventListener('touchstart',()=>{state.slidePaused=true;},{passive:true});
   carousel.addEventListener('touchend',()=>{setTimeout(()=>{state.slidePaused=false;},5000);},{passive:true});
-  el('carouselPrev').addEventListener('click',()=>selectSlide(state.slide-1));
-  el('carouselNext').addEventListener('click',()=>selectSlide(state.slide+1));
   el('carouselDots').addEventListener('click',e=>{const dot=e.target.closest('[data-carousel-dot]');if(dot)selectSlide(Number(dot.dataset.carouselDot));});
   carousel.addEventListener('scroll',()=>{
     clearTimeout(carousel._scrollTimer);
