@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/main.css?v=20261121-1">
-  <script src="./assets/js/app.js?v=20261121-1" type="module" defer></script>
+  <script src="./assets/js/app.js?v=20261121-2" type="module" defer></script>
   <!-- Check for newly installed versions and refresh the open PWA once. -->
   <script>
   (() => {
@@ -63,7 +63,6 @@
           <div class="hero-main">
             <span class="eyebrow">CURRENCYTEL / بازارهای امروز</span>
             <h1 id="heroTitle">بازار، در یک نگاه</h1>
-            <p>قیمت‌های مهم و تغییرات هر روز، ساده و سریع.</p>
             <div class="hero-meta"><span class="data-icon" aria-hidden="true">●</span><span>آخرین ثبت قیمت:</span><strong id="updatedAt">—</strong></div>
           </div>
           <div class="hero-aside clock-panel" aria-label="ساعت فعلی تهران">
@@ -71,16 +70,14 @@
             <div><span>زمان فعلی تهران</span><strong id="ageLabel" class="live-clock">—</strong><small id="currentDate">—</small></div>
           </div>
         </div>
-        <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2><span>تغییر نسبت به اولین نرخ ثبت‌شده امروز</span></div><div class="carousel-controls"><button type="button" id="carouselPrev" aria-label="اسلاید قبلی">→</button><button type="button" id="carouselNext" aria-label="اسلاید بعدی">←</button></div></div>
+        <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2></div><div class="carousel-controls"><button type="button" id="carouselPrev" aria-label="اسلاید قبلی">→</button><button type="button" id="carouselNext" aria-label="اسلاید بعدی">←</button></div></div>
         <div id="summaryGrid" class="summary-grid summary-carousel" aria-label="اسلایدر قیمت‌های شاخص" aria-roledescription="اسلایدر"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
         <div id="carouselDots" class="carousel-dots" aria-label="انتخاب اسلاید قیمت‌ها"></div>
         <div class="market-pulse" id="marketPulse" aria-live="polite"><span>◈ <b id="pulseAssets">—</b> نماد</span><span class="up">↑ <b id="pulseUp">—</b> افزایشی</span><span class="down">↓ <b id="pulseDown">—</b> کاهشی</span><span><b id="pulseMarkets">—</b> بازار</span></div>
       <section class="section" id="prices" aria-labelledby="pricesTitle">
-        <div class="section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2><p class="muted" id="countLabel">در حال دریافت قیمت‌ها...</p></div><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span></div>
+        <div class="section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span></div>
         <div class="toolbar"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="جستجوی نماد، ارز، سکه، فلز..." autocomplete="off" aria-label="جستجوی دارایی‌ها"></label><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div>
         <div id="filterBar" class="filter-bar" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip">☆ منتخب</button><button type="button" data-filter="currency" class="chip">ارز</button><button type="button" data-filter="gold" class="chip">طلا</button><button type="button" data-filter="coin" class="chip">سکه</button><button type="button" data-filter="crypto" class="chip">رمزارز</button><button type="button" data-filter="energy" class="chip">انرژی</button><button type="button" data-filter="stock" class="chip">بورس ایران</button><button type="button" data-filter="index" class="chip">شاخص‌ها</button><button type="button" data-filter="metal" class="chip">فلزات</button><button type="button" data-filter="agriculture" class="chip">کشاورزی</button><button type="button" data-filter="forex" class="chip">فارکس</button><button type="button" data-filter="bond" class="chip">اوراق</button><button type="button" data-filter="commodity" class="chip">کالاها</button></div>
-        <div class="table-toolbar"><span id="marketCoverage">نمای کلی بازارها</span><span class="hint">برای مشاهده جزئیات، دارایی را انتخاب کنید</span></div>
-        <p class="daily-open-note">تغییر روزانه نسبت به اولین نرخ معتبری است که سیستم در همان روز به وقت تهران ثبت کرده؛ در صورت اعلام بسته‌بودن بازار، مبنا از نخستین ثبت پس از بازشدن آن است. این لزوماً قیمت رسمی گشایش نیست.</p>
         <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="4" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
         <div id="errorMessage" role="alert" class="error-message" hidden></div>
       </section>
@@ -95,7 +92,7 @@
         <div id="newsTrack" class="news-track" role="region" aria-label="اسلایدر خبرها"></div>
         <p id="newsStatus" class="muted" role="status">در حال دریافت خبرها…</p>
         <section id="newsMore" hidden aria-labelledby="newsMoreTitle">
-          <div class="feed-heading"><h3 id="newsMoreTitle">سایر خبرها</h3><span id="newsMoreCount"></span></div>
+          <div class="feed-heading"><h3 id="newsMoreTitle">سایر خبرها</h3></div>
           <div id="newsList" class="news-list"></div>
         </section>
       </section>

@@ -6,7 +6,6 @@ const next = document.getElementById('newsNext');
 const dateFormat = new Intl.DateTimeFormat('fa-IR', {
   timeZone:'Asia/Tehran', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'
 });
-const count = new Intl.NumberFormat('fa-IR');
 let articles = [], active = 0, loading = false, offline = false;
 
 function node(tag, className, text) {
@@ -59,13 +58,14 @@ function indicator() {
   document.getElementById('newsMore').hidden = articles.length < 2;
   const rows = document.getElementById('newsList').children;
   for (let i = 0; i < rows.length; i++) rows[i].hidden = i === active;
-  document.getElementById('newsMoreCount').textContent = count.format(Math.max(0, articles.length - 1)) + ' خبر';
   prev.disabled = active === 0;
   next.disabled = active >= articles.length - 1;
   controls.hidden = articles.length < 2;
-  let label = articles.length ? 'خبر ' + count.format(active+1) + ' از ' + count.format(articles.length)
-    : 'هنوز خبری منتشر نشده است.';
-  if (offline) label = articles.length ? label + ' · به‌روزرسانی در دسترس نیست.' : 'دریافت خبرها ممکن نیست.';
+  // Only show useful state messages; never show redundant 'news N of M' labels.
+  const label = offline
+    ? (articles.length ? 'به‌روزرسانی خبرها در دسترس نیست.' : 'دریافت خبرها ممکن نیست.')
+    : (articles.length ? '' : 'هنوز خبری منتشر نشده است.');
+  status.hidden = !label;
   if (status.textContent !== label) status.textContent = label;
 }
 function go(index, smooth) {

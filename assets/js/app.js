@@ -1,4 +1,4 @@
-import {refreshNews} from './news.js?v=20261121-1';
+import {refreshNews} from './news.js?v=20261121-2';
 import {getSnapshot,getHistory} from './data.js?v=20261121-1';
 import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,parseLocalizedNumber} from './format.js?v=20261121-1';
 import {drawHistory} from './chart.js?v=20261121-1';
@@ -74,8 +74,6 @@ function filteredItems(){
 }
 function renderRows(){
   const data=filteredItems();
-  el('countLabel').textContent=`${number(data.length,0)} مورد از ${number(state.items.length,0)} قیمت ثبت‌شده`;
-  el('marketCoverage').textContent=`${number(state.snapshot?.social_count||0,0)} نرخ اصلی • ${number(state.snapshot?.extra_count||0,0)} بازار تکمیلی`;
   const tbody=el('priceRows');
   if(!data.length){tbody.innerHTML='<tr><td class="blank-state" colspan="4">موردی پیدا نشد. فیلتر یا عبارت جستجو را تغییر دهید.</td></tr>';return;}
   tbody.innerHTML=data.map(q=>{

@@ -1,5 +1,5 @@
-/* CurrencyTel PWA hotfix: 2026-11-21 / shell v5 */
-const APP_CACHE = 'currencytel-shell-v5-20261121-news-cache-hotfix';
+/* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
+const APP_CACHE = 'currencytel-shell-v6-20261121-ui-text-cleanup';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
