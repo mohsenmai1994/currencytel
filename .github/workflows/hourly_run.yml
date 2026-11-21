@@ -89,6 +89,17 @@ jobs:
           fi
           echo "### Tehran publication slots" >> "$GITHUB_STEP_SUMMARY"
           grep -E '^(auto_scheduled|tick|market|market_targets|news|instagram|replay_latest)=' "$GITHUB_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+      # Visibility only: no Telegram network request and no publishing decision.
+      # This step runs even on 'news-only' ticks, when the market job is skipped.
+      - name: Report Telegram status and next Tehran price slot
+        if: always()
+        env:
+          ENABLE_TELEGRAM: ${{ vars.ENABLE_TELEGRAM || '0' }}
+          AUTO_SCHEDULED: ${{ steps.slot.outputs.auto_scheduled || '0' }}
+          MARKET: ${{ steps.slot.outputs.market || '0' }}
+          MARKET_TARGETS: ${{ steps.slot.outputs.market_targets || 'none' }}
+          SCHEDULED_TICK: ${{ steps.slot.outputs.tick || '' }}
+        run: python -m currencytel.telegram_status
       - name: Check news and publish to enabled channels
         if: steps.slot.outputs.news == '1'
         env:
