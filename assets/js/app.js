@@ -1,3 +1,4 @@
+import {refreshNews} from './news.js';
 import {getSnapshot,getHistory} from './data.js';
 import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,parseLocalizedNumber} from './format.js';
 import {drawHistory} from './chart.js';
@@ -181,16 +182,28 @@ function openDetail(id){
 }
 function closeDetail(){el('detailBackdrop').hidden=true;el('detailSheet').hidden=true;document.body.style.overflow='';}
 function setupNavigation(){
-  const links=[...document.querySelectorAll('[data-nav]')];
-  const active=key=>links.forEach(a=>a.classList.toggle('active',a.dataset.nav===key));
-  links.forEach(a=>a.addEventListener('click',()=>active(a.dataset.nav)));
-  if('IntersectionObserver' in window){
-    const observer=new IntersectionObserver(entries=>{
-      const entry=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
-      if(entry)active(entry.target.id);
-    },{rootMargin:'-18% 0px -62% 0px',threshold:0});
-    ['home','prices','tools','connect'].forEach(id=>{const target=el(id);if(target)observer.observe(target);});
+  const panels = [...document.querySelectorAll('main > section')];
+  const links = [...document.querySelectorAll('[data-nav]')];
+  function showPage(){
+    const page = panels.find(panel => '#' + panel.id === location.hash) || el('home');
+    panels.forEach(panel => {panel.hidden = panel !== page;});
+    links.forEach(link => {
+      const active = link.dataset.nav === page.id;
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    if (location.hash === '#prices') el('prices').scrollIntoView({behavior:'instant'});
+    else window.scrollTo({top: 0, behavior: 'instant'});
+    if (page.id === 'news') refreshNews();
+    if (page.id === 'tools' && state.items.length) renderChart();
   }
+  window.addEventListener('hashchange', showPage);
+  showPage();
+  const updateNews = () => {if (!document.hidden && !el('news').hidden) refreshNews();};
+  setInterval(updateNews, 300000);
+  document.addEventListener('visibilitychange', updateNews);
+  window.addEventListener('online', updateNews);
 }
 function events(){
   el('summaryGrid').addEventListener('click',e=>{const card=e.target.closest('[data-summary]');if(card)openDetail(card.dataset.summary);});
@@ -226,7 +239,7 @@ function events(){
     el('chartRanges').querySelectorAll('[data-range]').forEach(b=>{
       const chosen=b.dataset.range==='7d';b.classList.toggle('active',chosen);b.setAttribute('aria-pressed',String(chosen));
     });
-    renderChart();el('tools').scrollIntoView({behavior:'smooth',block:'start'});
+    location.hash='tools';
   });
   if('ResizeObserver' in window){
     const ro=new ResizeObserver(()=>{if(state.snapshot)renderChart();});
@@ -270,7 +283,7 @@ function init(){
     if(state.renderedDay!==today){state.renderedDay=today;if(state.items.length){cards();marketPulse();renderRows();}}
   }},30000);
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
-    setInterval(()=>{if(!document.hidden&&!state.slidePaused&&state.items.length)selectSlide(state.slide+1);},6500);
+    setInterval(()=>{if(!document.hidden&&!el('home').hidden&&!state.slidePaused&&state.items.length)selectSlide(state.slide+1);},6500);
   }
   if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }

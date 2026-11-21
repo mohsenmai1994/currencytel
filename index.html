@@ -23,7 +23,7 @@
     <header class="site-header">
       <div class="shell header-inner">
         <a class="mobile-brand" href="#home" aria-label="CurrencyTel، صفحه اصلی"><img src="./assets/icons/icon.svg" alt="" width="38" height="38"><span><b>CurrencyTel</b><small>نبض بازار</small></span></a>
-        <nav class="header-nav" aria-label="منوی اصلی"><a href="#home" data-nav="home" class="active">خانه</a><a href="#prices" data-nav="prices">بازارها</a><a href="#tools" data-nav="tools">ابزارها</a><a href="#connect" data-nav="connect">کانال‌ها</a></nav>
+        <nav class="header-nav" aria-label="منوی اصلی"><a href="#home" data-nav="home" class="active">بازار</a><a href="#news" data-nav="news">خبرها</a><a href="#tools" data-nav="tools">ابزارها</a><a href="#connect" data-nav="connect">کانال‌ها</a></nav>
         <div class="header-actions">
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال بارگیری</span></div>
           <button id="themeBtn" type="button" class="icon-button" aria-label="تغییر حالت روشن و تاریک" title="تغییر تم">☼</button>
@@ -48,7 +48,6 @@
         <div id="summaryGrid" class="summary-grid summary-carousel" aria-label="اسلایدر قیمت‌های شاخص" aria-roledescription="اسلایدر"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
         <div id="carouselDots" class="carousel-dots" aria-label="انتخاب اسلاید قیمت‌ها"></div>
         <div class="market-pulse" id="marketPulse" aria-live="polite"><span>◈ <b id="pulseAssets">—</b> نماد</span><span class="up">↑ <b id="pulseUp">—</b> افزایشی</span><span class="down">↓ <b id="pulseDown">—</b> کاهشی</span><span><b id="pulseMarkets">—</b> بازار</span></div>
-      </section>
       <section class="section" id="prices" aria-labelledby="pricesTitle">
         <div class="section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2><p class="muted" id="countLabel">در حال دریافت قیمت‌ها...</p></div><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span></div>
         <div class="toolbar"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="جستجوی نماد، ارز، سکه، فلز..." autocomplete="off" aria-label="جستجوی دارایی‌ها"></label><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div>
@@ -58,7 +57,22 @@
         <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="4" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
         <div id="errorMessage" role="alert" class="error-message" hidden></div>
       </section>
-      <section id="tools" class="section tools-section"><div class="section-heading"><div><div class="eyebrow">TOOLS & INSIGHTS</div><h2>تحلیل و ابزارها</h2><p class="muted">اطلاعاتی مبتنی بر گزارش‌های ثبت‌شده، نه قیمت‌سازی یا پیش‌بینی</p></div></div>
+      </section>
+      <section id="news" class="section news-section" aria-labelledby="newsTitle" hidden>
+        <div class="spotlight-heading"><h2 id="newsTitle">آخرین خبرها</h2>
+          <div class="carousel-controls" id="newsControls" hidden>
+            <button id="newsPrev" type="button" aria-label="خبر قبلی">→</button>
+            <button id="newsNext" type="button" aria-label="خبر بعدی">←</button>
+          </div>
+        </div>
+        <div id="newsTrack" class="news-track" role="region" aria-label="اسلایدر خبرها"></div>
+        <p id="newsStatus" class="muted" role="status">در حال دریافت خبرها…</p>
+        <section id="newsMore" hidden aria-labelledby="newsMoreTitle">
+          <div class="feed-heading"><h3 id="newsMoreTitle">سایر خبرها</h3><span id="newsMoreCount"></span></div>
+          <div id="newsList" class="news-list"></div>
+        </section>
+      </section>
+      <section id="tools" hidden class="section tools-section"><div class="section-heading"><div><div class="eyebrow">TOOLS & INSIGHTS</div><h2>تحلیل و ابزارها</h2><p class="muted">اطلاعاتی مبتنی بر گزارش‌های ثبت‌شده، نه قیمت‌سازی یا پیش‌بینی</p></div></div>
         <div class="utilities-grid"><section class="panel analytics-panel" aria-labelledby="chartTitle">
           <div class="panel-heading"><div><h3 id="chartTitle">نمودار و تحلیل قیمت</h3><p class="muted chart-explain">روند واقعی بر اساس گزارش‌های ذخیره‌شده</p></div><span class="soft-badge">تا ۹۰ روز</span></div>
           <label class="field-label" for="chartAsset">انتخاب دارایی</label>
@@ -84,15 +98,27 @@
         </section>
           <section class="panel" aria-labelledby="convertTitle"><div class="panel-heading"><h3 id="convertTitle">محاسبه‌گر نرخ</h3><span class="soft-badge">بدون کارمزد</span></div><label class="field-label" for="converterAsset">انتخاب دارایی</label><select id="converterAsset" class="field-select"></select><label class="field-label" for="converterAmount">مقدار</label><input id="converterAmount" class="field-input" inputmode="decimal" type="text" value="۱" pattern="[0-9۰-۹٠-٩.,٫٬ ]*"><div class="conversion-result"><small>ارزش تقریبی به تومان</small><strong id="conversionValue">—</strong><span id="conversionNote">بر اساس آخرین نرخ ثبت‌شده و بدون کارمزد</span></div></section></div>
       </section>
-      <section id="connect" class="section connect-section"><div class="section-heading"><div><div class="eyebrow">FOLLOW US</div><h2>CurrencyTel در شبکه‌های اجتماعی</h2><p class="muted">هر کانال با شناسه currencytel</p></div></div><div class="channels-grid">
+      <section id="connect" hidden class="section connect-section"><div class="business-panel">
+          <h2>خدمات تجاری CurrencyTel</h2>
+          <p>برای خرید دسترسی یا استعلام تعرفهٔ تبلیغات، تماس بگیرید یا موضوع درخواست را در پیامک بفرستید.</p>
+          <div class="service-links" aria-label="ارسال درخواست با پیامک">
+            <a href="sms:+989029483015?body=درخواست%20خرید%20API%20قیمت">خرید API قیمت</a>
+            <a href="sms:+989029483015?body=درخواست%20خرید%20API%20خبر">خرید API خبر</a>
+            <a href="sms:+989029483015?body=استعلام%20تعرفه%20تبلیغات">استعلام تبلیغات</a>
+          </div>
+          <a class="business-call" href="tel:+989029483015"><span>تماس با فروش</span><b dir="ltr">۰۹۰۲ ۹۴۸ ۳۰۱۵</b></a>
+        </div>
+        <div class="section-heading channel-heading"><h2>کانال‌های رسمی</h2></div><div class="channels-grid">
         <a href="https://t.me/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon">✈</span><span><b>تلگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
         <a href="https://ble.ir/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon">ب</span><span><b>بله</b><small>@currencytel</small></span><span class="external">↗</span></a>
         <a href="https://rubika.ir/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon">ر</span><span><b>روبیکا</b><small>@currencytel</small></span><span class="external">↗</span></a>
         <a href="https://www.instagram.com/currencytel/" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon">◎</span><span><b>اینستاگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
+        </div>
+      </section>
     </main>
     <footer class="site-footer shell"><span>© CurrencyTel · نرخ‌ها صرفاً جهت اطلاع‌رسانی هستند.</span><span>آخرین ثبت: <span id="footerTime">—</span></span></footer>
   </div>
-  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a class="active" href="#home" data-nav="home"><span aria-hidden="true">⌂</span><small>خانه</small></a><a href="#prices" data-nav="prices"><span aria-hidden="true">▦</span><small>بازارها</small></a><a href="#tools" data-nav="tools"><span aria-hidden="true">⌁</span><small>ابزارها</small></a><a href="#connect" data-nav="connect"><span aria-hidden="true">◎</span><small>کانال‌ها</small></a></nav>
+  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a class="active" href="#home" data-nav="home"><span aria-hidden="true">⌂</span><small>بازار</small></a><a href="#news" data-nav="news"><span aria-hidden="true">▤</span><small>خبرها</small></a><a href="#tools" data-nav="tools"><span aria-hidden="true">⌁</span><small>ابزارها</small></a><a href="#connect" data-nav="connect"><span aria-hidden="true">◎</span><small>کانال‌ها</small></a></nav>
   <div id="detailBackdrop" class="detail-backdrop" hidden></div>
   <aside id="detailSheet" class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden><div class="detail-sheet-top"><span class="detail-handle"></span><button id="detailClose" type="button" class="icon-button" aria-label="بستن پنجره">×</button></div><div id="detailContent"></div></aside>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
