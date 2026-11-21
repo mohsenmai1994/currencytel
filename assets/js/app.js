@@ -35,7 +35,7 @@ function cards(){
   container.innerHTML=available.map((id,index)=>{
     const q=state.items.find(x=>x.id===id),[title,icon]=meta[id];
     const [movement,kind]=changeLabel(q);
-    return `<button type="button" class="summary-card" data-summary="${safe(id)}" data-slide="${index}" aria-label="جزئیات ${safe(title)}"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${number(q.value)}</div><div class="summary-bottom"><span class="summary-unit">${safe(q.unit)}</span><span class="change ${kind}" dir="ltr">${movement}</span></div><div class="card-footnote">${safe(dailyAmount(q)??"مبنای تغییر امروز ثبت نشده")}</div></button>`;
+    return `<button type="button" class="summary-card" data-summary="${safe(id)}" data-slide="${index}" aria-label="جزئیات ${safe(title)}"><div class="summary-top"><span class="summary-kicker">${safe(title)}</span><span class="summary-icon">${icon}</span></div><div class="summary-number">${number(q.value)}</div><div class="summary-bottom"><span class="summary-unit">${safe(q.unit)}</span><span class="change ${kind}" dir="ltr">${movement}</span></div><div class="card-footnote">${safe(dailyAmount(q)??"")}</div></button>`;
   }).join('');
   state.slide=Math.min(state.slide,Math.max(0,available.length-1));
   el('carouselDots').innerHTML=available.map((_,i)=>`<button type="button" data-carousel-dot="${i}" aria-label="نمایش قیمت ${safe(meta[available[i]][0])}" aria-pressed="${i===state.slide}"></button>`).join('');
@@ -107,9 +107,9 @@ function renderChart(){
   el('chartCount').textContent=number(model.entries.length,0);
   const label=PERIODS[state.chartRange]?.label||'۲۴ ساعت';
   const first=model.first,last=model.last;
-  el('chartMeta').textContent=!first ? `در ${label} گذشته برای این دارایی داده‌ای ثبت نشده؛ بازه دیگری را انتخاب کنید.`
-    : model.entries.length===1 ? `تنها یک مشاهده در ${label} اخیر ثبت شده؛ برای محاسبه تغییر به دو مشاهده نیاز است. آخرین ثبت: ${when(last.t)}`
-    : `پوشش واقعی ${when(first.t)} تا ${when(last.t)} • تغییر صرفاً بین اولین و آخرین نمونه همین فاصله محاسبه شده است.`;
+  el('chartMeta').textContent=!first ? `داده‌ای در بازه ${label} ثبت نشده است.`
+    : model.entries.length===1 ? `یک مشاهده در ${label} • ${when(last.t)}`
+    : `${when(first.t)} تا ${when(last.t)}`;
 }
 function renderConverter(){
   const item=state.items.find(q=>q.id===el('converterAsset').value);
@@ -125,7 +125,7 @@ function renderConverter(){
     toman*=Number(exchange.value);
   }
   el('conversionValue').textContent=`${number(toman,2)} تومان`;
-  el('conversionNote').textContent=`${number(amount,4)} × ${number(item.value)} ${item.unit}؛${base?' تبدیل با نرخ ارز آزاد؛':''} بدون کارمزد یا هزینه معامله`;
+  el('conversionNote').textContent=base?'برآورد با نرخ ارز ثبت‌شده':'برآورد با آخرین نرخ ثبت‌شده';
 }
 function renderTime(){
   const now=new Date();
@@ -205,7 +205,40 @@ function setupNavigation(){
 }
 function events(){
   el('summaryGrid').addEventListener('click',e=>{const card=e.target.closest('[data-summary]');if(card)openDetail(card.dataset.summary);});
+  // Search stays a single shared input, now accessible from the header on every page.
+  const searchPanel=el('searchPanel');
+  function setSearchOpen(open){
+    searchPanel.hidden=!open;
+    el('searchToggle').setAttribute('aria-expanded',String(open));
+    if(open){
+      if(location.hash!=='#prices')location.hash='#prices';
+      requestAnimationFrame(()=>el('searchInput').focus());
+    }
+  }
+  el('searchToggle').addEventListener('click',()=>setSearchOpen(searchPanel.hidden));
+  el('searchClose').addEventListener('click',()=>{setSearchOpen(false);el('searchToggle').focus();});
+  document.addEventListener('pointerdown',event=>{
+    if(!searchPanel.hidden&&!el('headerSearch').contains(event.target))setSearchOpen(false);
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!searchPanel.hidden){setSearchOpen(false);el('searchToggle').focus();}
+  });
   el('searchInput').addEventListener('input',e=>{state.query=clean(e.target.value);renderRows();});
+  el('searchInput').addEventListener('keydown',event=>{
+    if(event.key==='Enter'){event.preventDefault();setSearchOpen(false);el('prices').scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+  // RTL snapping sliders: progress to the visually next card without changing data.
+  function slideByCard(trackId,direction){
+    const track=el(trackId),card=track.firstElementChild;
+    if(!card)return;
+    const gap=parseFloat(getComputedStyle(track).columnGap)||0;
+    const rtl=getComputedStyle(track).direction==='rtl';
+    track.scrollBy({left:(rtl?-1:1)*direction*(card.getBoundingClientRect().width+gap),behavior:'smooth'});
+  }
+  el('pulsePrev').addEventListener('click',()=>slideByCard('marketPulse',-1));
+  el('pulseNext').addEventListener('click',()=>slideByCard('marketPulse',1));
+  el('filterPrev').addEventListener('click',()=>slideByCard('filterBar',-2));
+  el('filterNext').addEventListener('click',()=>slideByCard('filterBar',2));
   el('filterBar').addEventListener('click',e=>{
     const button=e.target.closest('[data-filter]');if(!button)return;
     state.filter=button.dataset.filter;

@@ -1,5 +1,5 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-v6-20261121-ui-text-cleanup';
+const APP_CACHE = 'currencytel-shell-v7-20261121-ux-refinement';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
