@@ -7,14 +7,13 @@ import logging
 LOG=logging.getLogger(__name__)
 CONNECTORS={'telegram':telegram.send,'bale':bale.send,'rubika':rubika.send}
 
-def dispatch(report,digest,post_unchanged=False,dry_run=False):
+def dispatch(report,digest,dry_run=False):
     state=read_json(DATA/'publish_state.json',{'schema_version':1,'platforms':{}})
     state.setdefault('platforms',{})
     outcomes={}
     for name in enabled_platforms():
-        previous=state['platforms'].get(name,{})
-        if not post_unchanged and previous.get('digest')==digest:
-            outcomes[name]='unchanged / skipped';continue
+        # Send every fresh market collection, even when the price digest is unchanged.
+        # A previous successful send does not suppress the next scheduled post.
         if dry_run:outcomes[name]='dry-run';continue
         try:
             receipt=CONNECTORS[name](report)

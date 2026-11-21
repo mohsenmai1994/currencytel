@@ -29,11 +29,11 @@ def run():
                 LOG.info('Instagram card prepared (not posted): %s',image.name)
             except Exception as exc:
                 LOG.warning('Instagram card generation failed (other channels unaffected): %s',type(exc).__name__)
-        outcomes=dispatch(report,digest,post_unchanged=config.post_unchanged,dry_run=config.dry_run)
+        outcomes=dispatch(report,digest,dry_run=config.dry_run)
         LOG.info('Publisher outcomes: %s',outcomes)
         return 1 if 'failed' in outcomes.values() else 0
     except Exception as exc:
-        LOG.error('Pipeline aborted, prior website data preserved: %s',exc)
+        LOG.exception('Market collection or price publication aborted (previous data may have been updated)')
         return 2
     finally:
         if browser:
