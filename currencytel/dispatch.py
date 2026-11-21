@@ -5,7 +5,7 @@ workflow_dispatch can be fired by cron-job.org as well as by humans.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 import logging
 import os
@@ -18,6 +18,35 @@ from .publishers import telegram, bale, rubika
 LOG = logging.getLogger(__name__)
 TEHRAN = ZoneInfo("Asia/Tehran")
 CONNECTORS = {"telegram": telegram.send, "bale": bale.send, "rubika": rubika.send}
+
+# Safeguard at the final publication boundary: Telegram must NEVER rely solely
+# on the GitHub workflow's choice of PUBLISH_ONLY or manual/automatic inputs.
+TELEGRAM_MAX_LATENESS = timedelta(minutes=10)
+
+
+def _clock_now():
+    """Injectable clock, always evaluated in Tehran (not the runner UTC zone)."""
+    return datetime.now(TEHRAN)
+
+
+def _telegram_allowed(slot, allowed):
+    """Fail closed for all manual runs, invalid slots and stale queued jobs.
+
+    The actual send is allowed only if the Python scheduler produced the
+    current 09:00..22:00 half-hour tick. A small lag covers collector runtime;
+    late queued jobs are dropped rather than producing out-of-hours posts.
+    """
+    if os.getenv("AUTO_SCHEDULED", "0") != "1":
+        return False
+    if not slot or "telegram" not in allowed:
+        return False
+    try:
+        scheduled = datetime.fromisoformat(slot).astimezone(TEHRAN)
+        elapsed = _clock_now().astimezone(TEHRAN) - scheduled
+    except (TypeError, ValueError, OverflowError):
+        return False
+    return timedelta(0) <= elapsed < TELEGRAM_MAX_LATENESS
+
 
 
 def _automatic_slot():
@@ -48,6 +77,12 @@ def dispatch(report, digest, dry_run=False):
     slot, allowed = _automatic_slot() if automatic else (None, set())
 
     for name in enabled_platforms():
+        # Invariant: even a forced workflow_dispatch/market run cannot deliver
+        # Telegram unless schedule.py chose a currently valid Tehran slot.
+        if name == "telegram" and not _telegram_allowed(slot, allowed):
+            outcomes[name] = "outside price slot / skipped" if automatic else "telegram schedule guard / skipped"
+            LOG.warning("Telegram publication blocked: require current 09:00-22:00 half-hour auto slot")
+            continue
         if automatic and name not in allowed:
             outcomes[name] = "outside price slot / skipped"
             LOG.info("%s: automatic publication blocked outside slot %s", name, slot)
