@@ -1,6 +1,16 @@
 name: CurrencyTel | Fetch & publish
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Send now (ignores the automatic 09:00–21:30 Tehran schedule)'
+        required: true
+        type: choice
+        default: both
+        options:
+          - both
+          - market
+          - news
   repository_dispatch:
     types: [market_update]
 permissions:
@@ -22,9 +32,30 @@ jobs:
           cache: 'pip'
       - name: Select Tehran publishing slot
         id: slot
-        run: python -m currencytel.schedule
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_TARGET: ${{ inputs.publish || 'both' }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # Manual runs are explicitly initiated by the operator.
+            # Do not change scheduler.json; automatic ticks keep their cadence.
+            case "$MANUAL_TARGET" in
+              both|market|news) ;;
+              *) echo "::error::Unknown manual target: $MANUAL_TARGET"; exit 1 ;;
+            esac
+            echo "mode=$MANUAL_TARGET" >> "$GITHUB_OUTPUT"
+          else
+            # External repository_dispatch ticks retain the existing hours.
+            python -m currencytel.schedule
+          fi
+          MODE=$(grep '^mode=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
+          echo "Selected publishing mode: $MODE"
+          echo "### CurrencyTel: $MODE" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$MODE" = "idle" ]; then
+            echo "::notice::No publishing this tick (outside hours or already processed)."
+          fi
       - name: Check news and publish to enabled channels
-        if: steps.slot.outputs.mode == 'news'
+        if: steps.slot.outputs.mode == 'news' || steps.slot.outputs.mode == 'both'
         env:
           ENABLE_BALE: ${{ vars.ENABLE_BALE || '0' }}
           ENABLE_RUBIKA: ${{ vars.ENABLE_RUBIKA || '0' }}
@@ -36,13 +67,15 @@ jobs:
           python -m pip install 'requests>=2.32,<3'
           python -c 'from currencytel.news.pipeline import run_news; raise SystemExit(run_news())'
       - name: Install dependencies
-        if: steps.slot.outputs.mode == 'market' 
+        id: market_deps
+        if: always() && (steps.slot.outputs.mode == 'market' || steps.slot.outputs.mode == 'both')
         run: |
           python -m pip install -r requirements.txt
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-core >/dev/null
       - name: Run market collector and enabled publishers
-        if: steps.slot.outputs.mode == 'market'
+        id: market_publish
+        if: always() && steps.market_deps.outcome == 'success' && (steps.slot.outputs.mode == 'market' || steps.slot.outputs.mode == 'both')
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -61,11 +94,12 @@ jobs:
       # Instagram: publish ONLY with a previously saved session.
       # This does not call login, verify_login or authenticate.
       - name: Install Instagram upload dependencies
-        if: success() && steps.slot.outputs.mode == 'market'
+        id: instagram_deps
+        if: always() && steps.market_publish.outcome == 'success'
         run: python -m pip install -r requirements-instagram.txt
 
       - name: Publish prepared Instagram card (saved session only)
-        if: success() && steps.slot.outputs.mode == 'market'
+        if: always() && steps.instagram_deps.outcome == 'success' && steps.market_publish.outcome == 'success'
         continue-on-error: true
         env:
           ENABLE_INSTAGRAM: ${{ vars.ENABLE_INSTAGRAM || '1' }}
@@ -74,6 +108,25 @@ jobs:
           INSTAGRAM_MAX_DAILY_POSTS: ${{ vars.INSTAGRAM_MAX_DAILY_POSTS || '3' }}
           INSTAGRAM_MIN_HOURS: ${{ vars.INSTAGRAM_MIN_HOURS || '4' }}
         run: python scripts/post_instagram.py
+
+      # Rubino social post: optional step in the SAME market publishing workflow.
+      # Separate from the Rubika channel bot; no login/SMS is attempted here.
+      - name: Install Rubino publisher dependencies (opt-in)
+        if: always() && steps.market_publish.outcome == 'success' && vars.ENABLE_RUBINO == '1'
+        run: python -m pip install -r requirements-rubino.txt
+
+      - name: Publish prepared CurrencyTel image to Rubino (saved session)
+        if: always() && steps.market_publish.outcome == 'success' && vars.ENABLE_RUBINO == '1'
+        continue-on-error: true
+        env:
+          ENABLE_RUBINO: ${{ vars.ENABLE_RUBINO || '0' }}
+          RUBINO_PHONE: ${{ secrets.RUBINO_PHONE }}
+          RUBINO_PAGE_ID: ${{ secrets.RUBINO_PAGE_ID }}
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          RUBINO_MAX_DAILY_POSTS: ${{ vars.RUBINO_MAX_DAILY_POSTS || '3' }}
+          RUBINO_MIN_HOURS: ${{ vars.RUBINO_MIN_HOURS || '4' }}
+        run: python scripts/post_rubino.py
 
       - name: Commit only generated public data and publishing state
         if: always()
