@@ -30,7 +30,7 @@ def decide(now):
         market.append("telegram")
     # Do not publish domestic news at either domestic price slot (:00 or :30).
     # All other five-minute ticks between price posts may publish news.
-    news = minute not in DOMESTIC_PRICE_MINUTES
+    news = minute % 10 == 5
     # Attempt once at noon, then hourly if it previously failed; the actual
     # publisher has a hard one-post-per-Tehran-day guard.
     instagram = (12 <= hour <= 21 and minute == 0)
