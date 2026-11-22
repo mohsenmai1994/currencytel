@@ -1,12 +1,12 @@
 """Platform-specific, safe formatting for article posts.
 
-The source URL is attached to the publisher name as a hyperlink. It is NEVER
-appended as raw text to the body. Bale renders HTML; Rubika uses metadata.
+The source URL is attached to the publisher name as a hyperlink, never
+appended as a bare link. Bale uses its native single-asterisk Markdown and
+Rubika uses metadata with UTF-16 positions.
 """
 from __future__ import annotations
-from html import escape
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit, quote
 
 FOOTER = "@currencytel"
 
@@ -31,17 +31,49 @@ def _tags(story):
                     if re.fullmatch(r"#[\w\u0600-\u06FF\u200c_]+", tag))
 
 
+def _bale_plain(value):
+    """Escape reserved Bale Markdown markers in untrusted article text.
+
+    Bale's parser differs from CommonMark and has no consistent backslash
+    escape support. Use visually close safe characters instead of generating
+    broken formatting or accidental hyperlinks.
+    """
+    return (_one_line(value)
+            .replace("*", "∗")
+            .replace("[", "〔").replace("]", "〕"))
+
+
+def _bale_link(url):
+    """Encode non-ASCII paths and parentheses that would close [text](url)."""
+    url = _valid_url(url)
+    if not url:
+        return ""
+    parts = urlsplit(url)
+    path = quote(parts.path, safe="/%:@-._~!$&'*,;=+")
+    query = quote(parts.query, safe="%=&/:@-._~!$'*,;+?[]")
+    return urlunsplit((parts.scheme, parts.netloc, path, query, ""))
+
+
 def bale_caption(story):
-    """HTML, NOT literal Markdown, for Bale sendPhoto(parse_mode='HTML')."""
-    title = escape(_one_line(story.get("title")))
-    summary = escape(_one_line(story.get("summary")))
-    source = escape(_one_line(story.get("source")) or "خبرگزاری")
-    url = _valid_url(story.get("link"))
-    source_part = f'<a href="{escape(url, quote=True)}">{source}</a>' if url else source
-    lead = f"📰 <b>{title}</b>"
+    """Bale native Markdown: *bold*, [source](url); no parse_mode.
+
+    An extra space after the closing * follows Bale's special spacing rule.
+    Title, description, source, hashtag and footer are independent blocks.
+    """
+    title = _bale_plain(story.get("title"))
+    summary = _bale_plain(story.get("summary"))
+    source = _bale_plain(story.get("source")) or "خبرگزاری"
+    url = _bale_link(story.get("link"))
+    source_part = f"[{source}]({url})" if url else source
+    blocks = [f"📰 *{title}* " if title else "📰"]
     if summary:
-        lead += "\n\n" + summary
-    return f"{lead}\n\n🔗 منبع: {source_part}\n{_tags(story)}\n{FOOTER}".replace("\n\n\n", "\n\n")
+        blocks.append(summary)
+    blocks.append(f"🔗 منبع: {source_part}")
+    tags = _tags(story)
+    if tags:
+        blocks.append(tags)
+    blocks.append(FOOTER)
+    return "\n\n".join(blocks)
 
 
 def _utf16_units(value):
