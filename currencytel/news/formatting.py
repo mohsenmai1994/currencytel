@@ -68,11 +68,13 @@ def bale_caption(story):
     blocks = [f"📰 *{title}* " if title else "📰"]
     if summary:
         blocks.append(summary)
-    blocks.append(f"🔗 منبع: {source_part}")
+    # Keep one line between source, hashtags and channel ID; no empty lines.
+    footer_lines = [f"🔗 منبع: {source_part}"]
     tags = _tags(story)
     if tags:
-        blocks.append(tags)
-    blocks.append(FOOTER)
+        footer_lines.append(tags)
+    footer_lines.append(FOOTER)
+    blocks.append("\n".join(footer_lines))
     return "\n\n".join(blocks)
 
 
