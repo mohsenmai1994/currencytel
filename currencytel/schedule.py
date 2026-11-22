@@ -3,7 +3,7 @@
 Automatic:
   Instagram: one price photo daily (first attempt at 12:00, retry hourly to 21:00).
   Telegram: prices each half hour from 09:00 through 22:00 inclusive.
-  Bale/Rubika: prices every 30 minutes, 24/7; RSS news at :05, :10, ..., :25 and :35, ..., :55.
+  Bale/Rubika: prices every 30 minutes 09:00-22:00 plus 00/02/04/06/08; RSS checked every 10 minutes at :05/:15/:25/:35/:45/:55.
 No news is ever sent to Telegram or Instagram.
 """
 import os
@@ -14,6 +14,7 @@ from .storage import DATA, read_json, write_atomic
 
 TEHRAN = ZoneInfo("Asia/Tehran")
 DOMESTIC_PRICE_MINUTES = (0, 30)
+DOMESTIC_NIGHT_HOURS = frozenset((0, 2, 4, 6, 8))
 
 
 def decide(now):
@@ -24,12 +25,18 @@ def decide(now):
     minute = tick.minute
     hour = tick.hour
     market = []
-    if minute in DOMESTIC_PRICE_MINUTES:
+    # Domestic price cadence: 27 daytime + 5 overnight = 32 posts/day.
+    domestic_price_slot = (
+        (9 <= hour < 22 and minute in DOMESTIC_PRICE_MINUTES)
+        or (hour == 22 and minute == 0)
+        or (hour in DOMESTIC_NIGHT_HOURS and minute == 0)
+    )
+    if domestic_price_slot:
         market.extend(("bale", "rubika"))
     if (9 <= hour < 22 and minute in (0, 30)) or (hour == 22 and minute == 0):
         market.append("telegram")
-    # Do not publish domestic news at either domestic price slot (:00 or :30).
-    # All other five-minute ticks between price posts may publish news.
+    # News polling cadence remains unchanged: every 10 minutes at :05/:15/:25/:35/:45/:55.
+    # Keep news independent of domestic price publishing to avoid losing late-night news.
     news = minute % 10 == 5
     # Attempt once at noon, then hourly if it previously failed; the actual
     # publisher has a hard one-post-per-Tehran-day guard.
