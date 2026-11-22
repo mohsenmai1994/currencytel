@@ -181,14 +181,34 @@ jobs:
 
       - name: Commit only generated public data and publishing state
         if: always()
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A -- data/ market_log.txt
           if [ -d assets/generated ]; then
             git add -A -- assets/generated/
           fi
-          if ! git diff --cached --quiet; then
-            git commit -m 'Update CurrencyTel data [skip ci]'
-            git push
+          if git diff --cached --quiet; then
+            echo 'Nothing generated changed; no commit required.'
+            exit 0
           fi
+          git commit -m 'Update CurrencyTel data [skip ci]'
+          for attempt in 1 2 3; do
+            # A human edit or another workflow may have moved origin/main.
+            git fetch origin main
+            if ! git -c rebase.autoStash=true rebase origin/main; then
+              echo '::error::Cannot safely integrate remote changes (rebase conflict).'
+              git rebase --abort || true
+              exit 1
+            fi
+            if git push origin HEAD:main; then
+              echo "Generated data saved successfully (attempt $attempt)."
+              exit 0
+            fi
+            echo "::warning::main advanced during push; retry $attempt/3."
+            sleep "$((attempt * 2))"
+          done
+          echo '::error::Could not save generated files after 3 safe retries. Messages already published must be checked before replay.'
+          exit 1
