@@ -41,7 +41,7 @@ def send_news(story, session=None):
     client = session or requests
     try:
         response = client.post(f'https://tapi.bale.ai/bot{token}/sendPhoto',
-                               data={'chat_id':chat, 'caption':caption, 'parse_mode':'HTML'},
+                               data={'chat_id':chat, 'caption':caption},
                                files={'photo': (name, data, mime)}, timeout=(5, 30))
     except requests.RequestException as exc:
         raise PublishError(f'Bale news photo upload failed: {type(exc).__name__}') from None
