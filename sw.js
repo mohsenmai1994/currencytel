@@ -1,5 +1,5 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-v15-20261123-market-polish-dropdown';
+const APP_CACHE = 'currencytel-shell-v16-20261123-touchclean';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
