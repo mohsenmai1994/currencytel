@@ -1,13 +1,13 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-v9-20261123-market-modules';
+const APP_CACHE = 'currencytel-shell-v14-20261123-market-tools-two-cards-gold-title';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
   './', './index.html', './assets/css/main.css',
   './assets/js/app.js', './assets/js/data.js', './assets/js/news.js',
   './assets/js/format.js', './assets/js/chart.js', './assets/js/history.js',
-  './assets/css/market-features.css',
-  './assets/js/modules/market-features.js', './assets/js/modules/world-economy.js',
+  './assets/css/market-features.css', './assets/css/market-redesign.css', './assets/js/modules/custom-select.js',
+  './assets/js/modules/market-features.js', './assets/js/modules/tools-carousel.js', './assets/js/modules/world-economy.js',
   './assets/js/modules/world-globe.js', './assets/js/modules/world-service.js',
   './assets/js/modules/gold-invoice.js', './assets/js/modules/gold-calculator.js',
   './assets/data/world-countries.json',

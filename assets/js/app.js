@@ -1,3 +1,4 @@
+import {initCustomSelects,syncCustomSelects} from './modules/custom-select.js?v=20261123-navigation2';
 import {refreshNews} from './news.js?v=20261121-2';
 import {getSnapshot,getHistory} from './data.js?v=20261121-1';
 import {categories,categoryIcons,number,clean,safe,when,ageMinutes,changeText,parseLocalizedNumber} from './format.js?v=20261121-1';
@@ -90,6 +91,7 @@ function selectOptions(){
   converterSelect.innerHTML=state.items.filter(q=>q.unit==='تومان'||/^(دلار|پوند|یورو|یوان)(\/|$)/.test(q.unit)).map(q=>`<option value=\"${safe(q.id)}\">${safe(q.label)} (${safe(q.unit)})</option>`).join('');
   chartSelect.value=state.items.some(q=>q.id===lastChart)?lastChart:'usd';
   converterSelect.value=state.items.some(q=>q.id===lastConv)?lastConv:'usd';
+  syncCustomSelects();
 }
 function renderChart(){
   const id=el('chartAsset').value;
@@ -179,10 +181,32 @@ function openDetail(id){
   el('detailClose').focus();
 }
 function closeDetail(){el('detailBackdrop').hidden=true;el('detailSheet').hidden=true;document.body.style.overflow='';}
+function navigateMarketTool(name){
+  const show=()=>{
+    const button=document.querySelector(`#marketFeatureCards [data-market-feature="${name}"]`);
+    if(!button)return;
+    if(button.getAttribute('aria-expanded')!=='true'){
+      window.dispatchEvent(new CustomEvent('ct:open-market-tool',{detail:{name}}));
+    }else{
+      document.getElementById('marketFeaturePanel')?.scrollIntoView({block:'start',behavior:'smooth'});
+    }
+  };
+  if(!['','#home','#prices'].includes(location.hash)){
+    location.hash='#home';
+    requestAnimationFrame(()=>requestAnimationFrame(show));
+  }else{
+    show();
+  }
+}
 function setupNavigation(){
   const panels = [...document.querySelectorAll('main > section')];
   const links = [...document.querySelectorAll('[data-nav]')];
   function showPage(){
+    // Preserve compatibility with previously shared URLs to the former tools tab.
+    if(location.hash==='#tools'){
+      history.replaceState(null,'','#home');
+      requestAnimationFrame(()=>navigateMarketTool('chart'));
+    }
     const page = panels.find(panel => '#' + panel.id === location.hash) || el('home');
     panels.forEach(panel => {panel.hidden = panel !== page;});
     links.forEach(link => {
@@ -194,7 +218,6 @@ function setupNavigation(){
     if (location.hash === '#prices') el('prices').scrollIntoView({behavior:'instant'});
     else window.scrollTo({top: 0, behavior: 'instant'});
     if (page.id === 'news') refreshNews();
-    if (page.id === 'tools' && state.items.length) renderChart();
   }
   window.addEventListener('hashchange', showPage);
   showPage();
@@ -204,6 +227,22 @@ function setupNavigation(){
   window.addEventListener('online', updateNews);
 }
 function events(){
+  document.getElementById('dashboard').addEventListener('click',event=>{
+    const tool=event.target.closest('[data-dashboard-tool]');
+    if(tool){navigateMarketTool(tool.dataset.dashboardTool);return;}
+    const favorite=event.target.closest('[data-dashboard-favorites]');
+    if(favorite){
+      state.filter='favorite';
+      el('filterBar').querySelectorAll('[data-filter]').forEach(b=>{
+        const chosen=b.dataset.filter==='favorite';b.classList.toggle('active',chosen);b.setAttribute('aria-pressed',String(chosen));
+      });
+      renderRows();
+    }
+  });
+  window.addEventListener('ct:core-tool-opened',event=>{
+    if(event.detail?.name==='chart')requestAnimationFrame(renderChart);
+    if(event.detail?.name==='converter')renderConverter();
+  });
   el('summaryGrid').addEventListener('click',e=>{const card=e.target.closest('[data-summary]');if(card)openDetail(card.dataset.summary);});
   // The search field is always visible in the header; filtering remains global.
   const searchInput=el('searchInput');
@@ -254,7 +293,8 @@ function events(){
     el('chartRanges').querySelectorAll('[data-range]').forEach(b=>{
       const chosen=b.dataset.range==='7d';b.classList.toggle('active',chosen);b.setAttribute('aria-pressed',String(chosen));
     });
-    location.hash='tools';
+    syncCustomSelects();
+    navigateMarketTool('chart');
   });
   if('ResizeObserver' in window){
     const ro=new ResizeObserver(()=>{if(state.snapshot)renderChart();});
@@ -288,9 +328,9 @@ function events(){
   window.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.snapshot)renderTime();});
 }
 function init(){
-  events();refresh();
+  events();initCustomSelects();refresh();
   // Lazy independent module: a failed market feature must never break existing rates/news.
-  import('./modules/market-features.js?v=20261123-modules1')
+  import('./modules/market-features.js?v=20261123-navigation2')
     .then(({initMarketFeatures})=>initMarketFeatures({getGoldQuote:()=>state.items.find(item=>item.id==='18ayar')}))
     .catch(error=>{
       console.warn('Market features unavailable:',error);
