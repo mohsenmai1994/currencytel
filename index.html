@@ -14,8 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css?v=20261121-ux8">
-  <script src="./assets/js/app.js?v=20261121-ux8" type="module" defer></script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261123-modules1">
+  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261123-modules1">
+  <script src="./assets/js/app.js?v=20261123-modules1" type="module" defer></script>
   <!-- Check for newly installed versions and refresh the open PWA once. -->
   <script>
   (() => {
@@ -85,6 +86,23 @@
           <div class="pulse-card down"><small>کاهش قیمت</small><strong id="pulseDown">—</strong><span class="pulse-decor">↘</span></div>
           <div class="pulse-card"><small>دسته بازار</small><strong id="pulseMarkets">—</strong><span class="pulse-decor">▦</span></div>
         </div>
+      <section class="ctmf-section" id="marketFeatures" aria-labelledby="marketFeaturesTitle">
+        <div class="ctmf-section-heading"><div><span class="eyebrow">MARKET EXPLORER</span><h2 id="marketFeaturesTitle">بازار را بیشتر بشناسید</h2></div><span class="ctmf-section-caption">دو ابزار جدید</span></div>
+        <div class="ctmf-cards" id="marketFeatureCards">
+          <button type="button" class="ctmf-feature-card" data-market-feature="world" aria-controls="marketFeaturePanel" aria-expanded="false">
+            <span class="ctmf-feature-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c-10 10-10 24 0 34M24 7c10 10 10 24 0 34M12 13c7 6 17 6 24 0M12 35c7-6 17-6 24 0"/></svg></span>
+            <span class="ctmf-feature-copy"><strong>اقتصاد جهان</strong><small>کره سه‌بعدی، تورم و شاخص‌های اقتصادی کشورها</small><span class="ctmf-feature-action">مشاهده کشورها ←</span></span>
+          </button>
+          <button type="button" class="ctmf-feature-card" data-market-feature="gold" aria-controls="marketFeaturePanel" aria-expanded="false">
+            <span class="ctmf-feature-icon ctmf-feature-gold" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 21h32l-5.5 15h-21L8 21ZM8 21l7-9h18l7 9M15 12l6 9m12-9-6 9M21 21l3 15 3-15"/></svg></span>
+            <span class="ctmf-feature-copy"><strong>پیش‌فاکتور طلا</strong><small>محاسبه قیمت، اجرت، سود و مالیات با نرخ کرنسی‌تل</small><span class="ctmf-feature-action">محاسبه قیمت ←</span></span>
+          </button>
+        </div>
+        <div id="marketFeaturePanel" class="ctmf-feature-panel" hidden>
+          <div class="ctmf-feature-panel-bar"><h2 id="marketFeatureTitle"></h2><button type="button" id="marketFeatureBack" class="ctmf-btn ctmf-btn-soft">بازگشت به بازار ×</button></div>
+          <div id="marketFeatureContent" aria-live="off"></div>
+        </div>
+      </section>
       <section class="section" id="prices" aria-labelledby="pricesTitle">
         <div class="section-heading price-section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><div class="price-heading-actions"><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div></div>
         <div class="filter-shell" aria-label="انتخاب دسته بازار">

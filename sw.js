@@ -1,11 +1,16 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-v8-20261121-header-cadence';
+const APP_CACHE = 'currencytel-shell-v9-20261123-market-modules';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
   './', './index.html', './assets/css/main.css',
   './assets/js/app.js', './assets/js/data.js', './assets/js/news.js',
   './assets/js/format.js', './assets/js/chart.js', './assets/js/history.js',
+  './assets/css/market-features.css',
+  './assets/js/modules/market-features.js', './assets/js/modules/world-economy.js',
+  './assets/js/modules/world-globe.js', './assets/js/modules/world-service.js',
+  './assets/js/modules/gold-invoice.js', './assets/js/modules/gold-calculator.js',
+  './assets/data/world-countries.json',
   './assets/icons/icon.svg', './manifest.webmanifest'
 ];
 self.addEventListener('install', event => {

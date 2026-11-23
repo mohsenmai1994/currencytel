@@ -289,6 +289,16 @@ function events(){
 }
 function init(){
   events();refresh();
+  // Lazy independent module: a failed market feature must never break existing rates/news.
+  import('./modules/market-features.js?v=20261123-modules1')
+    .then(({initMarketFeatures})=>initMarketFeatures({getGoldQuote:()=>state.items.find(item=>item.id==='18ayar')}))
+    .catch(error=>{
+      console.warn('Market features unavailable:',error);
+      const section=el('marketFeatures');
+      if(section){const note=document.createElement('p');note.className='ctmf-note ctmf-error';
+        note.textContent='ابزارهای جدید بارگیری نشدند؛ لطفاً برنامه را به‌روزرسانی کنید.';
+        section.append(note);section.querySelectorAll('[data-market-feature]').forEach(button=>button.disabled=true);}
+    });
   setInterval(()=>{if(!document.hidden)refresh();},30*60*1000);
   setInterval(()=>{if(!document.hidden){
     renderTime();
