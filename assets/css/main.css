@@ -438,3 +438,38 @@ main > section[hidden], #newsControls[hidden] { display: none !important; }
   .header-search-field input {font-size:10px}
   .header-search-field svg {flex-basis:16px;width:16px;height:16px}
 }
+
+
+/* CurrencyTel v6 cache-touchfix: applies without depending on optional theme CSS. */
+html,html *,html *::before,html *::after {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+html,body,body *,body *::before,body *::after {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+/* Keep text fields fully usable: cursor, selection, paste, copy and IME. */
+input,textarea,[contenteditable="true"],[contenteditable="true"] *,[role="textbox"] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
+@media (hover: none), (pointer: coarse) {
+  /* A tap must not latch a legacy desktop hover highlight on Android. */
+  .bottom-nav a:not(.active):is(:hover,:active),
+  .header-nav a:not(.active):is(:hover,:active) {
+    background: transparent !important;
+    color: var(--muted) !important;
+  }
+  .bottom-nav a,.header-nav a,.bottom-nav svg,
+  .icon-button,button,a,.chip,.summary-card,.channel-card {
+    transition: none !important;
+  }
+  .summary-card:hover {transform:none !important;background:var(--panel) !important;border-color:var(--border) !important;}
+  .chip:not(.active):hover {background:var(--panel) !important;color:var(--muted) !important;border-color:var(--border) !important;font-weight:400 !important;}
+  .icon-button:hover {background:var(--panel) !important;border-color:var(--border) !important;color:var(--text) !important;}
+  .channel-card:hover {background:var(--panel) !important;border-color:var(--border) !important;}
+  .prices-table tbody tr[data-detail]:hover {background:transparent !important;}
+  .news-row:hover:not(:focus-visible){background:transparent !important;}
+}

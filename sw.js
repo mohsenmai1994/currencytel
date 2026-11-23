@@ -1,5 +1,5 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-v16-20261123-touchclean';
+const APP_CACHE = 'currencytel-shell-v17-20261123-cachetouchfix';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
@@ -17,7 +17,22 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(APP_CACHE);
     // Bypass the browser's HTTP cache when preparing a new application version.
-    await cache.addAll(SHELL.map(path => new Request(path, { cache: 'reload' })));
+    // Do not abort the entire SW upgrade if one optional page asset is absent.
+    // Cache primary shell assets first, then best-effort cache the remaining files.
+    const essential = new Set(['./index.html','./assets/css/main.css','./assets/css/market-redesign.css']);
+    const failed = [];
+    await Promise.all(SHELL.map(async path => {
+      try {
+        const request = new Request(path, { cache: 'reload' });
+        const response = await fetch(request, { cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        await cache.put(request,response);
+      } catch(error) {
+        if (essential.has(path)) throw error;
+        failed.push(path);
+      }
+    }));
+    if (failed.length) console.warn('CurrencyTel: optional assets not pre-cached',failed);
     await self.skipWaiting();
   })());
 });

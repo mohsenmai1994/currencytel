@@ -458,3 +458,221 @@
   #marketFeatures .ctmf-slider-track .ctmf-feature-copy strong{font-size:11.5px}
   #marketFeatures .ctmf-slider-track .ctmf-feature-copy small{font-size:9px}
 }
+
+
+/* ===== CurrencyTel v6 • cohesive market polish • only scoped overrides below ===== */
+/* Popup is portaled to <body>, so it cannot reflow/clamp a widget or a scroller. */
+.ct-select-shell{isolation:auto!important;z-index:auto}
+.ct-select-open{z-index:auto!important}
+.ct-select-menu{position:fixed!important;inset:auto;z-index:9999!important;display:flex;flex-direction:column;
+  box-sizing:border-box;max-width:calc(100vw - 20px);margin:0!important;
+  border-radius:15px;background:var(--panel);border:1px solid color-mix(in srgb,var(--teal) 32%,var(--border));
+  box-shadow:0 22px 48px rgba(0,0,0,.36);padding:6px;overscroll-behavior:contain;
+}
+.ct-select-menu[hidden]{display:none!important}
+.ct-select-menu .ct-select-list{max-height:none!important;min-height:0;flex:1 1 auto;overflow-y:auto}
+.ct-select-menu .ct-select-search-wrap{flex:0 0 auto}
+.ct-select-option{min-height:42px;flex-shrink:0}
+.ct-select-option:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+.ct-select-caption{flex:1;min-width:0}
+.sort-wrap{min-width:0}
+.sort-wrap .ct-select-shell{min-width:100px!important}
+.sort-wrap .ct-select-trigger{min-width:100px}
+/* Overview: subtle integrated KPI grid instead of four unrelated boxes. */
+.market-overview{padding:18px 18px 15px;gap:10px 16px;border-radius:21px;
+  background:radial-gradient(circle at 100% 0%,color-mix(in srgb,var(--teal) 11%,transparent),transparent 66%),var(--panel)}
+.market-overview .hero-aside{border-color:color-mix(in srgb,var(--teal) 13%,var(--border))}
+#marketPulse.market-overview-stats{gap:8px!important;margin:3px 0 0!important;overflow:visible!important}
+#marketPulse .pulse-card{min-height:69px;min-width:0;display:flex;flex-direction:row;
+  align-items:center;justify-content:flex-start;gap:10px;padding:9px 11px;
+  border-radius:14px;box-shadow:none;
+  border:1px solid color-mix(in srgb,var(--teal) 12%,var(--border));
+  background:linear-gradient(120deg,color-mix(in srgb,var(--teal) 5%,var(--bg-alt)),var(--panel2));
+  color:var(--text)}
+#marketPulse .pulse-info{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:2px}
+#marketPulse .pulse-card small{font-size:10.5px;line-height:1.35;font-weight:650;white-space:normal;text-align:right;color:var(--muted)}
+#marketPulse .pulse-card strong{font-size:22px;line-height:1.3;margin:0;font-weight:850;color:var(--text)}
+#marketPulse .pulse-card .pulse-decor{position:static;display:grid;place-items:center;flex:0 0 34px;
+  width:34px;height:34px;transform:none;opacity:1;border-radius:11px;
+  background:var(--teal-dark);color:var(--teal)}
+#marketPulse .pulse-card .pulse-decor svg{height:18px;width:18px}
+#marketPulse .pulseUp{--kpi:#42c4a0}
+#marketPulse .pulseDown{--kpi:#e78088}
+#marketPulse .pulseMarkets{--kpi:#7caccf}
+#marketPulse .pulse-card:not(.pulseAssets) .pulse-decor{
+  background:color-mix(in srgb,var(--kpi,var(--teal)) 11%,var(--panel));
+  color:var(--kpi,var(--teal))}
+#marketPulse .pulseUp strong{color:var(--green)}
+#marketPulse .pulseDown strong{color:var(--red)}
+/* Tighten sequential market sections while maintaining tap targets and legibility. */
+.content{padding-top:15px}
+.spotlight-heading{margin:14px 1px 6px}
+.summary-grid.summary-carousel{margin:0;padding:2px 1px 6px;gap:10px!important}
+.summary-carousel .summary-card{min-height:119px;padding:13px 15px;border-radius:16px}
+.summary-carousel .summary-number{margin:11px 0 7px}
+.carousel-dots{min-height:13px;margin-top:1px}
+#marketFeatures{margin:13px 0 2px}
+#marketFeatures .ctmf-section-heading{margin:0 0 8px;align-items:center}
+#marketFeatures .ctmf-section-heading h2{font-size:19px;margin-top:1px}
+#marketFeatures .ctmf-section-caption{padding:4px 9px;border-radius:30px}
+#marketFeatures .ctmf-slider-controls{justify-content:center!important;margin:0 0 5px!important;min-height:19px}
+#marketFeatures .ctmf-slider-btn{display:none!important}
+#marketFeatures .ctmf-slider-dots{gap:7px}
+#marketFeatures .ctmf-slider-dots button{width:7px;min-width:7px;height:7px;opacity:.4}
+#marketFeatures .ctmf-slider-dots button[aria-current=true]{width:25px;opacity:1}
+#marketFeatures .ctmf-swipe-hint{font-size:9.5px;margin:3px 0 0;line-height:1.5}
+#marketFeatures .ctmf-slider-track{gap:9px;padding:2px 0 4px;scroll-padding-inline:0}
+#marketFeatures .ctmf-slider-track .ctmf-feature-card{flex:0 0 calc((100% - 9px)/2);
+  width:calc((100% - 9px)/2);min-height:137px;padding:12px;border-radius:16px;
+  gap:8px;position:relative;overflow:hidden;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--feature-accent,var(--teal)) 9%,var(--panel2)),var(--panel) 78%);
+  border:1px solid color-mix(in srgb,var(--feature-accent,var(--teal)) 19%,var(--border));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+#marketFeatures .ctmf-slider-track .ctmf-feature-card::before{content:"";position:absolute;inset:0 auto auto 0;
+  width:85px;height:85px;transform:translate(-35%,-40%);border-radius:50%;
+  background:color-mix(in srgb,var(--feature-accent,var(--teal)) 10%,transparent);pointer-events:none}
+#marketFeatures .ctmf-slider-track .ctmf-feature-card::after{width:27px;height:3px;right:12px}
+#marketFeatures .ctmf-slider-track .ctmf-feature-icon{width:39px;height:39px;border-radius:12px;flex:0 0 39px;
+  background:color-mix(in srgb,var(--feature-accent,var(--teal)) 14%,var(--panel));
+  border-color:color-mix(in srgb,var(--feature-accent,var(--teal)) 26%,var(--border))}
+#marketFeatures .ctmf-slider-track .ctmf-feature-copy{display:flex;flex:1 1 auto;flex-direction:column;gap:2px;width:100%}
+#marketFeatures .ctmf-slider-track .ctmf-feature-copy strong{font-size:12.5px;line-height:1.5;font-weight:850}
+#marketFeatures .ctmf-slider-track .ctmf-feature-copy small{font-size:9.5px;line-height:1.6;color:var(--muted)}
+#marketFeatures .ctmf-slider-track .ctmf-feature-action{font-size:9.4px;margin-top:auto;padding-top:3px}
+#marketFeatures .ctmf-feature-card[aria-expanded=true]{border-color:var(--feature-accent,var(--teal))}
+#marketFeatures .ctmf-feature-panel{margin-top:10px}
+#home #prices.section{margin-top:19px;scroll-margin-top:70px}
+#prices .section-heading{margin-bottom:10px}
+#prices .filter-bar{margin-bottom:9px}
+#prices .filter-shell{margin-bottom:8px}
+/* Mobile KPI cards: readable 2-by-2, not four narrow postage stamps. */
+@media(max-width:590px){
+  .market-overview{padding:14px 13px 13px;gap:8px;border-radius:19px}
+  #marketPulse.market-overview-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important;margin-top:3px!important}
+  #marketPulse .pulse-card{min-height:58px;padding:8px 9px;gap:8px;border-radius:12px;flex-direction:row;align-items:center}
+  #marketPulse .pulse-card .pulse-decor{display:grid;flex-basis:30px;width:30px;height:30px;border-radius:9px}
+  #marketPulse .pulse-card .pulse-decor svg{width:17px;height:17px}
+  #marketPulse .pulse-card small{font-size:10px;line-height:1.3}
+  #marketPulse .pulse-card strong{font-size:19px;line-height:1.15}
+  .spotlight-heading{margin:12px 1px 6px}
+  .summary-carousel .summary-card{min-height:132px;padding:14px 14px}
+  .summary-carousel .summary-number{margin:10px 0 5px}
+  #marketFeatures{margin:10px 0 1px}
+  #marketFeatures .ctmf-section-heading{margin-bottom:6px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-card{min-height:139px;padding:11px 10px;gap:6px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-copy strong{font-size:12px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-copy small{font-size:10px;line-height:1.5}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-action{font-size:9.8px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-icon{width:36px;height:36px;flex-basis:36px;border-radius:11px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-icon svg{width:21px;height:21px}
+  #home #prices.section{margin-top:16px}
+}
+@media(max-width:350px){
+  #marketPulse .pulse-card{gap:6px;padding:7px}
+  #marketPulse .pulse-card .pulse-decor{flex-basis:27px;width:27px;height:27px}
+  #marketPulse .pulse-card small{font-size:9.2px}
+  #marketPulse .pulse-card strong{font-size:17px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-card{min-height:142px;padding:10px 9px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-copy strong{font-size:11.3px}
+  #marketFeatures .ctmf-slider-track .ctmf-feature-copy small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  #marketFeatures .ctmf-slider-track .ctmf-feature-card{transition:none}
+}
+@media print{.ct-select-menu{display:none!important}}
+
+
+/* CurrencyTel v6.1 | native-app touch behaviour and text-selection policy.
+   Keep focus-visible indicators for hardware keyboard users and real active tab states. */
+html,body,body *,body *::before,body *::after{
+  -webkit-tap-highlight-color:transparent;
+}
+html,body,body *{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+/* Inputs must remain editable and allow caret movement, selection, cut and copy.
+   This also preserves the gold pre-invoice clipboard fallback textarea. */
+input,textarea,[contenteditable="true"],[contenteditable="true"] *{
+  -webkit-user-select:text!important;
+  -moz-user-select:text!important;
+  user-select:text!important;
+  -webkit-touch-callout:default;
+}
+/* Do not inhibit native page scrolling or carousel gestures. */
+a,button,[role="button"],.chip,.ct-home-tile{
+  touch-action:manipulation;
+}
+/* Android touch browsers can retain :hover briefly after a tap. Disable that
+   transient tint while preserving persistent .active, .selected, and expanded states. */
+@media (hover:none), (pointer:coarse){
+  a,button,[role="button"],.chip,.summary-card,
+  .prices-table tbody tr[data-detail],.ct-home-tile,
+  #marketFeatures .ctmf-feature-card{
+    transition:none!important;
+  }
+  .header-nav a:not(.active):hover{background:transparent;color:var(--muted)}
+  .icon-button:hover{background:var(--panel);color:var(--text);border-color:var(--border)}
+  .hero-cta:hover{filter:none}
+  .summary-card:hover{transform:none;background:var(--panel);border-color:var(--border)}
+  .chip:not(.active):hover,.filter-bar .chip:not(.active):hover{
+    background:var(--panel);border-color:var(--border);color:var(--muted);font-weight:400;
+  }
+  .prices-table tbody tr[data-detail]:hover{background:transparent}
+  .channel-card:hover{background:var(--panel);border-color:var(--border)}
+  .carousel-controls button:hover{border-color:var(--border);color:var(--text)}
+  .news-row:hover:not(:focus-visible){background:transparent}
+  .service-links a:hover:not(:focus-visible){border-color:var(--border)}
+  .search-close:hover{color:var(--muted)}
+  .compact-arrows button:hover:not(:focus-visible){
+    background:var(--panel);color:var(--muted);border-color:var(--border)
+  }
+  .ct-home-tile:hover:not(:focus-visible){
+    transform:none;
+    border-color:color-mix(in srgb,var(--tile-accent) 12%,var(--border));
+    background:
+      radial-gradient(circle at 95% 1%,color-mix(in srgb,var(--tile-accent) 10%,transparent),transparent 65%),
+      linear-gradient(160deg,color-mix(in srgb,var(--panel2) 38%,var(--panel)),var(--panel));
+  }
+  .ct-select-shell:not(.ct-select-open) .ct-select-trigger:hover:not(:focus-visible){
+    border-color:var(--border);background:var(--panel2)
+  }
+  .sort-wrap .ct-select-shell:not(.ct-select-open) .ct-select-trigger:hover:not(:focus-visible){
+    background:transparent;border-color:transparent
+  }
+  #marketFeatures .ctmf-field .ct-select-shell:not(.ct-select-open) .ct-select-trigger:hover:not(:focus-visible){
+    background:var(--bg-alt);border-color:var(--border)
+  }
+  .ct-select-option:not(.selected):hover:not(:focus-visible){
+    background:transparent;color:var(--text)
+  }
+  #marketFeatures .ctmf-feature-card:not([aria-expanded="true"]):hover:not(:focus-visible){
+    transform:none;
+    border-color:color-mix(in srgb,var(--teal) 16%,var(--border));
+    background:
+      radial-gradient(circle at 100% 0%,color-mix(in srgb,var(--teal) 12%,transparent),transparent 62%),
+      linear-gradient(145deg,var(--panel2),var(--panel) 76%);
+  }
+  #marketFeatures .ctmf-btn:hover:not(:disabled){filter:none}
+}
+
+
+/* v6 cache-touchfix: never paint a transient touch-hover over feature or home tiles. */
+@media (hover: none), (pointer: coarse) {
+  .ct-home-tile:is(:hover,:active):not(:focus-visible) {
+    transform:none !important;
+    border-color:color-mix(in srgb,var(--tile-accent) 12%,var(--border)) !important;
+    background:radial-gradient(circle at 95% 1%,color-mix(in srgb,var(--tile-accent) 10%,transparent),transparent 65%),linear-gradient(160deg,color-mix(in srgb,var(--panel2) 38%,var(--panel)),var(--panel)) !important;
+  }
+  #marketFeatures .ctmf-feature-card:is(:hover,:active):not([aria-expanded="true"]):not(:focus-visible) {
+    transform:none !important;
+    border-color:color-mix(in srgb,var(--teal) 16%,var(--border)) !important;
+    background:radial-gradient(circle at 100% 0%,color-mix(in srgb,var(--teal) 12%,transparent),transparent 62%),linear-gradient(145deg,var(--panel2),var(--panel) 76%) !important;
+  }
+  .ct-select-option:not(.selected):hover:not(:focus-visible){background:transparent !important;color:var(--text) !important;}
+  .ct-select-trigger:hover:not(:focus-visible):not([aria-expanded="true"]){filter:none !important;}
+  #marketFeatures .ctmf-btn:hover:not(:disabled){filter:none !important;}
+  .ct-home-tile,#marketFeatures .ctmf-feature-card,.ct-select-trigger {transition:none !important;}
+}

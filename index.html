@@ -8,42 +8,65 @@
   <meta name="color-scheme" content="dark light">
   <meta property="og:title" content="CurrencyTel | نبض بازار">
   <meta property="og:description" content="قیمت‌ها، تغییرات روزانه و نمودارهای بازار ایران و جهان">
+  <meta name="currencytel-build" content="20261123-v6-cachetouchfix-2">
   <title>CurrencyTel | نبض بازار</title>
   <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css?v=20261123-modules1">
-  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261123-modules1">
-  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261123-touchclean6">
-  <script src="./assets/js/app.js?v=20261123-polish6" type="module" defer></script>
-  <script src="./assets/js/modules/tools-carousel.js?v=20261123-polish6" defer></script>
-  <!-- Check for newly installed versions and refresh the open PWA once. -->
-  <script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261123-v6-cachetouchfix-2">
+  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261123-v6-cachetouchfix-2">
+  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261123-v6-cachetouchfix-2">
+  <script src="./assets/js/app.js?v=20261123-v6-cachetouchfix-2" type="module" defer></script>
+  <script src="./assets/js/modules/tools-carousel.js?v=20261123-v6-cachetouchfix-2" defer></script>
+
+  <!-- Critical touch behavior lives in HTML too, so stale optional styles cannot restore text selection. -->
+  <style id="ct-touch-policy-v6">
+    html,html *,html *::before,html *::after{-webkit-tap-highlight-color:transparent!important;-webkit-touch-callout:none!important}
+    html,body,body *,body *::before,body *::after{-webkit-user-select:none!important;user-select:none!important}
+    input,textarea,[contenteditable="true"],[contenteditable="true"] *,[role="textbox"]{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+    @media (hover:none),(pointer:coarse){
+      .bottom-nav a:not(.active):hover,.bottom-nav a:not(.active):active,.header-nav a:not(.active):hover,.header-nav a:not(.active):active{background:transparent!important;color:var(--muted)!important}
+      .bottom-nav a,.header-nav a,.bottom-nav svg,button,a,.chip{transition:none!important}
+    }
+  </style>
+  <script id="ct-touch-guard-v6">
+  (()=>{
+    const editable=(node)=>node instanceof Element&&Boolean(node.closest('input,textarea,[contenteditable="true"],[role="textbox"]'));
+    document.addEventListener('selectstart',event=>{if(!editable(event.target))event.preventDefault();},true);
+    document.addEventListener('contextmenu',event=>{
+      if(matchMedia('(pointer:coarse)').matches&&!editable(event.target))event.preventDefault();
+    },true);
+  })();
+  </script>
+
+  <!-- Always register a versioned worker: stale browser/CDN sw.js cannot block the upgrade. -->
+  <script id="ct-sw-updater-v6">
   (() => {
-    if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
-    const wasControlled = Boolean(navigator.serviceWorker.controller);
-    let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (wasControlled && !reloading) {
-        reloading = true;
-        location.reload();
-      }
+    const supported=('serviceWorker' in navigator)&&(
+      location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
+    if(!supported)return;
+    const worker='./sw.js?ct-build=20261123-v6-cachetouchfix-2';
+    const hadController=Boolean(navigator.serviceWorker.controller);
+    let reloading=false,lastCheck=0;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(!hadController||reloading)return;
+      reloading=true;
+      // Avoid an eternal reload loop if a browser has broken worker lifecycle semantics.
+      const k='ct-sw-refresh-20261123-v6-cachetouchfix-2';
+      if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}
     });
-    let lastChecked = 0;
-    const checkForUpdates = () => {
-      if (Date.now() - lastChecked < 5 * 60 * 1000) return;
-      lastChecked = Date.now();
-      navigator.serviceWorker.getRegistration()
-        .then(registration => registration && registration.update())
-        .catch(() => {});
+    const check=()=>{
+      if(Date.now()-lastCheck<60*1000)return;
+      lastCheck=Date.now();
+      navigator.serviceWorker.register(worker,{scope:'./',updateViaCache:'none'})
+        .then(reg=>reg.update()).catch(err=>console.warn('CurrencyTel SW update:',err));
     };
-    window.addEventListener('pageshow', checkForUpdates);
-    window.addEventListener('online', checkForUpdates);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) checkForUpdates();
-    });
+    check();
+    window.addEventListener('pageshow',check);
+    window.addEventListener('online',check);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
   })();
   </script>
 </head>

@@ -348,6 +348,6 @@ function init(){
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
     setInterval(()=>{if(!document.hidden&&!el('home').hidden&&!state.slidePaused&&state.items.length)selectSlide(state.slide+1);},6500);
   }
-  if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  // Service Worker is registered once by the versioned updater in index.html.
 }
 init();
