@@ -16,9 +16,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/main.css?v=20261123-modules1">
   <link rel="stylesheet" href="./assets/css/market-features.css?v=20261123-modules1">
-  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261123-carousel5b">
-  <script src="./assets/js/app.js?v=20261123-navigation2" type="module" defer></script>
-  <script src="./assets/js/modules/tools-carousel.js?v=20261123-carousel5b" defer></script>
+  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261123-polish6">
+  <script src="./assets/js/app.js?v=20261123-polish6" type="module" defer></script>
+  <script src="./assets/js/modules/tools-carousel.js?v=20261123-polish6" defer></script>
   <!-- Check for newly installed versions and refresh the open PWA once. -->
   <script>
   (() => {
@@ -78,10 +78,10 @@
     <div><span>زمان فعلی تهران</span><strong id="ageLabel" class="live-clock">—</strong><small id="currentDate">—</small></div>
   </div>
   <div class="market-pulse market-overview-stats" id="marketPulse" role="group" aria-label="خلاصه آمار بازار">
-    <div class="pulse-card"><small>نمادها</small><strong id="pulseAssets">—</strong><span class="pulse-decor" aria-hidden="true">◈</span></div>
-    <div class="pulse-card up"><small>افزایشی</small><strong id="pulseUp">—</strong><span class="pulse-decor" aria-hidden="true">↗</span></div>
-    <div class="pulse-card down"><small>کاهشی</small><strong id="pulseDown">—</strong><span class="pulse-decor" aria-hidden="true">↘</span></div>
-    <div class="pulse-card"><small>دسته‌های بازار</small><strong id="pulseMarkets">—</strong><span class="pulse-decor" aria-hidden="true">▦</span></div>
+    <div class="pulse-card pulseAssets"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></span><span class="pulse-info"><small>نمادها</small><strong id="pulseAssets">—</strong></span></div>
+    <div class="pulse-card pulseUp"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4 17 6-6 4 3 6-7"/><path d="M15 7h5v5"/></svg></span><span class="pulse-info"><small>افزایشی</small><strong id="pulseUp">—</strong></span></div>
+    <div class="pulse-card pulseDown"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4 7 6 6 4-3 6 7"/><path d="M15 17h5v-5"/></svg></span><span class="pulse-info"><small>کاهشی</small><strong id="pulseDown">—</strong></span></div>
+    <div class="pulse-card pulseMarkets"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3.5 19.5V5.5M3.5 19.5h17"/><path d="m7 15 4-5 3 2 5-7"/></svg></span><span class="pulse-info"><small>دسته‌های بازار</small><strong id="pulseMarkets">—</strong></span></div>
   </div>
 </div>
         <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2></div></div>
@@ -90,9 +90,9 @@
 <section class="ctmf-section" id="marketFeatures" aria-labelledby="marketFeaturesTitle">
   <div class="ctmf-section-heading"><div><span class="eyebrow">CURRENCYTEL TOOLS</span><h2 id="marketFeaturesTitle">ابزارهای بازار</h2></div><span class="ctmf-section-caption">۴ ابزار کاربردی</span></div>
   <div class="ctmf-slider-controls" aria-label="پیمایش ابزارهای بازار">
-    <button type="button" id="marketFeaturePrev" class="ctmf-slider-btn" aria-label="ابزار قبلی" title="ابزار قبلی" disabled>›</button>
+
     <div id="marketFeatureDots" class="ctmf-slider-dots" role="group" aria-label="انتخاب ابزار"></div>
-    <button type="button" id="marketFeatureNext" class="ctmf-slider-btn" aria-label="ابزار بعدی" title="ابزار بعدی">‹</button>
+
   </div>
   <div class="ctmf-cards ctmf-slider-track" id="marketFeatureCards" role="region" aria-roledescription="اسلایدر" aria-label="ابزارهای بازار؛ هر صفحه شامل دو ابزار است" tabindex="0">
     <button type="button" class="ctmf-feature-card" data-market-feature="world" aria-controls="marketFeaturePanel" aria-expanded="false">
@@ -146,7 +146,7 @@
   </div>
 </section>
       <section class="section" id="prices" aria-labelledby="pricesTitle">
-        <div class="section-heading price-section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><div class="price-heading-actions"><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span><label class="sort-wrap" for="sortInput"><span>مرتب‌سازی</span><select id="sortInput"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></label></div></div>
+        <div class="section-heading price-section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><div class="price-heading-actions"><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span><div class="sort-wrap"><span>مرتب‌سازی</span><select id="sortInput" aria-label="مرتب‌سازی بازار"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></div></div></div>
         <div class="filter-shell" aria-label="انتخاب دسته بازار">
           <div class="filter-toolbar"><span>دسته‌بندی بازار</span></div>
           <div id="filterBar" class="filter-bar" role="group" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip" aria-pressed="false">☆ منتخب</button><button type="button" data-filter="currency" class="chip" aria-pressed="false">ارز</button><button type="button" data-filter="gold" class="chip" aria-pressed="false">طلا</button><button type="button" data-filter="coin" class="chip" aria-pressed="false">سکه</button><button type="button" data-filter="crypto" class="chip" aria-pressed="false">رمزارز</button><button type="button" data-filter="forex" class="chip" aria-pressed="false">فارکس</button><button type="button" data-filter="metal" class="chip" aria-pressed="false">فلزات</button><button type="button" data-filter="energy" class="chip" aria-pressed="false">انرژی</button><button type="button" data-filter="commodity" class="chip" aria-pressed="false">کالاها</button><button type="button" data-filter="stock" class="chip" aria-pressed="false">بورس ایران</button><button type="button" data-filter="index" class="chip" aria-pressed="false">شاخص‌ها</button><button type="button" data-filter="bond" class="chip" aria-pressed="false">اوراق</button><button type="button" data-filter="agriculture" class="chip" aria-pressed="false">کشاورزی</button></div>
