@@ -8,18 +8,20 @@
   <meta name="color-scheme" content="dark light">
   <meta property="og:title" content="CurrencyTel | نبض بازار">
   <meta property="og:description" content="قیمت‌ها، تغییرات روزانه و نمودارهای بازار ایران و جهان">
-  <meta name="currencytel-build" content="20261123-v6-cachetouchfix-2">
+  <meta name="currencytel-build" content="20261124-ads-v7">
   <title>CurrencyTel | نبض بازار</title>
   <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css?v=20261123-v6-cachetouchfix-2">
-  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261123-v6-cachetouchfix-2">
-  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261123-v6-cachetouchfix-2">
-  <script src="./assets/js/app.js?v=20261123-v6-cachetouchfix-2" type="module" defer></script>
-  <script src="./assets/js/modules/tools-carousel.js?v=20261123-v6-cachetouchfix-2" defer></script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261124-ads-v7">
+  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261124-ads-v7">
+  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261124-ads-v7">
+  <link rel="stylesheet" href="./assets/css/ads.css?v=20261124-ads-v7">
+  <script src="./assets/js/ads.js?v=20261124-ads-v7" type="module" defer></script>
+  <script src="./assets/js/app.js?v=20261124-ads-v7" type="module" defer></script>
+  <script src="./assets/js/modules/tools-carousel.js?v=20261124-ads-v7" defer></script>
 
   <!-- Critical touch behavior lives in HTML too, so stale optional styles cannot restore text selection. -->
   <style id="ct-touch-policy-v6">
@@ -47,14 +49,14 @@
     const supported=('serviceWorker' in navigator)&&(
       location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
     if(!supported)return;
-    const worker='./sw.js?ct-build=20261123-v6-cachetouchfix-2';
+    const worker='./sw.js?ct-build=20261124-ads-v7';
     const hadController=Boolean(navigator.serviceWorker.controller);
     let reloading=false,lastCheck=0;
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(!hadController||reloading)return;
       reloading=true;
       // Avoid an eternal reload loop if a browser has broken worker lifecycle semantics.
-      const k='ct-sw-refresh-20261123-v6-cachetouchfix-2';
+      const k='ct-sw-refresh-20261124-ads-v7';
       if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}
     });
     const check=()=>{
@@ -165,8 +167,10 @@
         </section></div>
 <div id="marketConverterTool" data-core-feature="converter" hidden>
 <section class="panel" aria-labelledby="convertTitle"><div class="panel-heading"><h3 id="convertTitle">محاسبه‌گر نرخ</h3></div><label class="field-label" for="converterAsset">انتخاب دارایی</label><select id="converterAsset" class="field-select"></select><label class="field-label" for="converterAmount">مقدار</label><input id="converterAmount" class="field-input" inputmode="decimal" type="text" value="۱" pattern="[0-9۰-۹٠-٩.,٫٬ ]*"><div class="conversion-result"><small>ارزش تقریبی به تومان</small><strong id="conversionValue">—</strong><span id="conversionNote">برآورد بر اساس نرخ ثبت‌شده</span></div></section>      </div>
+      <div class="ctad-placement" data-ctad-slot="tools_footer" hidden></div>
     </div>
   </div>
+<div class="ctad-placement" data-ctad-slot="market_between" hidden></div>
 </section>
       <section class="section" id="prices" aria-labelledby="pricesTitle">
         <div class="section-heading price-section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><div class="price-heading-actions"><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span><div class="sort-wrap"><span>مرتب‌سازی</span><select id="sortInput" aria-label="مرتب‌سازی بازار"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></div></div></div>
@@ -195,6 +199,7 @@
           <a class="ct-home-tile" href="#prices" data-dashboard-favorites="true"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.6l-5.7 2.9 1.1-6.3-4.6-4.5 6.4-.9z"/></svg></span><span class="ct-home-info"><strong>علاقه‌مندی‌ها</strong><small>نمادهای ذخیره‌شده</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
           <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12 20 4l-4.3 16-5.4-5.8L3.5 12Z"/><path d="M10.3 14.2 20 4"/></svg></span><span class="ct-home-info"><strong>کانال‌های رسمی</strong><small>تلگرام و شبکه‌های اجتماعی</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
           <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="3"/><path d="M6 8V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M3 13h18"/></svg></span><span class="ct-home-info"><strong>خدمات تجاری</strong><small>درخواست API و تبلیغات</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>  </div>
+  <div class="ctad-placement" data-ctad-slot="home_quick" hidden></div>
 </section>
       <section id="news" class="section news-section" aria-labelledby="newsTitle" hidden>
         <div class="spotlight-heading"><h2 id="newsTitle">آخرین خبرها</h2>
@@ -222,6 +227,7 @@
         <a href="https://rubika.ir/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">ر</span><span class="channel-info"><b>روبیکا</b><small>@currencytel</small></span><span class="external">↗</span></a>
         <a href="https://www.instagram.com/currencytel/" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">◎</span><span class="channel-info"><b>اینستاگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
         </div>
+        <div class="ctad-placement" data-ctad-slot="channels_footer" hidden></div>
       </section>
     </main>
     <span id="footerTime" hidden aria-hidden="true"></span>

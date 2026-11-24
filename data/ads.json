@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "updatedAt": "",
+  "placements": {
+    "home_quick": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "market_between": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "market_inline": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "news_inline": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "world_footer": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "gold_footer": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "tools_footer": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    },
+    "channels_footer": {
+      "banner": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "image": "",
+        "alt": "",
+        "startAt": "",
+        "endAt": ""
+      },
+      "link": {
+        "enabled": false,
+        "title": "",
+        "url": "",
+        "startAt": "",
+        "endAt": ""
+      }
+    }
+  }
+}

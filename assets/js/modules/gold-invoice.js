@@ -43,7 +43,9 @@ export function mountGoldInvoice(container,{getGoldQuote}={}) {
   const actions=$('div','ctmf-invoice-actions'),copy=$('button','ctmf-btn ctmf-btn-soft','کپی ریز فاکتور'),print=$('button','ctmf-btn','چاپ / ذخیره PDF');
   copy.type=print.type='button';copy.disabled=print.disabled=true;actions.append(copy,print);result.append(actions);
   result.append($('p','ctmf-invoice-legal','این یک پیش‌فاکتور محاسباتی است؛ فاکتور رسمی مالیاتی و مدرک خرید محسوب نمی‌شود. نرخ مالیات و مفاد فاکتور را با فروشنده تطبیق دهید.'));
-  root.append(form,result);container.append(root);
+  const ad=$('div','ctad-placement');ad.dataset.ctadSlot='gold_footer';ad.hidden=true;
+  root.append(form,result,ad);container.append(root);
+  window.dispatchEvent(new Event('ct:ads-slots-updated'));
   let current=null,disposed=false;
   const num=n=>parseLocalizedNumber(inputs[n].value);
   function calculate(){

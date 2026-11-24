@@ -30,7 +30,9 @@ export async function mountWorldEconomy(target){
   currency.append(fxTitle,fxValue,fxDate);
   const foot=$('p','ctmf-source-note','منبع شاخص‌ها: بانک جهانی (World Bank). نرخ مرجع ارز: Frankfurter. این داده‌ها معادل نرخ بازار آزاد ایران یا قیمت لحظه‌ای نیستند.');
   const links=$('div','ctmf-source-links');links.innerHTML='<a href="https://data.worldbank.org/" target="_blank" rel="noopener noreferrer">بانک جهانی ↗</a><a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer">منبع نرخ ارز ↗</a>';
-  info.append(label,countryName,updated,currency,metrics,foot,links);grid.append(globePanel,info);root.append(intro,grid);target.append(root);
+  const ad=$('div','ctad-placement');ad.dataset.ctadSlot='world_footer';ad.hidden=true;
+  info.append(label,countryName,updated,currency,metrics,ad,foot,links);grid.append(globePanel,info);root.append(intro,grid);target.append(root);
+  window.dispatchEvent(new Event('ct:ads-slots-updated'));
   let listed;
   try{
     listed=await countries();

@@ -53,7 +53,7 @@ function newsRow(story) {
 }
 function indicator() {
   document.getElementById('newsMore').hidden = articles.length < 2;
-  const rows = document.getElementById('newsList').children;
+  const rows = document.getElementById('newsList').querySelectorAll('.news-row');
   for (let i = 0; i < rows.length; i++) rows[i].hidden = i === active;
   // Only show useful state messages; never show redundant 'news N of M' labels.
   const label = offline
@@ -91,7 +91,15 @@ export async function refreshNews() {
       active = Math.max(0,items.findIndex(s => s.id === oldId));
       articles = items;
       track.replaceChildren(...articles.map(card));
-      document.getElementById('newsList').replaceChildren(...articles.map(newsRow));
+      const nodes = articles.flatMap((story,index)=>{
+        const row=newsRow(story);
+        if(index!==1)return [row];
+        const slot=node('div','ctad-placement');
+        slot.dataset.ctadSlot='news_inline';slot.hidden=true;
+        return [row,slot];
+      });
+      document.getElementById('newsList').replaceChildren(...nodes);
+      window.dispatchEvent(new Event('ct:ads-slots-updated'));
       go(active,false);
     }
   } catch { offline = true; }

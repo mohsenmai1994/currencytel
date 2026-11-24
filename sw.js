@@ -1,5 +1,5 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-v17-20261123-cachetouchfix';
+const APP_CACHE = 'currencytel-shell-20261124-ads-v7';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
@@ -11,6 +11,8 @@ const SHELL = [
   './assets/js/modules/world-globe.js', './assets/js/modules/world-service.js',
   './assets/js/modules/gold-invoice.js', './assets/js/modules/gold-calculator.js',
   './assets/data/world-countries.json',
+  './assets/css/ads.css','./assets/js/ads.js','./data/ads.json',
+  './admin/ads.html','./assets/css/admin-ads.css','./assets/js/admin-ads.js',
   './assets/icons/icon.svg', './manifest.webmanifest'
 ];
 self.addEventListener('install', event => {
