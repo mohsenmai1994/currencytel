@@ -30,41 +30,35 @@ function withinSchedule(item,at=Date.now()) {
   if(item.endAt && (!Number.isFinite(Date.parse(item.endAt)) || at >= Date.parse(item.endAt)))return false;
   return true;
 }
-function buildCard(entry,kind) {
+function buildCard(entry) {
   if(!entry || entry.enabled!==true || !withinSchedule(entry))return null;
-  const target=safeLink(entry.url);
-  if(!target || typeof entry.title!=='string'||!entry.title.trim()||entry.title.length>120)return null;
-  if(kind==='banner'&&!safeImage(entry.image))return null;
+  const target=safeLink(entry.url),picture=safeImage(entry.image);
+  if(!target||!picture)return null;
   const a=document.createElement('a');
-  a.className='ctad-card ctad-'+kind;
-  a.href=target.href;
+  a.className='ctad-card ctad-banner';a.href=target.href;
+  const name=typeof entry.title==='string'&&entry.title.trim()?entry.title.trim():'بنر تبلیغاتی';
+  a.setAttribute('aria-label','تبلیغات: '+name);
   if(target.external){a.target='_blank';a.rel='noopener noreferrer sponsored';a.referrerPolicy='strict-origin-when-cross-origin';}
-  const promo=document.createElement('span');promo.className='ctad-label';promo.textContent='تبلیغات';
-  const title=document.createElement('span');title.className='ctad-title';title.textContent=entry.title.trim();
-  if(kind==='banner'){
-    const img=document.createElement('img');img.className='ctad-img';img.loading='lazy';img.decoding='async';
-    img.alt=(typeof entry.alt==='string'&&entry.alt.trim())?entry.alt.slice(0,160):entry.title.trim();
-    img.src=safeImage(entry.image);
-    // A broken image should never leave a half-empty ad in the UI.
-    img.addEventListener('error',()=>{const host=a.closest('[data-ctad-slot]');a.remove();if(host&&!host.querySelector('.ctad-card')){host.hidden=true;host.closest('.ctad-table-row')?.setAttribute('hidden','');}});
-    const meta=document.createElement('span');meta.className='ctad-meta';meta.append(promo,title);
-    a.append(img,meta);
-  }else{
-    const symbol=document.createElement('span');symbol.className='ctad-link-icon';symbol.textContent='↗';symbol.setAttribute('aria-hidden','true');
-    a.append(promo,title,symbol);
-  }
-  return a;
+  const img=document.createElement('img');img.className='ctad-img';img.loading='lazy';img.decoding='async';
+  img.alt=(typeof entry.alt==='string'&&entry.alt.trim())?entry.alt.slice(0,160):name;
+  img.src=picture;
+  img.addEventListener('error',()=>{
+    const host=a.closest('[data-ctad-slot]');a.remove();
+    if(host&&!host.querySelector('.ctad-card')){
+      host.hidden=true;host.closest('.ctad-table-row')?.setAttribute('hidden','');
+    }
+  });
+  const badge=document.createElement('span');badge.className='ctad-label';badge.textContent='تبلیغات';
+  a.append(img,badge);return a;
 }
 function renderSlots() {
   for (const host of $all('[data-ctad-slot]')) {
     const key=host.dataset.ctadSlot;
     if(!ALLOWED_SLOTS.has(key))continue;
     const setting=current?.placements?.[key];
-    const signature=JSON.stringify([setting?.banner||null,setting?.link||null,
-      Boolean(setting?.banner?.enabled&&withinSchedule(setting.banner)),
-      Boolean(setting?.link?.enabled&&withinSchedule(setting.link))]);
+    const signature=JSON.stringify([setting?.banner||null,Boolean(setting?.banner?.enabled&&withinSchedule(setting.banner))]);
     if(host.dataset.ctadSignature===signature)continue;
-    const items=[buildCard(setting?.banner,'banner'),buildCard(setting?.link,'link')].filter(Boolean);
+    const items=[buildCard(setting?.banner)].filter(Boolean);
     host.replaceChildren(...items);
     host.dataset.ctadSignature=signature;
     host.hidden=!items.length;

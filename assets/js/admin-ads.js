@@ -43,19 +43,19 @@ function destination(value){
 }
 function flagChanged(){dirty=true;$('publishState').textContent='تغییرات منتشرنشده';updateCounters();renderSlotButtons();}
 function updateCounters(){
-  let active=0;for(const [id] of DEFINITIONS)for(const kind of ['banner','link'])if(config.placements[id][kind].enabled)active++;
-  $('activeCount').textContent=new Intl.NumberFormat('fa-IR').format(active)+' / ۱۶';
+  let active=0;for(const [id] of DEFINITIONS)if(config.placements[id].banner.enabled)active++;
+  $('activeCount').textContent=new Intl.NumberFormat('fa-IR').format(active)+' / ۸';
   const slot=config.placements[selected];
-  $('slotStatus').textContent=slot.banner.enabled||slot.link.enabled?'فعال':'غیرفعال';
+  $('slotStatus').textContent=slot.banner.enabled?'فعال':'غیرفعال';
 }
 function renderSlotButtons(){
   const host=$('slots');host.replaceChildren();
   for(const [id,label] of DEFINITIONS){
-    const slot=config.placements[id],n=Number(slot.banner.enabled)+Number(slot.link.enabled);
+    const slot=config.placements[id],n=Number(slot.banner.enabled);
     const button=document.createElement('button');button.className='slot-btn'+(id===selected?' active':'');button.type='button';
     const left=document.createElement('span'),title=document.createElement('b'),extra=document.createElement('small');
     title.textContent=label;extra.textContent=n?'فعال':'بدون تبلیغ';left.append(title,extra);
-    const count=document.createElement('span');count.className='slot-count';count.textContent=n+'/۲';
+    const count=document.createElement('span');count.className='slot-count';count.textContent=n?'فعال':'خاموش';
     button.append(left,count);button.addEventListener('click',()=>{selected=id;renderSlotButtons();renderEditor();});host.append(button);
   }
 }
@@ -82,19 +82,18 @@ function renderImage(){
 }
 function renderPreview(){
   const host=$('preview');host.replaceChildren();
-  const record=config.placements[selected],pic=getPicture();
-  let used=0;
-  for(const kind of ['banner','link']){
-    const item=record[kind];if(!item.enabled)continue;
-    used++;
-    const card=document.createElement('div');card.className='pv-card '+kind;
-    if(kind==='banner'&&pic){const img=document.createElement('img');img.alt='';img.src=pic;img.style.objectPosition=`${uploads.get(selected)?.x??50}% ${uploads.get(selected)?.y??50}%`;card.append(img);}
-    const text=document.createElement('div');text.className=kind==='banner'?'pv-text':'pv-link';
-    const label=document.createElement('span');label.className='pv-label';label.textContent='تبلیغات';
-    const title=document.createElement('strong');title.textContent=item.title||'عنوان تبلیغ را وارد کنید';text.append(label,title);
-    card.append(text);host.append(card);
+  const record=config.placements[selected].banner,pic=getPicture();
+  if(!record.enabled){
+    const p=document.createElement('p');p.className='preview-empty';p.textContent='برای نمایش تبلیغ، کلید جایگاه را فعال کنید.';host.append(p);return;
   }
-  if(!used){const p=document.createElement('p');p.className='preview-empty';p.textContent='برای دیدن پیش‌نمایش، بنر یا لینک را فعال کنید.';host.append(p);}
+  if(!pic){
+    const p=document.createElement('p');p.className='preview-empty';p.textContent='تصویر بنر را انتخاب کنید.';host.append(p);return;
+  }
+  const card=document.createElement('div');card.className='pv-card banner';
+  const img=document.createElement('img');img.src=pic;img.alt='پیش‌نمایش بنر';
+  img.style.objectPosition=`${uploads.get(selected)?.x??50}% ${uploads.get(selected)?.y??50}%`;
+  const disclosure=document.createElement('span');disclosure.className='pv-disclosure';disclosure.textContent='تبلیغات';
+  card.append(img,disclosure);host.append(card);
 }
 function renderEditor(){
   const def=DEFINITIONS.find(([id])=>id===selected),record=config.placements[selected];
@@ -110,14 +109,12 @@ function notify(message,error=false){$('feedback').textContent=message;$('feedba
 function discardUploads(){for(const value of uploads.values())URL.revokeObjectURL(value.url);uploads.clear();}
 function validate(){
   for(const [id,label] of DEFINITIONS){
-    for(const kind of ['banner','link']){
-      const item=config.placements[id][kind];if(!item.enabled)continue;
-      if(!item.title.trim())throw Error(`«${label}»: عنوان ${kind==='banner'?'بنر':'لینک'} خالی است.`);
-      if(!destination(item.url))throw Error(`«${label}»: لینک باید HTTPS یا مسیری مانند #home باشد.`);
-      if(kind==='banner'&&!uploads.has(id)&&!/^\.\/assets\/ads\/[\w-]+\.(webp|jpe?g|png)$/.test(item.image))throw Error(`«${label}»: تصویر بنر انتخاب نشده است.`);
-      for(const key of ['startAt','endAt'])if(item[key]&&!Number.isFinite(Date.parse(item[key])))throw Error(`«${label}»: تاریخ نامعتبر است.`);
-      if(item.startAt&&item.endAt&&Date.parse(item.startAt)>=Date.parse(item.endAt))throw Error(`«${label}»: زمان پایان باید بعد از شروع باشد.`);
-    }
+    const item=config.placements[id].banner;
+    if(!item.enabled)continue;
+    if(!destination(item.url))throw Error(`«${label}»: لینک باید HTTPS یا مسیری مانند #home باشد.`);
+    if(!uploads.has(id)&&!/^\.\/assets\/ads\/[\w-]+\.(webp|jpe?g|png)$/.test(item.image))throw Error(`«${label}»: تصویر بنر انتخاب نشده است.`);
+    for(const key of ['startAt','endAt'])if(item[key]&&!Number.isFinite(Date.parse(item[key])))throw Error(`«${label}»: تاریخ نامعتبر است.`);
+    if(item.startAt&&item.endAt&&Date.parse(item.startAt)>=Date.parse(item.endAt))throw Error(`«${label}»: زمان پایان باید بعد از شروع باشد.`);
   }
 }
 async function selectImage(file){
@@ -178,7 +175,7 @@ async function loadRemote(){
     const result=await fetchRemoteFile('data/ads.json');
     if(result?.content){config=normalize(JSON.parse(decodeText(result.content)));remoteSha=result.sha;}
     else{config=BLANK();remoteSha=null;}
-    remoteLoaded=true;dirty=false;discardUploads();renderSlotButtons();renderEditor();$('publishState').textContent='نسخه GitHub بارگذاری شد';notify('تنظیمات از شاخه موردنظر GitHub خوانده شد.');
+    remoteLoaded=true;dirty=false;discardUploads();renderSlotButtons();renderEditor();$('publishState').textContent='نسخه GitHub بارگذاری شد';notify('تنظیمات GitHub دریافت شد. لینک‌های متنی قدیمی در نسخه جدید نمایش داده نمی‌شوند؛ متن و آدرسشان فعلاً در فایل محفوظ است.');
   }catch(error){notify('خطا در دریافت فایل: '+error.message,true);}finally{busy=false;}
 }
 async function loadPublic(){
@@ -195,6 +192,8 @@ async function publish(){
     const latest=await fetchRemoteFile('data/ads.json');
     if((latest?.sha||null)!==remoteSha)throw Error('تنظیمات از آخرین بارگیری تغییر کرده‌اند. برای جلوگیری از بازنویسی، ابتدا دوباره وضعیت GitHub را دریافت کن.');
     const next=structuredClone(config);
+    // Preserve legacy link text/URL in JSON for recovery, but disable the old extra advert.
+    for(const [id] of DEFINITIONS)next.placements[id].link.enabled=false;
     for(const [slot,entry] of uploads){
       notify(`در حال فشرده‌سازی و بارگذاری بنر «${DEFINITIONS.find(([id])=>id===slot)?.[1]}»…`);
       const {blob,extension}=await optimizedImage(entry);
