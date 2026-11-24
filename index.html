@@ -8,20 +8,20 @@
   <meta name="color-scheme" content="dark light">
   <meta property="og:title" content="CurrencyTel | نبض بازار">
   <meta property="og:description" content="قیمت‌ها، تغییرات روزانه و نمودارهای بازار ایران و جهان">
-  <meta name="currencytel-build" content="20261124-ads-v7-3-placement-contact1">
+  <meta name="currencytel-build" content="20261124-ads-v7-4-overlay-label">
   <title>CurrencyTel | نبض بازار</title>
   <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css?v=20261124-ads-v7-3-placement-contact1">
-  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261124-ads-v7-3-placement-contact1">
-  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261124-ads-v7-3-placement-contact1">
-  <link rel="stylesheet" href="./assets/css/ads.css?v=20261124-ads-v7-3-placement-contact1">
-  <script src="./assets/js/ads.js?v=20261124-ads-v7-3-placement-contact1" type="module" defer></script>
-  <script src="./assets/js/app.js?v=20261124-ads-v7-3-placement-contact1" type="module" defer></script>
-  <script src="./assets/js/modules/tools-carousel.js?v=20261124-ads-v7-3-placement-contact1" defer></script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261124-ads-v7-4-overlay-label">
+  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261124-ads-v7-4-overlay-label">
+  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261124-ads-v7-4-overlay-label">
+  <link rel="stylesheet" href="./assets/css/ads.css?v=20261124-ads-v7-4-overlay-label">
+  <script src="./assets/js/ads.js?v=20261124-ads-v7-4-overlay-label" type="module" defer></script>
+  <script src="./assets/js/app.js?v=20261124-ads-v7-4-overlay-label" type="module" defer></script>
+  <script src="./assets/js/modules/tools-carousel.js?v=20261124-ads-v7-4-overlay-label" defer></script>
 
   <!-- Critical touch behavior lives in HTML too, so stale optional styles cannot restore text selection. -->
   <style id="ct-touch-policy-v6">
@@ -49,14 +49,14 @@
     const supported=('serviceWorker' in navigator)&&(
       location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
     if(!supported)return;
-    const worker='./sw.js?ct-build=20261124-ads-v7-3-placement-contact1';
+    const worker='./sw.js?ct-build=20261124-ads-v7-4-overlay-label';
     const hadController=Boolean(navigator.serviceWorker.controller);
     let reloading=false,lastCheck=0;
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(!hadController||reloading)return;
       reloading=true;
       // Avoid an eternal reload loop if a browser has broken worker lifecycle semantics.
-      const k='ct-sw-refresh-20261124-ads-v7-3-placement-contact1';
+      const k='ct-sw-refresh-20261124-ads-v7-4-overlay-label';
       if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}
     });
     const check=()=>{
