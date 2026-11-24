@@ -30,3 +30,28 @@
 .ctad-banner .ctad-label{display:block;align-self:flex-start;margin:3px 9px 5px;padding:0;border:0;background:transparent;color:var(--muted);font-size:9px;font-weight:600;line-height:1.3}
 .ctad-banner .ctad-title,.ctad-banner .ctad-meta,.ctad-banner .ctad-link-icon{display:none!important}
 @media(max-width:420px){.ctad-banner{min-height:0}.ctad-banner .ctad-img{height:auto}.ctad-banner .ctad-label{margin:3px 8px 5px}}
+
+/* v7.2: always show the FULL image at full width, retaining its natural ratio. */
+.ctad-placement{width:100%;max-width:100%;min-width:0}
+.ctad-card.ctad-banner{width:100%;max-width:100%;aspect-ratio:auto;min-height:0;max-height:none;overflow:hidden}
+.ctad-card.ctad-banner>.ctad-img{position:static;inset:auto;width:100%;max-width:100%;height:auto;max-height:none;aspect-ratio:auto;object-fit:contain;object-position:center;display:block;flex:none;z-index:auto}
+#dashboard>.ctad-placement[data-ctad-slot="home_quick"]{margin:12px 0 15px}
+.ctad-banner .ctad-label{position:static;flex:none;align-self:flex-start}
+
+/* v7.3: standardized, responsive ad placements. No ad within scrollable tables or contact. */
+.ctad-placement{box-sizing:border-box;width:100%;max-width:100%;min-width:0;clear:both;align-self:stretch}
+#prices > .ctad-price-footer{margin:16px 0 0;max-width:100%}
+#newsList > .ctad-placement{width:100%;margin:10px 0;grid-column:1/-1}
+#marketFeatures > .ctad-placement[data-ctad-slot="market_between"]{margin-top:14px;margin-bottom:0}
+#marketFeaturePanel > .ctad-placement[data-ctad-slot="tools_footer"]{margin:18px 0 0}
+#marketFeatures .ctmf-world > .ctad-placement[data-ctad-slot="world_footer"]{margin:16px 0 0}
+#connect .ctad-placement{display:none!important}
+.ct-contact-heading{margin:0 0 16px}
+.ct-contact-heading h1{font-size:clamp(23px,3vw,30px);line-height:1.5;margin:5px 0 4px;color:var(--text)}
+.ct-contact-heading p{color:var(--muted);font-size:13px;line-height:1.9;margin:0}
+@media(max-width:600px){
+  #prices > .ctad-price-footer{margin:12px 0 0}
+  #marketFeaturePanel > .ctad-placement[data-ctad-slot="tools_footer"]{margin-top:12px}
+  .ct-contact-heading{margin-bottom:14px}
+  .ct-contact-heading p{font-size:11px}
+}

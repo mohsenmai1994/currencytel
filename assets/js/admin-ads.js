@@ -2,12 +2,11 @@
 const DEFINITIONS=[
   ['home_quick','خانه','زیر میانبرهای صفحه خانه'],
   ['market_between','بازار · بنر اصلی','پس از ابزارهای بازار، قبل از فهرست قیمت‌ها'],
-  ['market_inline','بازار · میان نمادها','پس از ده ردیف اول فهرست قیمت‌ها'],
+  ['market_inline','بازار · پایان نمادها','بعد از فهرست قیمت‌ها، در عرض کامل صفحه'],
   ['news_inline','خبرها','پس از دومین خبر در فهرست سایر خبرها'],
-  ['world_footer','اقتصاد جهان','بعد از کارت‌های شاخص کشور'],
+  ['world_footer','اقتصاد جهان','زیر بخش کامل اطلاعات کشور، در عرض کامل'],
   ['gold_footer','پیش‌فاکتور طلا','بعد از ریز محاسبات و نتیجه پیش‌فاکتور'],
-  ['tools_footer','نمودار و محاسبه‌گر نرخ','بعد از نتیجه نمودار یا محاسبه‌گر'],
-  ['channels_footer','کانال‌ها','بعد از فهرست کانال‌های رسمی']
+  ['tools_footer','نمودار و محاسبه‌گر نرخ','بعد از نتیجه نمودار یا محاسبه‌گر']
 ];
 const FIELDS={banner:['enabled','title','url','image','alt','startAt','endAt'],link:['enabled','title','url','startAt','endAt']};
 const BLANK=()=>({schema:1,updatedAt:'',placements:Object.fromEntries(DEFINITIONS.map(([id])=>[id,{
@@ -22,17 +21,20 @@ const getSettings=()=>({
 });
 function normalize(payload){
   if(!payload||payload.schema!==1||typeof payload.placements!=='object'||!payload.placements)throw Error('فرمت تنظیمات تبلیغات معتبر نیست.');
-  const normalized=BLANK();
+  // Important: retain every existing record and unknown setting, even those from
+  // an older/future version. Never reconstruct the live manifest from BLANK().
+  const normalized=structuredClone(payload);
   for(const [id] of DEFINITIONS){
+    const baseline=BLANK().placements[id];
+    if(!normalized.placements[id]||typeof normalized.placements[id]!=='object')normalized.placements[id]=baseline;
+    const slot=normalized.placements[id];
     for(const kind of ['banner','link']){
-      const item=payload.placements?.[id]?.[kind]||{};
+      if(!slot[kind]||typeof slot[kind]!=='object')slot[kind]=structuredClone(baseline[kind]);
       for(const name of FIELDS[kind]){
-        if(name==='enabled')normalized.placements[id][kind].enabled=item[name]===true;
-        else if(typeof item[name]==='string')normalized.placements[id][kind][name]=item[name].slice(0,name==='url'?2048:350);
+        if(!(name in slot[kind]))slot[kind][name]=name==='enabled'?false:'';
       }
     }
   }
-  normalized.updatedAt=typeof payload.updatedAt==='string'?payload.updatedAt:'';
   return normalized;
 }
 function destination(value){
@@ -44,7 +46,7 @@ function destination(value){
 function flagChanged(){dirty=true;$('publishState').textContent='تغییرات منتشرنشده';updateCounters();renderSlotButtons();}
 function updateCounters(){
   let active=0;for(const [id] of DEFINITIONS)if(config.placements[id].banner.enabled)active++;
-  $('activeCount').textContent=new Intl.NumberFormat('fa-IR').format(active)+' / ۸';
+  $('activeCount').textContent=new Intl.NumberFormat('fa-IR').format(active)+' / '+new Intl.NumberFormat('fa-IR').format(DEFINITIONS.length);
   const slot=config.placements[selected];
   $('slotStatus').textContent=slot.banner.enabled?'فعال':'غیرفعال';
 }
@@ -65,11 +67,21 @@ function localInput(iso){
   const pad=x=>String(x).padStart(2,'0');
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+const ADMIN_APP_ROOT=new URL('../../',import.meta.url);
+const ADMIN_ADS_ROOT=new URL('assets/ads/',ADMIN_APP_ROOT);
+function publishedImage(value){
+  if(typeof value!=='string')return '';
+  let raw=value.trim();if(/^\/assets\/ads\//.test(raw))raw='.'+raw;
+  try{
+    const u=new URL(raw,ADMIN_APP_ROOT);
+    if(u.origin!==ADMIN_ADS_ROOT.origin||!u.pathname.startsWith(ADMIN_ADS_ROOT.pathname))return '';
+    const file=u.pathname.slice(ADMIN_ADS_ROOT.pathname.length);
+    return /^[A-Za-z0-9_-]+\.(?:webp|jpe?g|png)$/i.test(file)?new URL('assets/ads/'+file,ADMIN_APP_ROOT).href:'';
+  }catch{return '';}
+}
 function getPicture(id=selected){
   const chosen=uploads.get(id);
-  if(chosen)return chosen.url;
-  const path=config.placements[id].banner.image;
-  return /^\.\/assets\/ads\/[\w-]+\.(webp|jpe?g|png)$/.test(path)?'../'+path.slice(2):'';
+  return chosen?chosen.url:publishedImage(config.placements[id].banner.image);
 }
 function renderImage(){
   const host=$('uploadVisual');host.replaceChildren();
@@ -112,7 +124,7 @@ function validate(){
     const item=config.placements[id].banner;
     if(!item.enabled)continue;
     if(!destination(item.url))throw Error(`«${label}»: لینک باید HTTPS یا مسیری مانند #home باشد.`);
-    if(!uploads.has(id)&&!/^\.\/assets\/ads\/[\w-]+\.(webp|jpe?g|png)$/.test(item.image))throw Error(`«${label}»: تصویر بنر انتخاب نشده است.`);
+    if(!uploads.has(id)&&!publishedImage(item.image))throw Error(`«${label}»: تصویر بنر انتخاب نشده است.`);
     for(const key of ['startAt','endAt'])if(item[key]&&!Number.isFinite(Date.parse(item[key])))throw Error(`«${label}»: تاریخ نامعتبر است.`);
     if(item.startAt&&item.endAt&&Date.parse(item.startAt)>=Date.parse(item.endAt))throw Error(`«${label}»: زمان پایان باید بعد از شروع باشد.`);
   }
@@ -171,15 +183,18 @@ async function putRemoteFile(path,bytes,sha,description){
 }
 function stringBytes(value){return new TextEncoder().encode(value);}
 async function loadRemote(){
-  if(busy)return;busy=true;try{
+  if(busy)return;
+  if(dirty&&!window.confirm('تغییرات ذخیره‌نشده با وضعیت مخزن جایگزین می‌شوند. ادامه می‌دهی؟'))return;
+  busy=true;try{
     const result=await fetchRemoteFile('data/ads.json');
     if(result?.content){config=normalize(JSON.parse(decodeText(result.content)));remoteSha=result.sha;}
-    else{config=BLANK();remoteSha=null;}
+    else{throw Error('فایل data/ads.json در این شاخه پیدا نشد. برای جلوگیری از حذف آگهی‌های فعلی، انتشار متوقف شد. نام مخزن و شاخه را بررسی کن.');}
     remoteLoaded=true;dirty=false;discardUploads();renderSlotButtons();renderEditor();$('publishState').textContent='نسخه GitHub بارگذاری شد';notify('تنظیمات GitHub دریافت شد. لینک‌های متنی قدیمی در نسخه جدید نمایش داده نمی‌شوند؛ متن و آدرسشان فعلاً در فایل محفوظ است.');
   }catch(error){notify('خطا در دریافت فایل: '+error.message,true);}finally{busy=false;}
 }
 async function loadPublic(){
   if(busy)return;
+  if(dirty&&!window.confirm('پیش‌نویس ذخیره‌نشده با نسخه عمومی جایگزین می‌شود. ادامه می‌دهی؟'))return;
   try{const response=await fetch('../data/ads.json?date='+Date.now(),{cache:'no-store'});if(!response.ok)throw Error('HTTP '+response.status);
     config=normalize(await response.json());remoteLoaded=false;remoteSha=null;dirty=false;discardUploads();renderSlotButtons();renderEditor();$('publishState').textContent='نسخه عمومی خوانده شد';notify('برای انتشار، ابتدا وضعیت را از GitHub هم دریافت کن.');
   }catch(error){notify('خطا در فایل عمومی: '+error.message,true);}
@@ -192,8 +207,7 @@ async function publish(){
     const latest=await fetchRemoteFile('data/ads.json');
     if((latest?.sha||null)!==remoteSha)throw Error('تنظیمات از آخرین بارگیری تغییر کرده‌اند. برای جلوگیری از بازنویسی، ابتدا دوباره وضعیت GitHub را دریافت کن.');
     const next=structuredClone(config);
-    // Preserve legacy link text/URL in JSON for recovery, but disable the old extra advert.
-    for(const [id] of DEFINITIONS)next.placements[id].link.enabled=false;
+    // Preserve all existing advertising records, including dormant legacy links.
     for(const [slot,entry] of uploads){
       notify(`در حال فشرده‌سازی و بارگذاری بنر «${DEFINITIONS.find(([id])=>id===slot)?.[1]}»…`);
       const {blob,extension}=await optimizedImage(entry);

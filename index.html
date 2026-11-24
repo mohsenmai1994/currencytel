@@ -8,20 +8,20 @@
   <meta name="color-scheme" content="dark light">
   <meta property="og:title" content="CurrencyTel | نبض بازار">
   <meta property="og:description" content="قیمت‌ها، تغییرات روزانه و نمودارهای بازار ایران و جهان">
-  <meta name="currencytel-build" content="20261124-ads-v7">
+  <meta name="currencytel-build" content="20261124-ads-v7-3-placement-contact1">
   <title>CurrencyTel | نبض بازار</title>
   <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/main.css?v=20261124-ads-v7">
-  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261124-ads-v7">
-  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261124-ads-v7">
-  <link rel="stylesheet" href="./assets/css/ads.css?v=20261124-ads-v7">
-  <script src="./assets/js/ads.js?v=20261124-ads-v7" type="module" defer></script>
-  <script src="./assets/js/app.js?v=20261124-ads-v7" type="module" defer></script>
-  <script src="./assets/js/modules/tools-carousel.js?v=20261124-ads-v7" defer></script>
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261124-ads-v7-3-placement-contact1">
+  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261124-ads-v7-3-placement-contact1">
+  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261124-ads-v7-3-placement-contact1">
+  <link rel="stylesheet" href="./assets/css/ads.css?v=20261124-ads-v7-3-placement-contact1">
+  <script src="./assets/js/ads.js?v=20261124-ads-v7-3-placement-contact1" type="module" defer></script>
+  <script src="./assets/js/app.js?v=20261124-ads-v7-3-placement-contact1" type="module" defer></script>
+  <script src="./assets/js/modules/tools-carousel.js?v=20261124-ads-v7-3-placement-contact1" defer></script>
 
   <!-- Critical touch behavior lives in HTML too, so stale optional styles cannot restore text selection. -->
   <style id="ct-touch-policy-v6">
@@ -49,14 +49,14 @@
     const supported=('serviceWorker' in navigator)&&(
       location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
     if(!supported)return;
-    const worker='./sw.js?ct-build=20261124-ads-v7';
+    const worker='./sw.js?ct-build=20261124-ads-v7-3-placement-contact1';
     const hadController=Boolean(navigator.serviceWorker.controller);
     let reloading=false,lastCheck=0;
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(!hadController||reloading)return;
       reloading=true;
       // Avoid an eternal reload loop if a browser has broken worker lifecycle semantics.
-      const k='ct-sw-refresh-20261124-ads-v7';
+      const k='ct-sw-refresh-20261124-ads-v7-3-placement-contact1';
       if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}
     });
     const check=()=>{
@@ -77,7 +77,7 @@
   <div class="app-main">
     <header class="site-header">
       <div class="shell header-inner">
-        <nav class="header-nav" aria-label="منوی اصلی"><a href="#dashboard" data-nav="dashboard">خانه</a><a href="#home" data-nav="home" class="active" aria-current="page">بازار</a><a href="#news" data-nav="news">خبرها</a><a href="#connect" data-nav="connect">کانال‌ها</a></nav>
+        <nav class="header-nav" aria-label="منوی اصلی"><a href="#dashboard" data-nav="dashboard">خانه</a><a href="#home" data-nav="home" class="active" aria-current="page">بازار</a><a href="#news" data-nav="news">خبرها</a><a href="#connect" data-nav="connect">ارتباط با ما</a></nav>
         <div class="header-actions">
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال بارگیری</span></div>
           <div class="header-search" id="headerSearch">
@@ -180,6 +180,7 @@
         </div>
         <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="4" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
         <div id="errorMessage" role="alert" class="error-message" hidden></div>
+        <div class="ctad-placement ctad-price-footer" data-ctad-slot="market_inline" hidden></div>
       </section>
       </section>
 <section id="dashboard" class="section ct-home" hidden aria-labelledby="dashboardTitle">
@@ -187,6 +188,7 @@
     <div><span class="eyebrow">CURRENCYTEL / YOUR DASHBOARD</span><h1 id="dashboardTitle">خانه کرنسی‌تل</h1><p>همه ابزارها و امکانات بازار، یک‌جا و در دسترس شما.</p></div>
     <span class="ct-home-mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 31l11-11 8 7 12-18"/><path d="m30 9 9 0 0 9"/></svg></span>
   </div>
+  <div class="ctad-placement" data-ctad-slot="home_quick" hidden></div>
   <div class="ct-home-section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>دسترسی سریع</h2></div><span>۱۰ مسیر کاربردی</span></div>
   <div class="ct-home-grid" aria-label="تمام امکانات کرنسی‌تل">
           <a class="ct-home-tile" href="#home"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M5 16l5-6 4 3 5-8"/><path d="m15 5 4 0v4"/></svg></span><span class="ct-home-info"><strong>بازار امروز</strong><small>نمای کلی قیمت‌ها</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
@@ -197,9 +199,8 @@
           <button class="ct-home-tile" type="button" data-dashboard-tool="world"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-6 5-6 13 0 18M12 3c6 5 6 13 0 18"/></svg></span><span class="ct-home-info"><strong>اقتصاد جهان</strong><small>کره سه‌بعدی و آمار کشورها</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></button>
           <button class="ct-home-tile" type="button" data-dashboard-tool="gold"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16l-3 8H7l-3-8Zm0 0 5-6h6l5 6m-11-6 3 6 3-6m-3 6v8"/></svg></span><span class="ct-home-info"><strong>پیش‌فاکتور طلا</strong><small>محاسبه اجرت و مالیات</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></button>
           <a class="ct-home-tile" href="#prices" data-dashboard-favorites="true"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.6l-5.7 2.9 1.1-6.3-4.6-4.5 6.4-.9z"/></svg></span><span class="ct-home-info"><strong>علاقه‌مندی‌ها</strong><small>نمادهای ذخیره‌شده</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
-          <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12 20 4l-4.3 16-5.4-5.8L3.5 12Z"/><path d="M10.3 14.2 20 4"/></svg></span><span class="ct-home-info"><strong>کانال‌های رسمی</strong><small>تلگرام و شبکه‌های اجتماعی</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
+          <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12 20 4l-4.3 16-5.4-5.8L3.5 12Z"/><path d="M10.3 14.2 20 4"/></svg></span><span class="ct-home-info"><strong>ارتباط با ما</strong><small>تلگرام و شبکه‌های اجتماعی</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
           <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="3"/><path d="M6 8V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M3 13h18"/></svg></span><span class="ct-home-info"><strong>خدمات تجاری</strong><small>درخواست API و تبلیغات</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>  </div>
-  <div class="ctad-placement" data-ctad-slot="home_quick" hidden></div>
 </section>
       <section id="news" class="section news-section" aria-labelledby="newsTitle" hidden>
         <div class="spotlight-heading"><h2 id="newsTitle">آخرین خبرها</h2>
@@ -211,7 +212,7 @@
           <div id="newsList" class="news-list"></div>
         </section>
       </section>
-      <section id="connect" hidden class="section connect-section"><div class="business-panel">
+      <section id="connect" hidden class="section connect-section" aria-labelledby="contactPageTitle"><div class="ct-contact-heading"><span class="eyebrow">CURRENCYTEL / CONTACT</span><h1 id="contactPageTitle">ارتباط با ما</h1><p>راه‌های ارتباطی، شبکه‌های اجتماعی و خدمات تجاری کرنسی‌تل</p></div><div class="business-panel">
           <h2>خدمات تجاری CurrencyTel</h2>
           <p>برای خرید دسترسی یا استعلام تعرفهٔ تبلیغات، تماس بگیرید یا موضوع درخواست را در پیامک بفرستید.</p>
           <div class="service-links" aria-label="ارسال درخواست با پیامک">
@@ -227,12 +228,11 @@
         <a href="https://rubika.ir/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">ر</span><span class="channel-info"><b>روبیکا</b><small>@currencytel</small></span><span class="external">↗</span></a>
         <a href="https://www.instagram.com/currencytel/" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">◎</span><span class="channel-info"><b>اینستاگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
         </div>
-        <div class="ctad-placement" data-ctad-slot="channels_footer" hidden></div>
       </section>
     </main>
     <span id="footerTime" hidden aria-hidden="true"></span>
   </div>
-  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a href="#dashboard" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><small>خانه</small></a><a class="active" aria-current="page" href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 15.5 8 11l3 2.5 6.5-7"/><path d="m13.5 6.5 4-.1.1 4"/><path d="M4 20h16"/></svg><small>بازار</small></a><a href="#news" data-nav="news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4.5" width="15.5" height="15" rx="2"/><path d="M7.5 8h8.5M7.5 12h8.5M7.5 16h5"/></svg><small>خبرها</small></a><a href="#connect" data-nav="connect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 19 5l-4.1 14-4.2-5.5-6.2-1z"/><path d="M10.7 13.5 19 5"/></svg><small>کانال‌ها</small></a></nav>
+  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a href="#dashboard" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><small>خانه</small></a><a class="active" aria-current="page" href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 15.5 8 11l3 2.5 6.5-7"/><path d="m13.5 6.5 4-.1.1 4"/><path d="M4 20h16"/></svg><small>بازار</small></a><a href="#news" data-nav="news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4.5" width="15.5" height="15" rx="2"/><path d="M7.5 8h8.5M7.5 12h8.5M7.5 16h5"/></svg><small>خبرها</small></a><a href="#connect" data-nav="connect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 19 5l-4.1 14-4.2-5.5-6.2-1z"/><path d="M10.7 13.5 19 5"/></svg><small>ارتباط با ما</small></a></nav>
   <div id="detailBackdrop" class="detail-backdrop" hidden></div>
   <aside id="detailSheet" class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden><div class="detail-sheet-top"><span class="detail-handle"></span><button id="detailClose" type="button" class="icon-button" aria-label="بستن پنجره">×</button></div><div id="detailContent"></div></aside>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>

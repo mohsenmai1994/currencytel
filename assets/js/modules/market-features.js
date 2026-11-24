@@ -13,7 +13,8 @@ export function initMarketFeatures({getGoldQuote}={}) {
     content.replaceChildren();content.hidden=false;
     core.hidden=true;
     for(const item of core.querySelectorAll('[data-core-feature]'))item.hidden=true;
-    panel.hidden=true;
+    panel.hidden=true;panel.dataset.activeTool='';
+    window.dispatchEvent(new Event('ct:ads-slots-updated'));
     for(const b of cards.querySelectorAll('[data-market-feature]'))b.setAttribute('aria-expanded','false');
     if(scroll)document.getElementById('marketFeatures')?.scrollIntoView({block:'start',behavior:'smooth'});
   }
@@ -25,7 +26,8 @@ export function initMarketFeatures({getGoldQuote}={}) {
     const myGeneration=generation;
     const btn=cards.querySelector(`[data-market-feature="${name}"]`);
     btn?.setAttribute('aria-expanded','true');
-    panel.hidden=false;title.textContent=names[name];
+    panel.hidden=false;panel.dataset.activeTool=name;title.textContent=names[name];
+    window.dispatchEvent(new Event('ct:ads-slots-updated'));
     const isCore=name==='chart'||name==='converter';
     core.hidden=!isCore;content.hidden=isCore;
     if(isCore){

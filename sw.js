@@ -1,5 +1,5 @@
 /* CurrencyTel UI copy cleanup: 2026-11-21 / shell v6 */
-const APP_CACHE = 'currencytel-shell-20261124-ads-v7-simplified1';
+const APP_CACHE = 'currencytel-shell-20261124-ads-v7-3-placement-contact1';
 // Keep the existing data cache so offline prices/news are not deleted on upgrade.
 const DATA_CACHE = 'currencytel-data-v3.4.2';
 const SHELL = [
@@ -66,6 +66,12 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Ads images may appear after ads.json during a GitHub Pages deploy.
+  // Network-first avoids stale/failed cached responses while keeping offline fallback.
+  if (/\/assets\/ads\/[a-zA-Z0-9_-]+\.(?:webp|jpe?g|png)$/i.test(url.pathname)) {
+    event.respondWith(networkFirst(event, APP_CACHE));
+    return;
+  }
   // JSON should never be served cache-first; otherwise rates/news go stale.
   if (/\/data\/[^/]+\.json$/.test(url.pathname)) {
     event.respondWith(networkFirst(event, DATA_CACHE));
