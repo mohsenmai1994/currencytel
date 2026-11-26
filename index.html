@@ -1,43 +1,240 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1420">
+  <meta name="description" content="CurrencyTel؛ اپلیکیشن قیمت ارز، طلا، سکه، رمزارز، انرژی، بورس و بازارهای جهانی با نمودار، جستجو و محاسبه‌گر">
+  <meta name="color-scheme" content="dark light">
+  <meta property="og:title" content="CurrencyTel | نبض بازار">
+  <meta property="og:description" content="قیمت‌ها، تغییرات روزانه و نمودارهای بازار ایران و جهان">
+  <meta name="currencytel-build" content="20261124-ads-v7-4-overlay-label">
+  <title>CurrencyTel | نبض بازار</title>
+  <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/main.css?v=20261124-ads-v7-4-overlay-label">
+  <link rel="stylesheet" href="./assets/css/market-features.css?v=20261124-ads-v7-4-overlay-label">
+  <link rel="stylesheet" href="./assets/css/market-redesign.css?v=20261124-ads-v7-4-overlay-label">
+  <link rel="stylesheet" href="./assets/css/ads.css?v=20261124-ads-v7-4-overlay-label">
+  <script src="./assets/js/ads.js?v=20261124-ads-v7-4-overlay-label" type="module" defer></script>
+  <script src="./assets/js/app.js?v=20261124-ads-v7-4-overlay-label" type="module" defer></script>
+  <script src="./assets/js/modules/tools-carousel.js?v=20261124-ads-v7-4-overlay-label" defer></script>
 
-  <meta name="theme-color" content="#101827">
-
-  <title>CurrencyTel</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #101827;
-    }
-
-    iframe {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: none;
+  <!-- Critical touch behavior lives in HTML too, so stale optional styles cannot restore text selection. -->
+  <style id="ct-touch-policy-v6">
+    html,html *,html *::before,html *::after{-webkit-tap-highlight-color:transparent!important;-webkit-touch-callout:none!important}
+    html,body,body *,body *::before,body *::after{-webkit-user-select:none!important;user-select:none!important}
+    input,textarea,[contenteditable="true"],[contenteditable="true"] *,[role="textbox"]{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+    @media (hover:none),(pointer:coarse){
+      .bottom-nav a:not(.active):hover,.bottom-nav a:not(.active):active,.header-nav a:not(.active):hover,.header-nav a:not(.active):active{background:transparent!important;color:var(--muted)!important}
+      .bottom-nav a,.header-nav a,.bottom-nav svg,button,a,.chip{transition:none!important}
     }
   </style>
+  <script id="ct-touch-guard-v6">
+  (()=>{
+    const editable=(node)=>node instanceof Element&&Boolean(node.closest('input,textarea,[contenteditable="true"],[role="textbox"]'));
+    document.addEventListener('selectstart',event=>{if(!editable(event.target))event.preventDefault();},true);
+    document.addEventListener('contextmenu',event=>{
+      if(matchMedia('(pointer:coarse)').matches&&!editable(event.target))event.preventDefault();
+    },true);
+  })();
+  </script>
+
+  <!-- Always register a versioned worker: stale browser/CDN sw.js cannot block the upgrade. -->
+  <script id="ct-sw-updater-v6">
+  (() => {
+    const supported=('serviceWorker' in navigator)&&(
+      location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
+    if(!supported)return;
+    const worker='./sw.js?ct-build=20261124-ads-v7-4-overlay-label';
+    const hadController=Boolean(navigator.serviceWorker.controller);
+    let reloading=false,lastCheck=0;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(!hadController||reloading)return;
+      reloading=true;
+      // Avoid an eternal reload loop if a browser has broken worker lifecycle semantics.
+      const k='ct-sw-refresh-20261124-ads-v7-4-overlay-label';
+      if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}
+    });
+    const check=()=>{
+      if(Date.now()-lastCheck<60*1000)return;
+      lastCheck=Date.now();
+      navigator.serviceWorker.register(worker,{scope:'./',updateViaCache:'none'})
+        .then(reg=>reg.update()).catch(err=>console.warn('CurrencyTel SW update:',err));
+    };
+    check();
+    window.addEventListener('pageshow',check);
+    window.addEventListener('online',check);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
+  })();
+  </script>
 </head>
 <body>
-  <iframe
-    src="https://currencytel.ir/"
-    title="CurrencyTel"
-    allow="fullscreen; clipboard-read; clipboard-write"
-    allowfullscreen>
-  </iframe>
+  <a class="skip-link" href="#prices">رفتن به قیمت‌ها</a>
+  <div class="app-main">
+    <header class="site-header">
+      <div class="shell header-inner">
+        <nav class="header-nav" aria-label="منوی اصلی"><a href="#dashboard" data-nav="dashboard">خانه</a><a href="#home" data-nav="home" class="active" aria-current="page">بازار</a><a href="#news" data-nav="news">خبرها</a><a href="#connect" data-nav="connect">ارتباط با ما</a></nav>
+        <div class="header-actions">
+          <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusLabel">در حال بارگیری</span></div>
+          <div class="header-search" id="headerSearch">
+            <label class="header-search-field" for="searchInput">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 4.4 4.4"/></svg>
+              <input id="searchInput" type="search" placeholder="جست‌وجوی ارز، طلا، سکه و نماد…" autocomplete="off" aria-label="جست‌وجوی دارایی‌ها">
+            </label>
+          </div>
+          <button id="themeBtn" type="button" class="icon-button" aria-label="تغییر حالت روشن و تاریک" title="تغییر تم">☼</button>
+        </div>
+      </div>
+    </header>
+    <main class="shell content">
+      <section id="home" class="home-section" aria-labelledby="heroTitle">
+<div class="hero compact-hero market-overview">
+  <div class="hero-main">
+    <span class="eyebrow">CURRENCYTEL / بازارهای امروز</span>
+    <h1 id="heroTitle">بازار، در یک نگاه</h1>
+    <div class="hero-meta"><span class="data-icon" aria-hidden="true">●</span><span>آخرین ثبت قیمت:</span><strong id="updatedAt">—</strong></div>
+  </div>
+  <div class="hero-aside clock-panel" aria-label="ساعت فعلی تهران">
+    <span class="clock-icon" aria-hidden="true">◷</span>
+    <div><span>زمان فعلی تهران</span><strong id="ageLabel" class="live-clock">—</strong><small id="currentDate">—</small></div>
+  </div>
+  <div class="market-pulse market-overview-stats" id="marketPulse" role="group" aria-label="خلاصه آمار بازار">
+    <div class="pulse-card pulseAssets"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></span><span class="pulse-info"><small>نمادها</small><strong id="pulseAssets">—</strong></span></div>
+    <div class="pulse-card pulseUp"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4 17 6-6 4 3 6-7"/><path d="M15 7h5v5"/></svg></span><span class="pulse-info"><small>افزایشی</small><strong id="pulseUp">—</strong></span></div>
+    <div class="pulse-card pulseDown"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4 7 6 6 4-3 6 7"/><path d="M15 17h5v-5"/></svg></span><span class="pulse-info"><small>کاهشی</small><strong id="pulseDown">—</strong></span></div>
+    <div class="pulse-card pulseMarkets"><span class="pulse-decor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3.5 19.5V5.5M3.5 19.5h17"/><path d="m7 15 4-5 3 2 5-7"/></svg></span><span class="pulse-info"><small>دسته‌های بازار</small><strong id="pulseMarkets">—</strong></span></div>
+  </div>
+</div>
+        <div class="spotlight-heading"><div><h2>قیمت‌های شاخص</h2></div></div>
+        <div id="summaryGrid" class="summary-grid summary-carousel" aria-label="اسلایدر قیمت‌های شاخص" aria-roledescription="اسلایدر"><div class="summary-card skeleton"></div><div class="summary-card skeleton"></div></div>
+        <div id="carouselDots" class="carousel-dots" aria-label="انتخاب اسلاید قیمت‌ها"></div>
+<section class="ctmf-section" id="marketFeatures" aria-labelledby="marketFeaturesTitle">
+  <div class="ctmf-section-heading"><div><span class="eyebrow">CURRENCYTEL TOOLS</span><h2 id="marketFeaturesTitle">ابزارهای بازار</h2></div><span class="ctmf-section-caption">۴ ابزار کاربردی</span></div>
+  <div class="ctmf-slider-controls" aria-label="پیمایش ابزارهای بازار">
+
+    <div id="marketFeatureDots" class="ctmf-slider-dots" role="group" aria-label="انتخاب ابزار"></div>
+
+  </div>
+  <div class="ctmf-cards ctmf-slider-track" id="marketFeatureCards" role="region" aria-roledescription="اسلایدر" aria-label="ابزارهای بازار؛ هر صفحه شامل دو ابزار است" tabindex="0">
+    <button type="button" class="ctmf-feature-card" data-market-feature="world" aria-controls="marketFeaturePanel" aria-expanded="false">
+      <span class="ctmf-feature-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c-10 10-10 24 0 34M24 7c10 10 10 24 0 34M12 13c7 6 17 6 24 0M12 35c7-6 17-6 24 0"/></svg></span>
+      <span class="ctmf-feature-copy"><strong>اقتصاد جهان</strong><small>کره سه‌بعدی و شاخص‌های کشورها</small><span class="ctmf-feature-action">مشاهده کشورها ←</span></span>
+    </button>
+    <button type="button" class="ctmf-feature-card" data-market-feature="gold" aria-controls="marketFeaturePanel" aria-expanded="false">
+      <span class="ctmf-feature-icon ctmf-feature-gold" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 21h32l-5.5 15h-21L8 21ZM8 21l7-9h18l7 9M15 12l6 9m12-9-6 9M21 21l3 15 3-15"/></svg></span>
+      <span class="ctmf-feature-copy"><strong>پیش‌فاکتور طلا</strong><small>وزن، اجرت، سود و مالیات</small><span class="ctmf-feature-action">ساخت پیش‌فاکتور ←</span></span>
+    </button>
+    <button type="button" class="ctmf-feature-card" data-market-feature="chart" aria-controls="marketFeaturePanel" aria-expanded="false">
+      <span class="ctmf-feature-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 37V9M8 37h32M13 29l8-9 8 5 9-15"/><circle cx="21" cy="20" r="2" fill="currentColor" stroke="none"/></svg></span>
+      <span class="ctmf-feature-copy"><strong>نمودار و تحلیل</strong><small>روند قیمت‌ها در بازه‌های زمانی</small><span class="ctmf-feature-action">مشاهده نمودار ←</span></span>
+    </button>
+    <button type="button" class="ctmf-feature-card" data-market-feature="converter" aria-controls="marketFeaturePanel" aria-expanded="false">
+      <span class="ctmf-feature-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="5" width="30" height="38" rx="6"/><path d="M15 13h18v9H15zM16 29h3m6 0h3m5 0h1M16 36h3m6 0h3m5 0h1"/></svg></span>
+      <span class="ctmf-feature-copy"><strong>محاسبه‌گر نرخ</strong><small>تبدیل ارزش دارایی‌ها به تومان</small><span class="ctmf-feature-action">محاسبه نرخ ←</span></span>
+    </button>
+  </div>
+  <p class="ctmf-swipe-hint">برای دیدن دو ابزار بعدی، به چپ یا راست بکشید</p>
+  <div id="marketFeaturePanel" class="ctmf-feature-panel" hidden>
+    <div class="ctmf-feature-panel-bar"><h2 id="marketFeatureTitle"></h2><button type="button" id="marketFeatureBack" class="ctmf-btn ctmf-btn-soft">بستن ابزار ×</button></div>
+    <div id="marketFeatureContent" aria-live="off"></div>
+    <div id="marketCoreTools" hidden>
+      <div id="marketChartTool" data-core-feature="chart" hidden>
+<section class="panel analytics-panel" aria-labelledby="chartTitle">
+          <div class="panel-heading"><h3 id="chartTitle">نمودار و تحلیل قیمت</h3></div>
+          <label class="field-label" for="chartAsset">انتخاب دارایی</label>
+          <select id="chartAsset" class="field-select"><option value="usd">دلار آمریکا</option></select>
+          <div class="range-tabs" id="chartRanges" role="group" aria-label="بازه زمانی نمودار">
+            <button type="button" class="range-tab active" data-range="24h" aria-pressed="true">۲۴ ساعت</button>
+            <button type="button" class="range-tab" data-range="7d" aria-pressed="false">۷ روز</button>
+            <button type="button" class="range-tab" data-range="30d" aria-pressed="false">۳۰ روز</button>
+            <button type="button" class="range-tab" data-range="90d" aria-pressed="false">۹۰ روز</button>
+          </div>
+          <div class="chart-headline"><div><small>آخرین قیمت ثبت‌شده</small><div id="chartNumber" class="chart-value">—</div></div><span id="chartTrend" class="chart-trend flat">—</span></div>
+          <div class="chart-wrap chart-pro" id="chartPlot">
+            <svg id="historyChart" tabindex="0" role="img" aria-label="نمودار قیمت بر اساس تاریخچه ثبت‌شده"></svg>
+            <div id="chartTooltip" class="chart-tooltip" hidden></div>
+            <div id="chartEmpty" class="chart-empty" hidden>برای این بازه هنوز گزارش قیمت ثبت نشده است.</div>
+          </div>
+          <div class="chart-stat-grid" id="chartStats" aria-live="polite">
+            <div><small>تغییر در داده‌های موجود</small><strong id="chartDelta">—</strong></div>
+            <div><small>تعداد مشاهدات</small><strong id="chartCount">—</strong></div>
+          </div>
+          <p id="chartMeta" class="muted chart-subtitle" aria-live="polite">برای رسم نمودار، تاریخچه قیمت لازم است.</p>
+        </section></div>
+<div id="marketConverterTool" data-core-feature="converter" hidden>
+<section class="panel" aria-labelledby="convertTitle"><div class="panel-heading"><h3 id="convertTitle">محاسبه‌گر نرخ</h3></div><label class="field-label" for="converterAsset">انتخاب دارایی</label><select id="converterAsset" class="field-select"></select><label class="field-label" for="converterAmount">مقدار</label><input id="converterAmount" class="field-input" inputmode="decimal" type="text" value="۱" pattern="[0-9۰-۹٠-٩.,٫٬ ]*"><div class="conversion-result"><small>ارزش تقریبی به تومان</small><strong id="conversionValue">—</strong><span id="conversionNote">برآورد بر اساس نرخ ثبت‌شده</span></div></section>      </div>
+      <div class="ctad-placement" data-ctad-slot="tools_footer" hidden></div>
+    </div>
+  </div>
+<div class="ctad-placement" data-ctad-slot="market_between" hidden></div>
+</section>
+      <section class="section" id="prices" aria-labelledby="pricesTitle">
+        <div class="section-heading price-section-heading"><div><div class="eyebrow">MARKET WATCH</div><h2 id="pricesTitle">بازارها</h2></div><div class="price-heading-actions"><span id="favoriteCount" class="favs-badge">☆ منتخب‌ها: ۰</span><div class="sort-wrap"><span>مرتب‌سازی</span><select id="sortInput" aria-label="مرتب‌سازی بازار"><option value="default">پیش‌فرض</option><option value="name">نام</option><option value="price_desc">بیشترین قیمت</option><option value="change_desc">بیشترین رشد</option></select></div></div></div>
+        <div class="filter-shell" aria-label="انتخاب دسته بازار">
+          <div class="filter-toolbar"><span>دسته‌بندی بازار</span></div>
+          <div id="filterBar" class="filter-bar" role="group" aria-label="فیلتر بازارها"><button type="button" data-filter="all" class="chip active" aria-pressed="true">همه</button><button type="button" data-filter="favorite" class="chip" aria-pressed="false">☆ منتخب</button><button type="button" data-filter="currency" class="chip" aria-pressed="false">ارز</button><button type="button" data-filter="gold" class="chip" aria-pressed="false">طلا</button><button type="button" data-filter="coin" class="chip" aria-pressed="false">سکه</button><button type="button" data-filter="crypto" class="chip" aria-pressed="false">رمزارز</button><button type="button" data-filter="forex" class="chip" aria-pressed="false">فارکس</button><button type="button" data-filter="metal" class="chip" aria-pressed="false">فلزات</button><button type="button" data-filter="energy" class="chip" aria-pressed="false">انرژی</button><button type="button" data-filter="commodity" class="chip" aria-pressed="false">کالاها</button><button type="button" data-filter="stock" class="chip" aria-pressed="false">بورس ایران</button><button type="button" data-filter="index" class="chip" aria-pressed="false">شاخص‌ها</button><button type="button" data-filter="bond" class="chip" aria-pressed="false">اوراق</button><button type="button" data-filter="agriculture" class="chip" aria-pressed="false">کشاورزی</button></div>
+        </div>
+        <div class="data-card"><div class="table-scroll"><table class="prices-table"><thead><tr><th>دارایی</th><th>آخرین قیمت</th><th>تغییر از شروع روز</th><th>منتخب</th></tr></thead><tbody id="priceRows"><tr><td colspan="4" class="blank-state">در حال دریافت قیمت‌ها...</td></tr></tbody></table></div></div>
+        <div id="errorMessage" role="alert" class="error-message" hidden></div>
+        <div class="ctad-placement ctad-price-footer" data-ctad-slot="market_inline" hidden></div>
+      </section>
+      </section>
+<section id="dashboard" class="section ct-home" hidden aria-labelledby="dashboardTitle">
+  <div class="ct-home-hero">
+    <div><span class="eyebrow">CURRENCYTEL / YOUR DASHBOARD</span><h1 id="dashboardTitle">خانه کرنسی‌تل</h1><p>همه ابزارها و امکانات بازار، یک‌جا و در دسترس شما.</p></div>
+    <span class="ct-home-mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 31l11-11 8 7 12-18"/><path d="m30 9 9 0 0 9"/></svg></span>
+  </div>
+  <div class="ctad-placement" data-ctad-slot="home_quick" hidden></div>
+  <div class="ct-home-section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>دسترسی سریع</h2></div><span>۱۰ مسیر کاربردی</span></div>
+  <div class="ct-home-grid" aria-label="تمام امکانات کرنسی‌تل">
+          <a class="ct-home-tile" href="#home"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M5 16l5-6 4 3 5-8"/><path d="m15 5 4 0v4"/></svg></span><span class="ct-home-info"><strong>بازار امروز</strong><small>نمای کلی قیمت‌ها</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
+          <a class="ct-home-tile" href="#prices"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/></svg></span><span class="ct-home-info"><strong>فهرست قیمت‌ها</strong><small>تمام نمادها و دسته‌ها</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
+          <a class="ct-home-tile" href="#news"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span><span class="ct-home-info"><strong>اخبار روز</strong><small>اخبار اقتصادی و سیاسی</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
+          <button class="ct-home-tile" type="button" data-dashboard-tool="chart"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 18 10 11l4 3 6-10"/><path d="M5 4v14"/></svg></span><span class="ct-home-info"><strong>نمودار قیمت</strong><small>روند و تغییرات دارایی‌ها</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></button>
+          <button class="ct-home-tile" type="button" data-dashboard-tool="converter"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M8 8h8M9 13h1m4 0h1m-6 4h1m4 0h1"/></svg></span><span class="ct-home-info"><strong>محاسبه‌گر نرخ</strong><small>محاسبه ارزش به تومان</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></button>
+          <button class="ct-home-tile" type="button" data-dashboard-tool="world"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-6 5-6 13 0 18M12 3c6 5 6 13 0 18"/></svg></span><span class="ct-home-info"><strong>اقتصاد جهان</strong><small>کره سه‌بعدی و آمار کشورها</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></button>
+          <button class="ct-home-tile" type="button" data-dashboard-tool="gold"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16l-3 8H7l-3-8Zm0 0 5-6h6l5 6m-11-6 3 6 3-6m-3 6v8"/></svg></span><span class="ct-home-info"><strong>پیش‌فاکتور طلا</strong><small>محاسبه اجرت و مالیات</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></button>
+          <a class="ct-home-tile" href="#prices" data-dashboard-favorites="true"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.6l-5.7 2.9 1.1-6.3-4.6-4.5 6.4-.9z"/></svg></span><span class="ct-home-info"><strong>علاقه‌مندی‌ها</strong><small>نمادهای ذخیره‌شده</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
+          <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12 20 4l-4.3 16-5.4-5.8L3.5 12Z"/><path d="M10.3 14.2 20 4"/></svg></span><span class="ct-home-info"><strong>ارتباط با ما</strong><small>تلگرام و شبکه‌های اجتماعی</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>
+          <a class="ct-home-tile" href="#connect"><span class="ct-home-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="3"/><path d="M6 8V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M3 13h18"/></svg></span><span class="ct-home-info"><strong>خدمات تجاری</strong><small>درخواست API و تبلیغات</small></span><span class="ct-home-chevron" aria-hidden="true">←</span></a>  </div>
+</section>
+      <section id="news" class="section news-section" aria-labelledby="newsTitle" hidden>
+        <div class="spotlight-heading"><h2 id="newsTitle">آخرین خبرها</h2>
+        </div>
+        <div id="newsTrack" class="news-track" role="region" aria-label="اسلایدر خبرها"></div>
+        <p id="newsStatus" class="muted" role="status">در حال دریافت خبرها…</p>
+        <section id="newsMore" class="news-more-section" hidden aria-labelledby="newsMoreTitle">
+          <div class="feed-heading"><h3 id="newsMoreTitle">سایر خبرها</h3></div>
+          <div id="newsList" class="news-list"></div>
+        </section>
+      </section>
+      <section id="connect" hidden class="section connect-section" aria-labelledby="contactPageTitle"><div class="ct-contact-heading"><span class="eyebrow">CURRENCYTEL / CONTACT</span><h1 id="contactPageTitle">ارتباط با ما</h1><p>راه‌های ارتباطی، شبکه‌های اجتماعی و خدمات تجاری کرنسی‌تل</p></div><div class="business-panel">
+          <h2>خدمات تجاری CurrencyTel</h2>
+          <p>برای خرید دسترسی یا استعلام تعرفهٔ تبلیغات، تماس بگیرید یا موضوع درخواست را در پیامک بفرستید.</p>
+          <div class="service-links" aria-label="ارسال درخواست با پیامک">
+            <a href="sms:+989029483015?body=درخواست%20خرید%20API%20قیمت">خرید API قیمت</a>
+            <a href="sms:+989029483015?body=درخواست%20خرید%20API%20خبر">خرید API خبر</a>
+            <a href="sms:+989029483015?body=استعلام%20تعرفه%20تبلیغات">استعلام تبلیغات</a>
+          </div>
+          <a class="business-call" href="tel:+989029483015"><span>تماس با فروش</span><b dir="ltr">۰۹۰۲ ۹۴۸ ۳۰۱۵</b></a>
+        </div>
+        <div class="section-heading channel-heading"><h2>کانال‌های رسمی</h2></div><div class="channels-grid">
+        <a href="https://t.me/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">✈</span><span class="channel-info"><b>تلگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a href="https://ble.ir/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">ب</span><span class="channel-info"><b>بله</b><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a href="https://rubika.ir/currencytel" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">ر</span><span class="channel-info"><b>روبیکا</b><small>@currencytel</small></span><span class="external">↗</span></a>
+        <a href="https://www.instagram.com/currencytel/" target="_blank" rel="noopener noreferrer" class="channel-card"><span class="channel-icon" aria-hidden="true">◎</span><span class="channel-info"><b>اینستاگرام</b><small>@currencytel</small></span><span class="external">↗</span></a>
+        </div>
+      </section>
+    </main>
+    <span id="footerTime" hidden aria-hidden="true"></span>
+  </div>
+  <nav class="bottom-nav" aria-label="منوی پایین برنامه"><a href="#dashboard" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><small>خانه</small></a><a class="active" aria-current="page" href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 15.5 8 11l3 2.5 6.5-7"/><path d="m13.5 6.5 4-.1.1 4"/><path d="M4 20h16"/></svg><small>بازار</small></a><a href="#news" data-nav="news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4.5" width="15.5" height="15" rx="2"/><path d="M7.5 8h8.5M7.5 12h8.5M7.5 16h5"/></svg><small>خبرها</small></a><a href="#connect" data-nav="connect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 19 5l-4.1 14-4.2-5.5-6.2-1z"/><path d="M10.7 13.5 19 5"/></svg><small>ارتباط با ما</small></a></nav>
+  <div id="detailBackdrop" class="detail-backdrop" hidden></div>
+  <aside id="detailSheet" class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden><div class="detail-sheet-top"><span class="detail-handle"></span><button id="detailClose" type="button" class="icon-button" aria-label="بستن پنجره">×</button></div><div id="detailContent"></div></aside>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 </body>
 </html>
