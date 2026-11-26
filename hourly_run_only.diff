@@ -1,0 +1,19 @@
+--- a/.github/workflows/hourly_run.yml
++++ b/.github/workflows/hourly_run.yml
+@@ -185,6 +185,16 @@
+           RUBINO_MIN_HOURS: ${{ vars.RUBINO_MIN_HOURS || '4' }}
+         run: python scripts/post_rubino.py
+ 
++      # Update the public World Economy JSON INSIDE the existing dispatch workflow.
++      # No dedicated GitHub cron or separate scheduled action is needed.
++      # The Python collector checks fetched_at and skips API calls if the data
++      # has been updated in the past 12 hours.
++      - name: Refresh World Economy data in GitHub (at most every 12 hours)
++        id: world_economy
++        if: always()
++        continue-on-error: true
++        run: python scripts/build_world_economy.py --min-age-hours 12
++
+       - name: Commit only generated public data and publishing state
+         if: always()
+         shell: bash
