@@ -73,7 +73,7 @@ def kraken():
 
 def okx():
     base='https://www.okx.com'; sym={'instId':'BTC-USDT-SWAP'}
-    jobs={'ticker':(base,'/api/v5/market/ticker',sym),'mark':(base,'/api/v5/public/mark-price',{**sym,'instType':'SWAP'}),'oi':(base,'/api/v5/public/open-interest',{**sym,'instType':'SWAP'}),'funding':(base,'/api/v5/public/funding-rate',sym),'instrument':(base,'/api/v5/public/instruments',{**sym,'instType':'SWAP'}),'book':(base,'/api/v5/market/books',{**sym,'sz':100}),'trades':(base,'/api/v5/market/trades',{**sym,'limit':500})}
+    jobs={'ticker':(base,'/api/v5/market/ticker',sym),'mark':(base,'/api/v5/public/mark-price',{**sym,'instType':'SWAP'}),'oi':(base,'/api/v5/public/open-interest',{**sym,'instType':'SWAP'}),'funding':(base,'/api/v5/public/funding-rate',sym),'instrument':(base,'/api/v5/public/instruments',{**sym,'instType':'SWAP'}),'book':(base,'/api/v5/market/books',{**sym,'sz':100}),'trades':(base,'/api/v5/market/trades',{**sym,'limit':500}),'spot_trades':(base,'/api/v5/market/trades',{'instId':'BTC-USDT','limit':500})}
     data,errors=parallel(jobs); out={'source':'OKX','quote':'USDT','market_type':'futures','time':int(time.time()),'errors':errors}
     for k in list(data):
         v=data[k]
@@ -89,4 +89,10 @@ def okx():
             mult=float(inst['ctVal'])*float(inst.get('ctMult') or 1)
             if 'book' in data: out['book']={s:[[x[0],float(x[1])*mult] for x in data['book'][0][s]] for s in ('bids','asks')}
             if 'trades' in data: out['trades']=[{'id':t['tradeId'],'time':int(t['ts'])//1000,'price':float(t['px']),'qty':float(t['sz'])*mult,'side':t['side']} for t in data['trades']]
+    if 'spot_trades' in data:
+        out['spot_trades'] = [
+            {'id':str(t['tradeId']), 'time':int(t['ts'])//1000,
+             'price':float(t['px']), 'qty':float(t['sz']), 'side':str(t['side']).lower()}
+            for t in data['spot_trades']
+        ]
     return out
